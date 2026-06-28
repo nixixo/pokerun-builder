@@ -605,6 +605,11 @@ export default function Home() {
   const [configDraftTransform, setConfigDraftTransform] = useState<SpriteTransform>(DEFAULT_TRANSFORM);
   const [dragFromIdx, setDragFromIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  // Touch-based drag-and-drop for mobile
+  const touchDragFrom = useRef<number | null>(null);
+  const touchDragEl = useRef<HTMLElement | null>(null);
+  // Stat tooltip open state per slot (tap on mobile, hover on desktop)
+  const [statsTooltipOpen, setStatsTooltipOpen] = useState<boolean[]>(() => Array(6).fill(false));
   // Type picker open state per slot and move.
   const [hpTypeOpen, setHpTypeOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
   const [fakeTypeOpen, setFakeTypeOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
@@ -1483,15 +1488,40 @@ const merged = matches.slice(0, 8);
   };
 
   return (
-    <div ref={rootRef} className="min-h-screen p-6 bg-linear-to-b from-slate-900 via-[#041229] to-[#031022] text-slate-100">
-      <header className="mb-8">
+    <div ref={rootRef} className="min-h-screen px-3 py-4 sm:p-6 bg-linear-to-b from-slate-900 via-[#041229] to-[#031022] text-slate-100">
+      <style>{`
+        /* ── PokéRun custom scrollbars ── */
+        :root {
+          --sb-track: #0a1628;
+          --sb-thumb: #1e3a5f;
+          --sb-thumb-hover: #2563eb;
+          --sb-size: 6px;
+        }
+        /* Webkit (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar { width: var(--sb-size); height: var(--sb-size); }
+        ::-webkit-scrollbar-track { background: var(--sb-track); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: var(--sb-thumb); border-radius: 99px; border: 1px solid var(--sb-track); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--sb-thumb-hover); }
+        ::-webkit-scrollbar-corner { background: var(--sb-track); }
+        /* Firefox */
+        * { scrollbar-width: thin; scrollbar-color: var(--sb-thumb) var(--sb-track); }
+        /* Touch drag for slot reorder */
+        .touch-drag-handle { touch-action: none; }
+        /* xs breakpoint (≥420px) */
+        @media (min-width: 420px) {
+          .xs\\:inline { display: inline !important; }
+          .xs\\:hidden { display: none !important; }
+          .xs\\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+      `}</style>
+      <header className="mb-6 sm:mb-8">
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-4 sm:mb-5">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-600/20 border border-red-500/30 text-base">⬤</span>
             <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">PokéRun</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Language toggle */}
             <div className="flex items-center rounded-full border border-slate-700/60 bg-slate-900/70 p-0.5 gap-0.5">
               {(["es", "en"] as Lang[]).map((l) => (
@@ -1499,13 +1529,13 @@ const merged = matches.slice(0, 8);
                   key={l}
                   type="button"
                   onClick={() => setLang(l)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition ${lang === l ? "bg-blue-700 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition ${lang === l ? "bg-blue-700 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
                 >
                   {l === "es" ? "🇪🇸 ES" : "🇬🇧 EN"}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-mono">
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-600 font-mono">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>{t.liveBadge}</span>
             </div>
@@ -1513,34 +1543,34 @@ const merged = matches.slice(0, 8);
         </div>
 
         {/* Main hero block */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 via-[#050f1f] to-[#03091a] px-6 py-7 sm:px-10 sm:py-9 shadow-xl shadow-black/40">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 via-[#050f1f] to-[#03091a] px-4 py-5 sm:px-10 sm:py-9 shadow-xl shadow-black/40">
           {/* Decorative rings */}
           <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[3px] border-slate-700/20 opacity-40" />
           <div className="pointer-events-none absolute -right-8 -top-8 h-48 w-48 rounded-full border-[2px] border-blue-700/15 opacity-40" />
           <div className="pointer-events-none absolute -right-2 -top-2 h-32 w-32 rounded-full border border-blue-600/10 opacity-40" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 32px)" }} />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
             <div>
-              <div className="flex flex-wrap items-baseline gap-2 mb-2">
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
-                <span className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
-                <span className="text-2xl">✨</span>
+              <div className="flex flex-wrap items-baseline gap-2 mb-1.5 sm:mb-2">
+                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
+                <span className="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
+                <span className="text-xl sm:text-2xl">✨</span>
               </div>
-              <p className="text-sm sm:text-base text-slate-400 max-w-md leading-relaxed">{t.appSubtitle}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <p className="text-xs sm:text-base text-slate-400 max-w-md leading-relaxed">{t.appSubtitle}</p>
+              <div className="mt-2 sm:mt-3 flex flex-wrap gap-1.5 sm:gap-2">
                 {[t.tagTypes, t.tagCoverage, t.tagRoles, t.tagFakemons].map((tag) => (
-                  <span key={tag} className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/60 px-2.5 py-0.5 text-[11px] font-medium text-slate-400 tracking-wide">{tag}</span>
+                  <span key={tag} className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/60 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-slate-400 tracking-wide">{tag}</span>
                 ))}
               </div>
             </div>
-            <div className="flex sm:flex-col gap-3 shrink-0">
+            <div className="flex sm:flex-col gap-2 sm:gap-3 shrink-0 overflow-x-auto pb-1 sm:pb-0">
               {([["🏆", t.labelSlots, t.statSlots], ["⚔️", t.labelMoves, t.statMoves], ["📊", t.labelAnalysis, t.statAnalysis]] as [string,string,string][]).map(([icon, label, value]) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-3 py-2 min-w-[140px]">
-                  <span className="text-lg shrink-0">{icon}</span>
+                <div key={label} className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 sm:px-3 py-1.5 sm:py-2 min-w-[110px] sm:min-w-[140px] shrink-0">
+                  <span className="text-base sm:text-lg shrink-0">{icon}</span>
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 leading-none mb-0.5">{label}</div>
-                    <div className="text-xs font-semibold text-slate-200">{value}</div>
+                    <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-500 leading-none mb-0.5">{label}</div>
+                    <div className="text-[11px] sm:text-xs font-semibold text-slate-200">{value}</div>
                   </div>
                 </div>
               ))}
@@ -1551,19 +1581,19 @@ const merged = matches.slice(0, 8);
       {isMounted && (
       <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr] gap-6">
-        <section className="pokedex-panel p-4 rounded-lg h-full">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <h2 className="flex items-center gap-3 text-xl font-semibold tracking-tight text-slate-100">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>
+        <section className="pokedex-panel p-3 sm:p-4 rounded-lg h-full">
+          <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+            <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-semibold tracking-tight text-slate-100">
+              <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>
               {t.myTeam}
             </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => setShowPlantillas(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-700/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-blue-700/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
-              <span>💾</span> {t.saveTemplates} {savedTeams.length > 0 && <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs">{savedTeams.length}</span>}
+              <span>💾</span> <span className="hidden xs:inline">{t.saveTemplates}</span><span className="xs:hidden">Plantillas</span> {savedTeams.length > 0 && <span className="inline-flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-white/20 text-xs">{savedTeams.length}</span>}
             </button>
             <button
               type="button"
@@ -1574,16 +1604,17 @@ const merged = matches.slice(0, 8);
                   localStorage.removeItem(STORAGE_KEY);
                 }
               }}
-              className="inline-flex items-center justify-center rounded-full bg-red-600/90 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="inline-flex items-center justify-center rounded-full bg-red-600/90 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400"
             >
               {t.clearTeam}
             </button>
           </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {team.map((slot, idx) => (
               <div
                 key={idx}
+                data-slot-idx={idx}
                 className={`pokedex-card relative hover:z-20 p-2 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-2 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30" : ""} ${dragFromIdx === idx ? "opacity-50" : ""}`}
                 onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
                 onDragLeave={() => setDragOverIdx(null)}
@@ -1594,20 +1625,43 @@ const merged = matches.slice(0, 8);
                   draggable
                   onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; setDragFromIdx(idx); }}
                   onDragEnd={() => { setDragFromIdx(null); setDragOverIdx(null); }}
-                  className="flex items-center justify-between text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing select-none"
+                  onTouchStart={(e) => {
+                    touchDragFrom.current = idx;
+                    touchDragEl.current = e.currentTarget as HTMLElement;
+                    setDragFromIdx(idx);
+                  }}
+                  onTouchMove={(e) => {
+                    if (touchDragFrom.current === null) return;
+                    const touch = e.touches[0];
+                    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const card = el?.closest("[data-slot-idx]") as HTMLElement | null;
+                    if (card) {
+                      const overIdx = Number(card.dataset.slotIdx);
+                      if (!isNaN(overIdx)) setDragOverIdx(overIdx);
+                    }
+                  }}
+                  onTouchEnd={() => {
+                    if (touchDragFrom.current !== null && dragOverIdx !== null && touchDragFrom.current !== dragOverIdx) {
+                      swapSlots(touchDragFrom.current, dragOverIdx);
+                    }
+                    touchDragFrom.current = null;
+                    setDragFromIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className="touch-drag-handle flex items-center justify-between text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing select-none py-1"
                   title="Arrastra para reordenar"
                 >
                   <span className="text-lg tracking-widest">⠿</span>
-                  <span className="text-[13px] uppercase tracking-widest opacity-50">{t.dragHandle}</span>
+                  <span className="text-[11px] sm:text-[13px] uppercase tracking-widest opacity-50">{t.dragHandle}</span>
                 </div>
                 <div className="flex gap-3 items-start">
-                  <div className="w-32 h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
+                  <div className="w-20 h-20 sm:w-32 sm:h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
                     {slot.sprite ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={slot.sprite}
                         alt={slot.name}
-                        className="w-28 h-28 object-contain"
+                        className="w-16 h-16 sm:w-28 sm:h-28 object-contain"
                         style={buildSpriteStyle(slot.spriteTransform)}
                       />
                     ) : (
@@ -1620,10 +1674,18 @@ const merged = matches.slice(0, 8);
                         <div className="text-lg font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
                         {slot.stats ? (
                           <div className="relative inline-flex items-center group">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-[14px] text-slate-300">ⓘ</span>
-                            <div className={`absolute top-0 z-50 hidden w-80 rounded-2xl border border-slate-700 bg-slate-950/97 p-4 text-sm text-slate-100 shadow-xl shadow-black/50 group-hover:block ${idx % 2 === 0 ? "left-full ml-2" : "right-full mr-2"}`}>
-                              {/* Base stats */}
-                              <div className="mb-2 text-xs uppercase tracking-[0.3em] text-slate-500">{lang === "es" ? "Stats base" : "Base stats"}</div>
+                            <span
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-[14px] text-slate-300 cursor-pointer"
+                              onClick={() => setStatsTooltipOpen((prev) => prev.map((v, i) => i === idx ? !v : v))}
+                            >ⓘ</span>
+                            {/* Desktop: group-hover; Mobile: state toggle */}
+                            <div className={`absolute top-0 z-50 w-72 sm:w-80 rounded-2xl border border-slate-700 bg-slate-950/97 p-4 text-sm text-slate-100 shadow-xl shadow-black/50 ${statsTooltipOpen[idx] ? "block" : "hidden group-hover:block"} ${idx % 2 === 0 ? "left-full ml-2" : "right-full mr-2"}`}
+                              style={{ maxHeight: "70vh", overflowY: "auto" }}
+                            >
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="text-xs uppercase tracking-[0.3em] text-slate-500">{lang === "es" ? "Stats base" : "Base stats"}</div>
+                                <button type="button" className="sm:hidden text-slate-500 hover:text-slate-300 text-xs px-1" onClick={() => setStatsTooltipOpen((prev) => prev.map((v, i) => i === idx ? false : v))}>✕</button>
+                              </div>
                               <div className="space-y-2 mb-4">
                                 {statLabels.map(([key, label]) => {
                                   const value = slot.stats![key];
@@ -1714,7 +1776,7 @@ const merged = matches.slice(0, 8);
                   </div>
                 </div>
 
-                <div className="relative flex items-center gap-2 text-sm text-slate-300">
+                <div className="relative flex flex-wrap items-center gap-2 text-sm text-slate-300">
                   <input
                     value={slot.name}
                     onChange={(e) => {
@@ -1747,18 +1809,18 @@ const merged = matches.slice(0, 8);
                       }
                     }}
                     placeholder={slot.isFake ? t.searchFakemon : t.searchPokemon}
-                    className="min-w-0 flex-1 bg-transparent border border-blue-800/40 text-slate-100 placeholder-slate-500 px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-700"
+                    className="min-w-0 flex-1 bg-transparent border border-blue-800/40 text-slate-100 placeholder-slate-500 px-2 py-1.5 rounded focus:outline-none focus:ring-2 focus:ring-blue-700 text-[13px] sm:text-sm"
                   />
                   {!slot.isFake && (
                     <button
                       onClick={() => fetchPokemon(slot.name, idx)}
-                      className="px-3 py-1 bg-linear-to-r from-blue-700 to-indigo-900 text-white rounded btn-interactive whitespace-nowrap"
+                      className="px-2.5 sm:px-3 py-1 bg-linear-to-r from-blue-700 to-indigo-900 text-white rounded btn-interactive whitespace-nowrap text-xs sm:text-sm"
                     >
                       {t.btnSearch}
                     </button>
                   )}
-                  <div className="inline-flex items-center gap-3">
-                    <label className="inline-flex items-center gap-2 whitespace-nowrap">
+                  <div className="inline-flex items-center gap-2 sm:gap-3">
+                    <label className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm">
                       <input
                         type="checkbox"
                         checked={slot.isFake}
@@ -1771,7 +1833,7 @@ const merged = matches.slice(0, 8);
                       <button
                         type="button"
                         onClick={() => openFakemonConfig(idx)}
-                        className="rounded-full bg-slate-800/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200 transition hover:bg-slate-700"
+                        className="rounded-full bg-slate-800/90 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-slate-200 transition hover:bg-slate-700"
                       >
                         {t.btnConfigure}
                       </button>
@@ -1845,7 +1907,7 @@ const merged = matches.slice(0, 8);
                       );
                     };
                     return (
-                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-3">
+                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2.5 sm:p-3">
                         <div className="mb-2 flex items-center justify-between gap-3">
                           <div className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
                           <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
@@ -2069,22 +2131,22 @@ const enSlug =
           </div>
         </section>
 
-        <section className="pokedex-panel p-4 rounded-lg h-full flex flex-col gap-4 min-h-0 overflow-hidden">
-          <h2 className="flex items-center gap-3 text-xl font-semibold tracking-tight mb-2 text-slate-100">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📊</span>
+        <section className="pokedex-panel p-3 sm:p-4 rounded-lg h-full flex flex-col gap-4 min-h-0 overflow-hidden">
+          <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-semibold tracking-tight mb-1 sm:mb-2 text-slate-100">
+            <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📊</span>
             {lang === "es" ? "Análisis" : "Analysis"}
           </h2>
           <div className="grid gap-2 flex-1 min-h-0 overflow-hidden">
-            <div className="p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 overflow-hidden">
-              <div className="flex items-center gap-2 text-lg font-semibold tracking-tight mb-3 text-slate-100">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚔️</span>
+            <div className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 overflow-hidden">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold tracking-tight mb-2 sm:mb-3 text-slate-100">
+                <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚔️</span>
                 {lang === "es" ? "Tipos" : "Types"}
               </div>
               {loadingRelations ? (
                 <div className="text-slate-300">{lang === "es" ? "Cargando relaciones de tipos..." : "Loading type chart..."}</div>
               ) : (
                 <div className="grid grid-cols-1 gap-2">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20">
                       <div className="font-semibold text-slate-100 mb-2">{t.weaknesses} (×2 {lang === "es" ? "o más" : "or more"})</div>
                     <div className="flex flex-wrap gap-2">
@@ -2130,9 +2192,9 @@ const enSlug =
               )}
             </div>
 
-            <div className="p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden">
-              <div className="flex items-center gap-2 text-lg font-semibold tracking-tight mb-3 text-slate-100">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚡</span>
+            <div className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold tracking-tight mb-2 sm:mb-3 text-slate-100">
+                <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚡</span>
                 {t.coverageTitle}
               </div>
               <div className="flex-1 grid gap-3 min-h-0 overflow-hidden">
@@ -2192,9 +2254,9 @@ const enSlug =
               </div>
             </div>
 
-            <div className="p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden">
-              <div className="flex items-center gap-2 text-lg font-semibold tracking-tight mb-3 text-slate-100">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">💡</span>
+            <div className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold tracking-tight mb-2 sm:mb-3 text-slate-100">
+                <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">💡</span>
                 {t.balanceSugg}
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
@@ -2227,9 +2289,9 @@ const enSlug =
                 )}
               </div>
             </div>
-            <div className="p-4 pokedex-card rounded-lg border-blue-800/30 min-h-0 flex flex-col">
-              <div className="flex items-center gap-2 text-lg font-semibold tracking-tight mb-3 text-slate-100">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📈</span>
+            <div className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 min-h-0 flex flex-col">
+              <div className="flex items-center gap-2 text-base sm:text-lg font-semibold tracking-tight mb-2 sm:mb-3 text-slate-100">
+                <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📈</span>
                 {t.statsBalance}
               </div>
               {statsAnalysis ? (
@@ -2334,7 +2396,7 @@ const enSlug =
       {/* Team Summary Panel */}
       {teamSummary && (
         <div className="mt-0">
-          <div className="p-4 pokedex-panel rounded-lg max-w-4xl mx-auto">
+          <div className="p-3 sm:p-4 pokedex-panel rounded-lg max-w-4xl mx-auto">
             <div className="flex items-center gap-2 text-base font-semibold tracking-tight mb-3 text-slate-100">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">🎯</span>
               {t.summaryTitle}
@@ -2406,11 +2468,14 @@ const enSlug =
       </div>
       )}
       {showPlantillas && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-        <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-950/97 p-6 text-slate-100 shadow-2xl shadow-black/60 flex flex-col gap-4">
+        <div
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 p-3 sm:p-4 overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowPlantillas(false); setSavingNew(false); setPlantillaDraftName(""); } }}
+        >
+        <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-950/97 p-4 sm:p-6 text-slate-100 shadow-2xl shadow-black/60 flex flex-col gap-4 my-auto">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-slate-100">{t.templateTitle}</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-slate-100">{t.templateTitle}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{t.templateSubtitle}</p>
               </div>
               <button type="button" onClick={() => { setShowPlantillas(false); setSavingNew(false); setPlantillaDraftName(""); }}
@@ -2418,7 +2483,7 @@ const enSlug =
                 {t.templateClose}
               </button>
             </div>
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[50vh] sm:max-h-64 overflow-y-auto pr-1">
               {savedTeams.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-slate-500 text-sm gap-2">
                   <span className="text-3xl">📂</span>
@@ -2429,7 +2494,7 @@ const enSlug =
                   const filledCount = saved.team.filter((s) => s.name).length;
                   const types = saved.team.flatMap((s) => s.types.filter(Boolean)).slice(0, 6);
                   return (
-                    <div key={saved.id} className="flex items-center gap-3 rounded-2xl border border-slate-700/50 bg-slate-900/60 px-4 py-3">
+                    <div key={saved.id} className="flex items-center gap-3 rounded-2xl border border-slate-700/50 bg-slate-900/60 px-3 sm:px-4 py-3">
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-slate-100 text-sm truncate">{saved.name}</div>
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -2438,15 +2503,15 @@ const enSlug =
                           ))}
                           {filledCount === 0 && <span className="text-[13px] text-slate-500">{t.templateEmptyTeam}</span>}
                         </div>
-                        <div className="text-[13px] text-slate-500 mt-1">{filledCount}/6 {t.templatePokemon} · {saved.savedAt}</div>
+                        <div className="text-[12px] sm:text-[13px] text-slate-500 mt-1">{filledCount}/6 {t.templatePokemon} · {saved.savedAt}</div>
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <button type="button" onClick={() => loadSavedTeam(saved)}
-                          className="rounded-full bg-blue-700/80 px-3 py-1 text-xs font-semibold text-white transition hover:bg-blue-600">{t.templateLoad}</button>
+                          className="rounded-full bg-blue-700/80 px-2.5 sm:px-3 py-1 text-xs font-semibold text-white transition hover:bg-blue-600">{t.templateLoad}</button>
                         <button type="button" onClick={() => overwriteSavedTeam(saved.id)}
-                          className="rounded-full bg-slate-700/80 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-slate-600">{t.templateOverwrite}</button>
+                          className="rounded-full bg-slate-700/80 px-2.5 sm:px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-slate-600">{t.templateOverwrite}</button>
                         <button type="button" onClick={() => deleteSavedTeam(saved.id)}
-                          className="rounded-full bg-red-900/60 px-3 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-800/60">{t.templateDelete}</button>
+                          className="rounded-full bg-red-900/60 px-2.5 sm:px-3 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-800/60">{t.templateDelete}</button>
                       </div>
                     </div>
                   );
@@ -2481,19 +2546,22 @@ const enSlug =
           </div>
         </div>
       )}
-      {configSlotIndex !== null ? (        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-slate-950/95 p-6 text-slate-100 shadow-2xl shadow-black/60">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      {configSlotIndex !== null ? (        <div
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 p-3 sm:p-4 overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) closeFakemonConfig(); }}
+        >
+          <div className="w-full max-w-3xl rounded-3xl border border-slate-700 bg-slate-950/95 p-4 sm:p-6 text-slate-100 shadow-2xl shadow-black/60 my-auto">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-slate-100">{t.configTitle}</h3>
-                <p className="mt-1 text-sm text-slate-400">{t.configSubtitle}</p>
+                <h3 className="text-base sm:text-lg font-semibold text-slate-100">{t.configTitle}</h3>
+                <p className="mt-1 text-xs sm:text-sm text-slate-400">{t.configSubtitle}</p>
               </div>
               <button type="button" onClick={closeFakemonConfig}
                 className="self-start rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100">
                 {t.configClose}
               </button>
             </div>
-            <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="mt-4 sm:mt-6 grid gap-4 sm:gap-6 lg:grid-cols-[1.2fr_0.8fr]">
               {/* Image picker section */}
               <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-4 col-span-full">
                 <div className="mb-3 text-xs uppercase tracking-[0.3em] text-slate-500">{t.configImage}</div>
@@ -2504,7 +2572,7 @@ const enSlug =
                       : <span className="text-slate-500 text-xs text-center">{t.noSprite}</span>
                     }
                   </div>
-                  <div className="flex flex-col gap-2 flex-1 min-w-[200px]">
+                  <div className="flex flex-col gap-2 flex-1 min-w-0">
                     <div className="text-[14px] text-slate-400 uppercase tracking-widest">{t.configSearchSprite}</div>
                     <div className="relative flex gap-2">
                       <div className="relative flex-1">
@@ -2700,13 +2768,13 @@ const enSlug =
                 ) : null}
               </div>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <div className="mt-4 sm:mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <button type="button" onClick={closeFakemonConfig}
-                className="rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 text-sm text-slate-200 transition hover:bg-slate-800">
+                className="w-full sm:w-auto rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2.5 sm:py-2 text-sm text-slate-200 transition hover:bg-slate-800">
                 {t.configCancel}
               </button>
               <button type="button" onClick={saveFakemonConfig}
-                className="rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
+                className="w-full sm:w-auto rounded-full bg-sky-600 px-4 py-2.5 sm:py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
                 {t.configSave}
               </button>
             </div>
