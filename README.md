@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎴 PokéRun Builder
 
-## Getting Started
+PokéRun Builder is a modern team-building tool for **PokéRun**, designed to help players create, analyze and optimize their teams through an intuitive interface.
 
-First, run the development server:
+The application supports both official Pokémon and custom Fakemon, providing real-time team analysis, type coverage visualization and multilingual support.
+
+---
+
+## ✨ Features
+
+### Team Builder
+
+* Build teams of up to 6 Pokémon.
+* Search Pokémon by name.
+* Drag & drop to reorder team members.
+* Save teams locally.
+* Duplicate or remove Pokémon from the team.
+
+### Fakemon Support
+
+* Create fully custom Fakemon.
+* Upload custom sprites.
+* Customize:
+
+  * Name
+  * Types
+  * Stats
+  * Ability
+  * Moves
+* Live sprite preview.
+* Sprite editor with crop/zoom controls.
+* Custom sprites are displayed throughout the application.
+
+### Move Search
+
+* Search moves in **English** or **Spanish**.
+* Autocomplete suggestions.
+* Automatic localization based on the selected language.
+
+Example:
+
+* Flamethrower
+* Lanzallamas
+
+Both return the same move.
+
+### Team Analysis
+
+Real-time analysis including:
+
+* Offensive type coverage.
+* Defensive weaknesses.
+* Defensive resistances.
+* Immunities.
+* Role analysis.
+* Team weaknesses overview.
+
+### Multilanguage
+
+* 🇬🇧 English
+* 🇪🇸 Spanish
+
+The interface automatically updates all supported texts and move names.
+
+---
+
+## 🚀 Technologies
+
+* Next.js (App Router)
+* React
+* TypeScript
+* Tailwind CSS
+* GraphQL
+* PokéAPI
+
+---
+
+## 📦 Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd pokerun-builder
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📂 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+app/
+components/
+public/
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The main application logic lives in:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+app/page.tsx
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Future Improvements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Some planned features include:
+
+* Team import/export.
+* Share teams via URL.
+* Smart team recommendations.
+* Team comparison.
+* Improved Fakemon sprite editor.
+* Additional analysis tools.
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions and bug reports are always welcome.
+
+Feel free to open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
