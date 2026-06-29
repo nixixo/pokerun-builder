@@ -65,6 +65,7 @@ const EMPTY_STAT_INPUT: BaseStatsInput = {
 
 const STORAGE_KEY = "pokerun-builder-team";
 const SAVED_TEAMS_KEY = "pokerun-builder-saved-teams";
+const VIEW_MODE_KEY = "pokerun-builder-view-mode";
 const MAX_PLANTILLAS = 5;
 
 type SavedTeam = {
@@ -89,63 +90,63 @@ type RoleDefinition = {
 };
 
 const ROLES: RoleDefinition[] = [
-  { es: "Sweeper Físico",           en: "Physical Sweeper",         color: "#ea580c",
+  { es: "Atacante Físico Veloz",      en: "Fast Physical Attacker",   color: "#ea580c",
     weights: { ATK: 0.5,  SPE: 0.5 },
     descEs: "Ataque y Velocidad altos: golpea fuerte y antes que el rival.",
     descEn: "High Attack and Speed: hits hard and moves before the opponent." },
-  { es: "Sweeper Especial",          en: "Special Sweeper",          color: "#9333ea",
+  { es: "Atacante Especial Veloz",    en: "Fast Special Attacker",    color: "#9333ea",
     weights: { "SP.ATK": 0.5, SPE: 0.5 },
     descEs: "Ataque Especial y Velocidad altos: arrasa con movimientos especiales antes que el rival actúe.",
     descEn: "High Sp. Atk and Speed: sweeps with special moves before the opponent acts." },
-  { es: "Atacante Mixto",            en: "Mixed Attacker",           color: "#c026d3",
+  { es: "Atacante Versátil",          en: "Versatile Attacker",       color: "#c026d3",
     weights: { ATK: 0.3, "SP.ATK": 0.3, SPE: 0.4 },
     descEs: "Ataque y Ataque Especial equilibrados, con buena Velocidad: amenaza por ambos lados ofensivos.",
     descEn: "Balanced Attack and Sp. Atk with good Speed: threatens from both offensive sides." },
-  { es: "Muro Físico",               en: "Physical Wall",            color: "#0369a1",
+  { es: "Tanque Defensivo",           en: "Defensive Tank",           color: "#0369a1",
     weights: { HP: 0.4,  DEF: 0.45, SPE: 0.15 },
     descEs: "HP y Defensa altos: aguanta ataques físicos durante muchos turnos.",
     descEn: "High HP and Defense: tanks physical attacks for many turns." },
-  { es: "Muro Especial",             en: "Special Wall",             color: "#1d4ed8",
+  { es: "Tanque Especial",            en: "Special Tank",             color: "#1d4ed8",
     weights: { HP: 0.4,  "SP.DEF": 0.45, SPE: 0.15 },
     descEs: "HP y Defensa Especial altos: aguanta ataques especiales durante muchos turnos.",
     descEn: "High HP and Sp. Def: tanks special attacks for many turns." },
-  { es: "Muro Total",                en: "Full Wall",                color: "#1e40af",
+  { es: "Muralla Resistente",         en: "Sturdy Wall",              color: "#1e40af",
     weights: { HP: 0.35, DEF: 0.325, "SP.DEF": 0.325 },
     descEs: "HP, Defensa y Defensa Especial altos por igual: resiste prácticamente cualquier tipo de ataque.",
     descEn: "High HP, Defense, and Sp. Def in equal measure: resists almost any kind of attack." },
-  { es: "Tanque Físico Ofensivo",    en: "Offensive Physical Tank",  color: "#b45309",
+  { es: "Tanque Físico Agresivo",     en: "Aggressive Physical Tank", color: "#b45309",
     weights: { HP: 0.35, ATK: 0.4,  DEF: 0.25 },
     descEs: "HP y Ataque altos con Defensa de apoyo: aguanta golpes mientras sigue golpeando fuerte.",
     descEn: "High HP and Attack with supporting Defense: tanks hits while still hitting hard." },
-  { es: "Tanque Especial Ofensivo",  en: "Offensive Special Tank",   color: "#7c3aed",
+  { es: "Tanque Especial Agresivo",   en: "Aggressive Special Tank",  color: "#7c3aed",
     weights: { HP: 0.35, "SP.ATK": 0.4, "SP.DEF": 0.25 },
     descEs: "HP y Ataque Especial altos con Defensa Especial de apoyo: aguanta golpes especiales mientras ataca.",
     descEn: "High HP and Sp. Atk with supporting Sp. Def: tanks special hits while still attacking." },
-  { es: "Pivot Resistente",          en: "Bulky Pivot",              color: "#0f766e",
+  { es: "Pívot Resistente",           en: "Resilient Pivot",          color: "#0f766e",
     weights: { HP: 0.4,  SPE: 0.35, DEF: 0.15, "SP.DEF": 0.1 },
     descEs: "HP y Velocidad altos, con algo de defensa: entra y sale del campo con facilidad sin caer fácilmente.",
     descEn: "High HP and Speed, with some defense: switches in and out easily without going down fast." },
-  { es: "Defensor Ágil",             en: "Agile Defender",           color: "#0e7490",
+  { es: "Defensor Veloz",             en: "Fast Defender",            color: "#0e7490",
     weights: { DEF: 0.45, SPE: 0.4, HP: 0.15 },
     descEs: "Defensa y Velocidad altas: bloquea ataques físicos y aún así actúa primero.",
     descEn: "High Defense and Speed: blocks physical attacks and still acts first." },
-  { es: "Defensor Especial Ágil",    en: "Agile Special Defender",   color: "#0891b2",
+  { es: "Defensor Especial Veloz",    en: "Fast Special Defender",    color: "#0891b2",
     weights: { "SP.DEF": 0.45, SPE: 0.4, HP: 0.15 },
     descEs: "Defensa Especial y Velocidad altas: bloquea ataques especiales y aún así actúa primero.",
     descEn: "High Sp. Def and Speed: blocks special attacks and still acts first." },
-  { es: "Físico Equilibrado",        en: "Balanced Physical",        color: "#b91c1c",
+  { es: "Todoterreno Físico",         en: "All-Around Physical",      color: "#b91c1c",
     weights: { ATK: 0.35, DEF: 0.35, HP: 0.3 },
     descEs: "Ataque, Defensa y HP repartidos por igual: combina pegada física con resistencia.",
     descEn: "Attack, Defense, and HP spread evenly: combines physical power with resilience." },
-  { es: "Especial Equilibrado",      en: "Balanced Special",         color: "#6d28d9",
+  { es: "Todoterreno Especial",       en: "All-Around Special",       color: "#6d28d9",
     weights: { "SP.ATK": 0.35, "SP.DEF": 0.35, HP: 0.3 },
     descEs: "Ataque Especial, Defensa Especial y HP repartidos por igual: combina pegada especial con resistencia.",
     descEn: "Sp. Atk, Sp. Def, and HP spread evenly: combines special power with resilience." },
-  { es: "Atacante Físico Sólido",    en: "Solid Physical Attacker",  color: "#dc2626",
+  { es: "Atacante Físico Resistente", en: "Tough Physical Attacker",  color: "#dc2626",
     weights: { ATK: 0.45, "SP.DEF": 0.3, HP: 0.25 },
     descEs: "Ataque alto con buena Defensa Especial y HP: golpea fuerte sin ser frágil ante ataques especiales.",
     descEn: "High Attack with good Sp. Def and HP: hits hard without being fragile to special attacks." },
-  { es: "Especial Defensivo",        en: "Defensive Special",        color: "#4338ca",
+  { es: "Atacante Especial Resistente", en: "Tough Special Attacker", color: "#4338ca",
     weights: { "SP.ATK": 0.35, DEF: 0.35, HP: 0.3 },
     descEs: "Ataque Especial y Defensa repartidos con HP de apoyo: ataca por la vía especial mientras bloquea golpes físicos.",
     descEn: "Sp. Atk and Defense spread with supporting HP: attacks specially while blocking physical hits." },
@@ -202,26 +203,26 @@ const getRoleDescription = (label: string, lang: Lang): string | null => {
 // No es un sustituto del cálculo real con stats; solo excluye los casos más obvios.
 const TYPE_ROLE_AFFINITY: Record<string, string[]> = {
   // Tipos ofensivos físicos
-  fighting:  ["Physical Sweeper", "Offensive Physical Tank", "Solid Physical Attacker", "Balanced Physical"],
-  rock:      ["Physical Sweeper", "Offensive Physical Tank", "Physical Wall"],
-  ground:    ["Physical Sweeper", "Offensive Physical Tank", "Physical Wall"],
-  normal:    ["Physical Sweeper", "Solid Physical Attacker", "Balanced Physical"],
-  dragon:    ["Physical Sweeper", "Special Sweeper", "Mixed Attacker"],
+  fighting:  ["Fast Physical Attacker", "Aggressive Physical Tank", "Tough Physical Attacker", "All-Around Physical"],
+  rock:      ["Fast Physical Attacker", "Aggressive Physical Tank", "Defensive Tank"],
+  ground:    ["Fast Physical Attacker", "Aggressive Physical Tank", "Defensive Tank"],
+  normal:    ["Fast Physical Attacker", "Tough Physical Attacker", "All-Around Physical"],
+  dragon:    ["Fast Physical Attacker", "Fast Special Attacker", "Versatile Attacker"],
   // Tipos ofensivos especiales
-  fire:      ["Special Sweeper", "Offensive Special Tank", "Balanced Special"],
-  electric:  ["Special Sweeper", "Agile Special Defender", "Defensive Special"],
-  ice:       ["Special Sweeper", "Offensive Special Tank"],
-  psychic:   ["Special Sweeper", "Offensive Special Tank", "Special Wall"],
-  water:     ["Special Sweeper", "Balanced Special", "Bulky Pivot"],
-  grass:     ["Special Sweeper", "Balanced Special", "Special Wall"],
+  fire:      ["Fast Special Attacker", "Aggressive Special Tank", "All-Around Special"],
+  electric:  ["Fast Special Attacker", "Fast Special Defender", "Tough Special Attacker"],
+  ice:       ["Fast Special Attacker", "Aggressive Special Tank"],
+  psychic:   ["Fast Special Attacker", "Aggressive Special Tank", "Special Tank"],
+  water:     ["Fast Special Attacker", "All-Around Special", "Resilient Pivot"],
+  grass:     ["Fast Special Attacker", "All-Around Special", "Special Tank"],
   // Tipos defensivos
-  steel:     ["Physical Wall", "Full Wall", "Bulky Pivot"],
-  fairy:     ["Special Wall", "Full Wall", "Bulky Pivot"],
-  ghost:     ["Special Wall", "Agile Defender", "Agile Special Defender"],
-  dark:      ["Physical Sweeper", "Agile Defender", "Solid Physical Attacker"],
-  poison:    ["Physical Wall", "Special Wall", "Bulky Pivot"],
-  bug:       ["Physical Sweeper", "Agile Defender"],
-  flying:    ["Physical Sweeper", "Agile Defender", "Mixed Attacker"],
+  steel:     ["Defensive Tank", "Sturdy Wall", "Resilient Pivot"],
+  fairy:     ["Special Tank", "Sturdy Wall", "Resilient Pivot"],
+  ghost:     ["Special Tank", "Fast Defender", "Fast Special Defender"],
+  dark:      ["Fast Physical Attacker", "Fast Defender", "Tough Physical Attacker"],
+  poison:    ["Defensive Tank", "Special Tank", "Resilient Pivot"],
+  bug:       ["Fast Physical Attacker", "Fast Defender"],
+  flying:    ["Fast Physical Attacker", "Fast Defender", "Versatile Attacker"],
 };
 
 // Muro total (todos los walls): solo tipos genuinamente defensivos
@@ -265,6 +266,8 @@ type AvailablePokemon = {
                              // para calcular el rol real con el mismo helper `getRole`
                              // que usa el equipo. Si no están disponibles, el rol
                              // real del candidato simplemente no se muestra/filtra.
+  isFinalEvo: boolean;      // true si es última evolución (o no evoluciona). Calculado
+                             // dinámicamente desde la API — nunca desde lista manual.
 };
 
 // Rangos de ID por generación (Pokédex nacional)
@@ -304,73 +307,68 @@ const LEGENDARY_IDS = new Set<number>([
   984, 985, 986, 987, 988, 989, 990, 991, 992, 993, 994, 995, 996, 997,
   998, 999, 1000, 1001, 1002, 1003, 1004, 1007, 1008, 1009, 1010,
   1017, 1018, 1019, 1020, 1021, 1022, 1023, 1024, 1025,
+  // Formas alternativas de legendarios (IDs > 10000 en PokéAPI)
+  10016, // Kyurem-Black
+  10017, // Kyurem-White
+  10018, // Kyurem (forma base alternativa)
+  10026, // Mewtwo-Mega-X
+  10027, // Mewtwo-Mega-Y
+  10028, // Lugia (forma alternativa)
+  10085, // Shaymin-Sky
+  10086, // Zygarde-10-Power-Construct
+  10087, // Zygarde-50-Power-Construct
+  10090, // Hoopa-Unbound
+  10116, // Necrozma-Dusk-Mane
+  10117, // Necrozma-Dawn-Wings
+  10118, // Zygarde-10
+  10119, // Zygarde-50 (otro slug)
+  10120, // Zygarde-Complete
+  10121, // Zygarde-Complete (Power Construct)
+  10155, // Necrozma-Ultra
+  10156, // Calyrex-Ice-Rider
+  10157, // Calyrex-Shadow-Rider
+  10158, // Eternatus-Eternamax
+  10189, // Koraidon-Apex-Build (y variantes)
+  10190, // Miraidon-Apex-Drive (y variantes)
 ]);
 
-// Slugs que pueden evolucionar (tienen al menos una evolución disponible):
-// Se usa para el filtro "solo últimas evoluciones". En lugar de mantener
-// una lista fija de NO-finales (que cambia con cada gen), detectamos por slug
-// usando los patrones conocidos de nombres de etapas previas.
-// Solución pragmática: marcamos como "no final" los slugs que coincidan con
-// patrones de formas base/intermedias comunes (usando la misma fuente dinámica).
-// La función recibe el ID de la Pokédex nacional para identificar Pokémon que
-// son etapas previas conocidas usando rangos de IDs.
-const NON_FINAL_EVO_IDS = new Set<number>([
-  // Gen 1 – etapas previas (primera y segunda etapa si hay 3)
-  1,2,4,5,7,8,10,11,13,14,16,17,19,21,23,25,27,29,32,35,37,39,41,43,
-  44,46,48,50,52,54,56,58,60,61,63,64,66,67,69,70,72,74,75,77,79,81,
-  83,84,86,88,90,92,93,96,98,100,102,104,106,107,108,109,111,113,114,
-  116,117,118,119,120,122,123,124,125,126,127,128,129,133,134,135,136,
-  138,140,142,
-  // Gen 2
-  152,153,155,156,158,159,161,163,165,167,169,170,172,173,174,175,177,
-  179,180,182,183,185,187,188,190,191,193,194,196,197,198,199,200,201,
-  202,203,204,206,207,209,211,213,214,215,216,218,220,222,223,225,226,
-  227,228,230,231,233,234,235,236,237,238,239,240,241,242,243,244,245,
-  // Gen 3
-  252,253,255,256,258,259,261,263,265,266,267,268,270,271,273,274,276,
-  278,280,281,283,285,287,290,291,292,293,295,296,298,300,302,303,304,
-  305,307,309,311,312,313,314,315,316,318,320,322,324,325,327,328,331,
-  333,335,336,337,338,339,341,343,345,347,349,351,353,355,357,360,361,
-  363,366,367,368,369,370,371,372,374,375,
-  // Gen 4
-  387,388,390,391,393,394,396,397,399,400,402,403,404,406,407,408,409,
-  410,411,412,415,417,418,420,421,422,424,425,427,429,431,433,434,436,
-  437,438,439,440,441,442,443,444,446,447,449,451,453,455,456,458,459,
-  460,461,462,463,464,465,466,467,468,469,470,471,472,473,474,475,476,
-  477,478,479,
-  // Gen 5
-  495,496,498,499,501,502,504,505,506,507,509,511,513,515,517,519,521,
-  522,524,525,527,529,531,532,533,535,536,538,540,541,543,545,546,548,
-  550,551,552,554,555,556,557,559,561,562,564,566,568,570,572,574,576,
-  577,578,580,582,584,585,586,587,588,590,592,594,595,597,599,600,602,
-  603,605,607,608,610,611,613,615,616,618,619,621,622,624,626,627,629,
-  631,633,634,636,
-  // Gen 6
-  650,651,653,654,656,657,659,660,661,662,664,665,667,668,670,672,674,
-  676,677,679,680,682,684,686,688,690,692,694,696,698,700,702,703,704,
-  705,707,708,710,712,714,
-  // Gen 7
-  722,723,725,726,728,729,731,732,734,736,737,739,741,742,744,746,747,
-  749,751,753,755,757,759,761,762,764,766,767,769,771,774,775,776,777,
-  778,779,780,781,782,783,
-  // Gen 8
-  810,811,813,814,816,817,819,821,822,824,826,827,829,830,831,832,834,
-  835,837,838,840,841,842,843,844,845,846,848,850,852,854,856,858,859,
-  860,861,862,863,864,865,866,867,868,869,870,871,872,873,874,875,876,
-  877,878,880,882,884,886,
-  // Gen 9
-  906,907,909,910,912,913,915,916,918,919,921,923,924,926,928,930,932,
-  934,936,938,940,942,944,946,948,950,952,954,956,958,960,962,964,966,
-  968,970,972,974,976,978,980,982,
+// Segunda capa de seguridad: slugs de legendarios conocidos.
+// Cubre formas alternativas con IDs no listados y cualquier futura variante.
+const LEGENDARY_SLUG_PREFIXES = new Set([
+  "mewtwo", "mew", "lugia", "ho-oh", "celebi",
+  "regirock", "regice", "registeel", "latias", "latios",
+  "kyogre", "groudon", "rayquaza", "jirachi", "deoxys",
+  "uxie", "mesprit", "azelf", "dialga", "palkia", "heatran",
+  "regigigas", "giratina", "cresselia", "phione", "manaphy",
+  "darkrai", "shaymin", "arceus",
+  "victini", "cobalion", "terrakion", "virizion", "tornadus",
+  "thundurus", "reshiram", "zekrom", "landorus", "kyurem",
+  "keldeo", "meloetta", "genesect",
+  "xerneas", "yveltal", "zygarde", "diancie", "hoopa", "volcanion",
+  "type-null", "silvally", "tapu-koko", "tapu-lele", "tapu-bulu", "tapu-fini",
+  "cosmog", "cosmoem", "solgaleo", "lunala", "nihilego", "buzzwole",
+  "pheromosa", "xurkitree", "celesteela", "kartana", "guzzlord",
+  "necrozma", "magearna", "marshadow", "poipole", "naganadel",
+  "stakataka", "blacephalon", "zeraora", "meltan", "melmetal",
+  "zacian", "zamazenta", "eternatus", "kubfu", "urshifu",
+  "zarude", "regieleki", "regidrago", "glastrier", "spectrier", "calyrex",
+  "enamorus",
+  "wo-chien", "chien-pao", "ting-lu", "chi-yu",
+  "koraidon", "miraidon", "walking-wake", "iron-leaves",
+  "gouging-fire", "raging-bolt", "iron-boulder", "iron-crown",
+  "terapagos", "pecharunt", "ogerpon", "okidogi", "munkidori", "fezandipiti",
 ]);
 
-/** ¿Es este Pokémon la última evolución de su línea (o no evoluciona)? */
-const isFinalEvo = (pokemon: AvailablePokemon): boolean =>
-  !NON_FINAL_EVO_IDS.has(pokemon.id);
-
-/** ¿Es legendario, sub-legendario, Ultra Beast o Paradox? */
-const isLegendary = (pokemon: AvailablePokemon): boolean =>
-  LEGENDARY_IDS.has(pokemon.id);
+/** ¿Es legendario, sub-legendario, Ultra Beast o Paradox?
+ *  Capa 1: comprueba el ID numérico (incluye formas alternativas > 10000).
+ *  Capa 2: comprueba que el slug empiece por algún prefijo legendario conocido,
+ *           cubriendo formas alternativas que la PokéAPI pueda añadir en el futuro. */
+const isLegendary = (pokemon: AvailablePokemon): boolean => {
+  if (LEGENDARY_IDS.has(pokemon.id)) return true;
+  return [...LEGENDARY_SLUG_PREFIXES].some((prefix) =>
+    pokemon.slug.startsWith(prefix)
+  );
+};
 
 // ─── Color de tipo para movimientos ─────────────────────────────────────────
 const TYPE_COLORS: Record<string, string> = {
@@ -447,6 +445,10 @@ const computeTeamDefenseProfile = (
 // pesa más que la suma de todas las de menor prioridad (pesos en cascada).
 type CandidateScoreResult = {
   score: number;
+  priority1: number;        // reducir debilidades graves existentes
+  priority2: number;        // penalización por nuevas debilidades críticas
+  priority3: number;        // resistencias / inmunidades nuevas
+  priority4: number;        // equilibrio general
   reduces: string[];        // tipos cuya debilidad de equipo se reduce o elimina
   immunities: string[];     // tipos a los que el candidato es inmune (0×) y el equipo era débil
   newResistances: string[]; // tipos donde el candidato aporta una resistencia nueva al equipo
@@ -539,7 +541,7 @@ const scorePokemonCandidate = (
   // Pesos en cascada: cada prioridad domina sobre la suma de las siguientes.
   const score = priority1 * 1000 + priority2 * 100 + priority3 * 10 + priority4;
 
-  return { score, reduces, immunities, newResistances, criticalAdds, addsWeakness };
+  return { score, priority1, priority2, priority3, priority4, reduces, immunities, newResistances, criticalAdds, addsWeakness };
 };
 
 
@@ -617,8 +619,7 @@ const UI: Record<Lang, Record<string, string>> = {
   es: {
     // Header
     appTitle: "PokéRun Builder",
-    appSubtitle: "Arma tu equipo ideal, analiza cobertura de tipos y detecta debilidades.",
-    tagTypes: "Tipos", tagCoverage: "Cobertura", tagRoles: "Roles", tagFakemons: "Fakemons",
+    appSubtitle: "Arma tu equipo, descubre qué tan bien cubre y encuentra sus puntos débiles.",
     statSlots: "6 slots", statMoves: "4 por slot", statAnalysis: "En tiempo real",
     labelSlots: "Equipos", labelMoves: "Movimientos", labelAnalysis: "Análisis",
     // Equipo
@@ -679,6 +680,7 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterLegendary: "Mostrar legendarios",
     recFilterNoDupTypes: "Evitar recomendaciones repetidas",
     recFilterMatchRole: "Mostrar solo Pokémon del rol recomendado",
+    recFilterPrioritizeCoverage: "Priorizar cobertura de tipos",
     recRealRole: "Rol",
     recRole: "Rol recomendado",
     recWhyTitle: "Por qué se recomienda",
@@ -704,6 +706,27 @@ const UI: Record<Lang, Record<string, string>> = {
     configHide: "Ocultar", configShow: "Mostrar",
     configCancel: "Cancelar", configSave: "Guardar",
     liveBadge: "En vivo",
+    // Puntuación del equipo
+    teamScore: "Puntuación",
+    teamScoreTitle: "Puntuación del equipo",
+    teamScoreNoData: "Añade Pokémon con tipos para calcular la puntuación",
+    teamScoreOffense: "Cobertura ofensiva",
+    teamScoreOffenseDesc: "Qué porcentaje de tipos puede golpear tu equipo de forma superefectiva.",
+    teamScoreDefense: "Solidez defensiva",
+    teamScoreDefenseDesc: "Qué tan expuesto está tu equipo a debilidades compartidas por varios Pokémon a la vez.",
+    teamScoreStats: "Balance de stats",
+    teamScoreStatsDesc: "Si las estadísticas promedio del equipo están repartidas o tienen huecos importantes.",
+    teamScoreRoles: "Diversidad de roles",
+    teamScoreRolesDesc: "Si el equipo cubre roles variados o se repite demasiado el mismo perfil.",
+    teamScoreNotEnoughData: "datos insuficientes",
+    teamScoreGradeS: "Excelente", teamScoreGradeA: "Muy bueno", teamScoreGradeB: "Bueno",
+    teamScoreGradeC: "Mejorable", teamScoreGradeD: "Débil",
+    // Modo de vista
+    modeSimple: "Sencillo",
+    modeAdvanced: "Avanzado",
+    modeSimpleDesc: "Lo esencial para armar tu equipo",
+    modeAdvancedDesc: "Todos los detalles y herramientas de análisis",
+    advancedOnlyNote: "Disponible en modo avanzado",
     // Sprite editor
     editorTitle: "Ajustar encuadre",
     editorSubtitle: "Arrastra para reencuadrar · usa el zoom para escalar",
@@ -715,8 +738,7 @@ const UI: Record<Lang, Record<string, string>> = {
   },
   en: {
     appTitle: "PokéRun Builder",
-    appSubtitle: "Build your perfect team, analyze type coverage and spot weaknesses.",
-    tagTypes: "Types", tagCoverage: "Coverage", tagRoles: "Roles", tagFakemons: "Fakemons",
+    appSubtitle: "Build your team, see how well it covers, and find its weak spots.",
     statSlots: "6 slots", statMoves: "4 per slot", statAnalysis: "Real-time",
     labelSlots: "Team slots", labelMoves: "Moves", labelAnalysis: "Analysis",
     myTeam: "My Team", saveTemplates: "Templates", clearTeam: "Clear team",
@@ -773,6 +795,7 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterLegendary: "Show legendaries",
     recFilterNoDupTypes: "Avoid type duplicates",
     recFilterMatchRole: "Show only Pokémon with the recommended role",
+    recFilterPrioritizeCoverage: "Prioritize type coverage",
     recRealRole: "Role",
     recRole: "Recommended role",
     recWhyTitle: "Why recommended",
@@ -796,6 +819,27 @@ const UI: Record<Lang, Record<string, string>> = {
     configHide: "Hide", configShow: "Show",
     configCancel: "Cancel", configSave: "Save",
     liveBadge: "Live",
+    // Team score
+    teamScore: "Score",
+    teamScoreTitle: "Team score",
+    teamScoreNoData: "Add Pokémon with types to calculate the score",
+    teamScoreOffense: "Offensive coverage",
+    teamScoreOffenseDesc: "What percentage of types your team can hit super-effectively.",
+    teamScoreDefense: "Defensive soundness",
+    teamScoreDefenseDesc: "How exposed your team is to weaknesses shared by several Pokémon at once.",
+    teamScoreStats: "Stat balance",
+    teamScoreStatsDesc: "Whether the team's average stats are well spread out or have major gaps.",
+    teamScoreRoles: "Role diversity",
+    teamScoreRolesDesc: "Whether the team covers varied roles or repeats the same profile too much.",
+    teamScoreNotEnoughData: "not enough data",
+    teamScoreGradeS: "Excellent", teamScoreGradeA: "Very good", teamScoreGradeB: "Good",
+    teamScoreGradeC: "Needs work", teamScoreGradeD: "Weak",
+    // View mode
+    modeSimple: "Simple",
+    modeAdvanced: "Advanced",
+    modeSimpleDesc: "The essentials to build your team",
+    modeAdvancedDesc: "All the details and analysis tools",
+    advancedOnlyNote: "Available in advanced mode",
     // Sprite editor
     editorTitle: "Adjust framing",
     editorSubtitle: "Drag to reframe · use zoom to scale",
@@ -1270,6 +1314,22 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>("es");
   const t = UI[lang];
   const tn = (apiKey: string) => getTypeName(apiKey, lang);
+  // Modo de vista: "simple" para usuarios casuales (oculta detalle técnico),
+  // "advanced" muestra absolutamente todo (comportamiento original de la app).
+  // Se persiste en localStorage para recordar la preferencia entre visitas.
+  const [viewMode, setViewMode] = useState<"simple" | "advanced">("simple");
+  const isAdvanced = viewMode === "advanced";
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VIEW_MODE_KEY);
+      if (saved === "advanced" || saved === "simple") setViewMode(saved);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_MODE_KEY, viewMode);
+    } catch {}
+  }, [viewMode]);
   const [team, setTeam] = useState<Slot[]>(() => Array.from({ length: 6 }, EMPTY_SLOT));
   const [allTypes, setAllTypes] = useState<string[]>([]);
   const [typeRelations, setTypeRelations] = useState<Record<string, any>>({});
@@ -1305,6 +1365,8 @@ export default function Home() {
   const [recFilterLegendary, setRecFilterLegendary] = useState(false); // ocultar legendarios por defecto
   const [recFilterNoDupTypes, setRecFilterNoDupTypes] = useState(true); // evitar duplicados de tipo
   const [recFilterMatchRole, setRecFilterMatchRole] = useState(false); // solo Pokémon cuyo rol REAL coincida con el recomendado
+  const [recFilterPrioritizeCoverage, setRecFilterPrioritizeCoverage] = useState(true); // priorizar cobertura de debilidades en el scoring
+  const [recFilterRoleManual, setRecFilterRoleManual] = useState<string | null>(null); // filtro manual de rol (null = cualquier rol)
   // es_lower → en_slug  e.g. "lanzallamas" → "flamethrower"
   const [moveEsMap, setMoveEsMap] = useState<Record<string, string>>({});
   // reverse: en_slug → spanish display name  e.g. "flamethrower" → "Lanzallamas"
@@ -1591,7 +1653,7 @@ export default function Home() {
       const gqlVariants = [
         {
           url: "https://beta.pokeapi.co/graphql/v1beta",
-          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } } }`,
+          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } pokemon_v2_pokemonspecy { evolves_from_species_id id } } }`,
           rowsKey: "pokemon_v2_pokemon",
           typesKey: "pokemon_v2_pokemontypes",
           typeNameKey: "pokemon_v2_type",
@@ -1600,7 +1662,7 @@ export default function Home() {
         },
         {
           url: "https://graphql.pokeapi.co/v1beta2",
-          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } } }`,
+          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } species: pokemon_v2_pokemonspecy { evolves_from_species_id id } } }`,
           rowsKey: "pokemon",
           typesKey: "pokemontypes",
           typeNameKey: "type",
@@ -1628,6 +1690,17 @@ export default function Home() {
           if (data.errors) continue;
           const rows = data?.data?.[rowsKey] ?? [];
           if (rows.length === 0) continue;
+          // Calculamos isFinalEvo dinámicamente desde la API:
+          // Un Pokémon NO es última evolución si algún otro en el dataset
+          // tiene `evolves_from_species_id` igual a su species id.
+          const speciesIdsThatEvolveFrom = new Set<number>(
+            rows
+              .map((row: any) => {
+                const sp = row.pokemon_v2_pokemonspecy ?? row.species;
+                return sp?.evolves_from_species_id ?? null;
+              })
+              .filter((id: any) => id !== null)
+          );
           const parsed: AvailablePokemon[] = rows
             .filter((row: any) => !EXCLUDED_FORM_PATTERN.test(row.name))
             .map((row: any) => {
@@ -1636,11 +1709,16 @@ export default function Home() {
                 .filter(Boolean);
               if (types.length === 0) return null;
               const stats = buildStatsFromList(row[statsKey] ?? [], "base_stat", statNameKey);
+              const sp = row.pokemon_v2_pokemonspecy ?? row.species;
+              const speciesId: number | null = sp?.id ?? null;
+              // Es última evolución si ningún otro Pokémon evoluciona desde su species id
+              const isFinalEvo = speciesId === null || !speciesIdsThatEvolveFrom.has(speciesId);
               return {
                 slug: row.name,
                 id: row.id,
                 types: (types.length === 1 ? [types[0]] : [types[0], types[1]]) as [string] | [string, string],
                 stats,
+                isFinalEvo,
               };
             })
             .filter(Boolean) as AvailablePokemon[];
@@ -1654,32 +1732,58 @@ export default function Home() {
 
       // Ambas variantes de GraphQL fallaron — fallback REST por lotes sobre
       // la Pokédex nacional (#1–1025), evitando saturar la API pública.
+      // Paso 1: cargamos todos los pokemon + species en paralelo para poder
+      // calcular isFinalEvo dinámicamente (sin lista manual).
       console.warn("[PokéRun] GraphQL no disponible, usando fallback REST para el dataset de recomendaciones");
-      const parsed: AvailablePokemon[] = [];
       const chunkSize = 25;
       const maxId = 1025;
+
+      // Recopilamos datos crudos de pokemon y species juntos
+      type RawRest = { slug: string; id: number; types: string[]; stats: BaseStats | null; speciesId: number | null; evolvesFromSpeciesId: number | null };
+      const rawList: RawRest[] = [];
+
       for (let start = 1; start <= maxId; start += chunkSize) {
         const ids = Array.from({ length: Math.min(chunkSize, maxId - start + 1) }, (_, i) => start + i);
         await Promise.all(
           ids.map(async (id) => {
             try {
-              const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-              if (!r.ok) return;
-              const d = await r.json();
+              const [rPoke, rSpec] = await Promise.all([
+                fetch(`https://pokeapi.co/api/v2/pokemon/${id}`),
+                fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`),
+              ]);
+              if (!rPoke.ok) return;
+              const d = await rPoke.json();
               const types = d.types.map((t: any) => t.type.name);
               if (types.length === 0) return;
-              // REST expone los stats como [{ base_stat, stat: { name } }, ...]
               const stats = buildStatsFromList(d.stats ?? [], "base_stat", "stat");
-              parsed.push({
-                slug: d.name,
-                id: d.id,
-                types: (types.length === 1 ? [types[0]] : [types[0], types[1]]) as [string] | [string, string],
-                stats,
-              });
+              let evolvesFromSpeciesId: number | null = null;
+              let speciesId: number | null = null;
+              if (rSpec.ok) {
+                const sp = await rSpec.json();
+                speciesId = sp.id ?? null;
+                evolvesFromSpeciesId = sp.evolves_from_species?.url
+                  ? parseInt(sp.evolves_from_species.url.split("/").filter(Boolean).pop() ?? "0", 10) || null
+                  : null;
+              }
+              rawList.push({ slug: d.name, id: d.id, types, stats, speciesId, evolvesFromSpeciesId });
             } catch { /* skip */ }
           })
         );
       }
+
+      // Paso 2: calculamos isFinalEvo — un Pokémon NO es última evo si algún
+      // otro en el dataset tiene evolvesFromSpeciesId === su speciesId.
+      const speciesIdsThatEvolveFrom = new Set<number>(
+        rawList.map((p) => p.evolvesFromSpeciesId).filter((id): id is number => id !== null)
+      );
+      const parsed: AvailablePokemon[] = rawList.map((p) => ({
+        slug: p.slug,
+        id: p.id,
+        types: (p.types.length === 1 ? [p.types[0]] : [p.types[0], p.types[1]]) as [string] | [string, string],
+        stats: p.stats,
+        isFinalEvo: p.speciesId === null || !speciesIdsThatEvolveFrom.has(p.speciesId),
+      }));
+
       console.log(`[PokéRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
       setAllPokemonData(parsed);
       setLoadingAllPokemonData(false);
@@ -2251,15 +2355,16 @@ const merged = matches.slice(0, 8);
           if (!hasType) return false;
         }
         // Filtro: solo últimas evoluciones
-        if (recFilterFinalEvo && !isFinalEvo(c)) return false;
+        if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
-        // Filtro: mostrar solo Pokémon cuyo ROL REAL coincida con el rol recomendado.
-        // El rol real ya viene calculado con getRole() a partir de las stats reales
-        // del candidato (el mismo helper que usa el equipo) — nunca se sustituye por
-        // el rol que el equipo necesita. Si no hay rol recomendado o no hay stats
-        // para el candidato, no puede confirmarse la coincidencia y se excluye.
-        if (recFilterMatchRole) {
+        // Filtro de rol: manual tiene prioridad sobre el toggle automático.
+        // recFilterRoleManual: el usuario eligió un rol concreto → filtra por ese rol real.
+        // recFilterMatchRole (fallback, sin selector manual): solo Pokémon cuyo rol real
+        //   coincida con el rol recomendado por el algoritmo.
+        if (recFilterRoleManual) {
+          if (!candidateRealRole || candidateRealRole.label !== recFilterRoleManual) return false;
+        } else if (recFilterMatchRole) {
           if (!neededRole) return false;
           if (!candidateRealRole || candidateRealRole.label !== neededRole.label) return false;
         }
@@ -2282,7 +2387,10 @@ const merged = matches.slice(0, 8);
             roleBonus = 50;
           }
         }
-        return { candidate, ...result, score: result.score + roleBonus, realRole };
+        const finalScore = recFilterPrioritizeCoverage
+          ? result.score + roleBonus                                        // comportamiento normal: prioriza cobertura de debilidades
+          : result.priority3 * 10 + result.priority4 + roleBonus;          // sin sesgo: ordena por resistencias generales + equilibrio
+        return { candidate, ...result, score: finalScore, realRole };
       })
       .sort((a, b) => b.score - a.score);
 
@@ -2352,7 +2460,7 @@ const merged = matches.slice(0, 8);
         candidateFitsRole, // true/false/null: si el rol real coincide con el necesitado
       };
     });
-  }, [team, analysis, typeRelations, allPokemonData, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterNoDupTypes, recFilterMatchRole]);
+  }, [team, analysis, typeRelations, allPokemonData, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual]);
 
   // Stats balance analysis with role-based suggestions
   const statsAnalysis = useMemo(() => {
@@ -2611,6 +2719,99 @@ const merged = matches.slice(0, 8);
     };
   }, [team, analysis, coverage, typeRelations, allTypes, statsAnalysis, lang]);
 
+  // ─── Puntuación general del equipo (0-100) ──────────────────────────────────
+  // Combina 4 pilares ya calculados en otras partes de la app (mismas fuentes
+  // que alimentan el resto de la UI, para que el número sea consistente con
+  // lo que el usuario ya ve en pantalla):
+  //   1. Cobertura ofensiva  (coverage.supCount / nº de tipos)
+  //   2. Solidez defensiva   (analysis.weaknesses / analysis.strengths)
+  //   3. Balance de stats    (statsAnalysis: niveles + brechas)
+  //   4. Diversidad de roles (rolesSummary: redundancia de roles)
+  // Cada pilar puntúa 0-100. Si un pilar no tiene datos suficientes (p.ej.
+  // menos de 3 Pokémon con stats) se omite del promedio final y su peso se
+  // redistribuye entre los pilares restantes, para no penalizar equipos
+  // incompletos con un número injustamente bajo.
+  const teamScore = useMemo(() => {
+    const totalTypes = Object.keys(typeRelations).length;
+    const hasTeamWithTypes = team.some((s) => s.types.filter(Boolean).length > 0);
+    if (!totalTypes || !hasTeamWithTypes) return null;
+
+    const pillars: { key: "offense" | "defense" | "stats" | "roles"; score: number; available: boolean }[] = [];
+
+    // 1. Cobertura ofensiva: % de tipos que el equipo golpea superefectivamente
+    const offenseScore = Math.round((coverage.supCount / totalTypes) * 100);
+    pillars.push({ key: "offense", score: offenseScore, available: true });
+
+    // 2. Solidez defensiva: penaliza debilidades compartidas por 2+ Pokémon,
+    // más fuerte cuantos más Pokémon comparten esa debilidad; premia resistencias.
+    let defenseScore = 100;
+    Object.values(analysis.weaknesses).forEach((count) => {
+      if (count >= 3) defenseScore -= 16;
+      else if (count >= 2) defenseScore -= 8;
+    });
+    const resistBonus = Math.min(Object.keys(analysis.strengths).length * 2, 20);
+    defenseScore = Math.max(0, Math.min(100, defenseScore + resistBonus));
+    pillars.push({ key: "defense", score: defenseScore, available: true });
+
+    // 3. Balance de stats: solo si hay suficientes Pokémon con stats (mismo
+    // umbral que statsAnalysis, que ya exige 3+).
+    if (statsAnalysis) {
+      const STAT_KEYS = statsAnalysis.STAT_KEYS;
+      let statsScore = 100;
+      STAT_KEYS.forEach((k) => {
+        const lv = statsAnalysis.levels[k];
+        if (lv === "bajo") statsScore -= 12;
+        else if (lv === "medio") statsScore -= 4;
+        const gap = statsAnalysis.gaps[k];
+        if (gap > 25) statsScore -= 6;
+      });
+      statsScore -= statsAnalysis.redundantRoles.length * 10;
+      statsScore = Math.max(0, Math.min(100, statsScore));
+      pillars.push({ key: "stats", score: statsScore, available: true });
+    } else {
+      pillars.push({ key: "stats", score: 0, available: false });
+    }
+
+    // 4. Diversidad de roles: más roles distintos = mejor; penaliza
+    // concentración (muchos Pokémon en el mismo rol).
+    if (rolesSummary.length > 0) {
+      const totalWithRole = rolesSummary.reduce((sum, r) => sum + r.count, 0);
+      const distinctRoles = rolesSummary.length;
+      const maxShare = Math.max(...rolesSummary.map((r) => r.count)) / totalWithRole;
+      // Bono por variedad (hasta 6 roles distintos = ideal para un equipo de 6)
+      const varietyScore = Math.min((distinctRoles / Math.min(totalWithRole, 6)) * 100, 100);
+      // Penalización por concentración: si todo el equipo comparte 1-2 roles, baja fuerte
+      const concentrationPenalty = maxShare > 0.5 ? (maxShare - 0.5) * 100 : 0;
+      const rolesScore = Math.max(0, Math.min(100, Math.round(varietyScore - concentrationPenalty)));
+      pillars.push({ key: "roles", score: rolesScore, available: true });
+    } else {
+      pillars.push({ key: "roles", score: 0, available: false });
+    }
+
+    const availablePillars = pillars.filter((p) => p.available);
+    if (!availablePillars.length) return null;
+
+    const total = Math.round(
+      availablePillars.reduce((sum, p) => sum + p.score, 0) / availablePillars.length
+    );
+
+    const grade =
+      total >= 90 ? { label: t.teamScoreGradeS, color: "#10b981" } :
+      total >= 75 ? { label: t.teamScoreGradeA, color: "#38bdf8" } :
+      total >= 55 ? { label: t.teamScoreGradeB, color: "#facc15" } :
+      total >= 35 ? { label: t.teamScoreGradeC, color: "#fb923c" } :
+                     { label: t.teamScoreGradeD, color: "#f87171" };
+
+    return {
+      total,
+      grade,
+      offense: pillars.find((p) => p.key === "offense")!,
+      defense: pillars.find((p) => p.key === "defense")!,
+      stats: pillars.find((p) => p.key === "stats")!,
+      roles: pillars.find((p) => p.key === "roles")!,
+    };
+  }, [team, typeRelations, coverage, analysis, statsAnalysis, rolesSummary, t]);
+
   const badgeClass = (t: string) => `type-badge type-${t.replace(/\s+/g, "-").toLowerCase()}`;
 
   // ─── Badge de rol reutilizable ──────────────────────────────────────────
@@ -2748,6 +2949,32 @@ const merged = matches.slice(0, 8);
             <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">PokéRun</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mode toggle: simple / advanced */}
+            <FloatingTooltip
+              preferredPlacement="bottom"
+              content={
+                <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-3 shadow-xl text-xs text-slate-300 leading-relaxed">
+                  <p className="font-semibold text-slate-100 mb-1">{isAdvanced ? t.modeAdvanced : t.modeSimple}</p>
+                  <p>{isAdvanced ? t.modeAdvancedDesc : t.modeSimpleDesc}</p>
+                </div>
+              }
+            >
+              <div className="flex items-center rounded-full border border-slate-700/60 bg-slate-900/70 p-0.5 gap-0.5">
+                {([
+                  ["simple", "🌱"],
+                  ["advanced", "🛠️"],
+                ] as const).map(([mode, icon]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setViewMode(mode)}
+                    className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition ${viewMode === mode ? "bg-emerald-700 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  >
+                    {icon} <span className="hidden xs:inline">{mode === "simple" ? t.modeSimple : t.modeAdvanced}</span>
+                  </button>
+                ))}
+              </div>
+            </FloatingTooltip>
             {/* Language toggle */}
             <div className="flex items-center rounded-full border border-slate-700/60 bg-slate-900/70 p-0.5 gap-0.5">
               {(["es", "en"] as Lang[]).map((l) => (
@@ -2776,23 +3003,89 @@ const merged = matches.slice(0, 8);
           <div className="pointer-events-none absolute -right-2 -top-2 h-32 w-32 rounded-full border border-blue-600/10 opacity-40" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 32px)" }} />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             {/* Title + subtitle */}
-            <div className="min-w-0">
+            <div className="min-w-0 sm:flex-1">
               <div className="flex flex-wrap items-baseline gap-1.5 mb-0.5">
                 <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
                 <span className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
                 <span className="text-base">✨</span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-snug hidden sm:block">{t.appSubtitle}</p>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {[t.tagTypes, t.tagCoverage, t.tagRoles, t.tagFakemons].map((tag) => (
-                  <span key={tag} className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/60 px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-slate-400 tracking-wide">{tag}</span>
-                ))}
-              </div>
             </div>
+
+            {/* Team score — destacado, centro del hero */}
+            {teamScore && (
+              <div className="flex justify-center shrink-0 order-first sm:order-none">
+                <FloatingTooltip
+                  preferredPlacement="bottom"
+                  content={
+                    <div className="w-80 rounded-2xl border border-slate-700 bg-slate-950/98 p-5 shadow-xl shadow-black/50 text-base text-slate-100">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-sm uppercase tracking-[0.2em] text-slate-500">{t.teamScoreTitle}</div>
+                        <div className="text-2xl font-extrabold tabular-nums" style={{ color: teamScore.grade.color }}>{teamScore.total}<span className="text-slate-500 text-sm font-medium">/100</span></div>
+                      </div>
+                      <div className="space-y-3.5">
+                        {[
+                          { key: "offense", label: t.teamScoreOffense, desc: t.teamScoreOffenseDesc, data: teamScore.offense, icon: "⚔️" },
+                          { key: "defense", label: t.teamScoreDefense, desc: t.teamScoreDefenseDesc, data: teamScore.defense, icon: "🛡️" },
+                          { key: "stats",   label: t.teamScoreStats,   desc: t.teamScoreStatsDesc,   data: teamScore.stats,   icon: "📈" },
+                          { key: "roles",   label: t.teamScoreRoles,   desc: t.teamScoreRolesDesc,   data: teamScore.roles,   icon: "🧩" },
+                        ].map(({ key, label, desc, data, icon }) => (
+                          <div key={key} className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm text-slate-300 flex items-center gap-2">
+                                <span className="text-sm">{icon}</span>{label}
+                              </span>
+                              <span className="text-sm font-semibold tabular-nums text-slate-300">
+                                {data.available ? `${data.score}/100` : t.teamScoreNotEnoughData}
+                              </span>
+                            </div>
+                            <div className="h-2 rounded-full bg-slate-800">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: data.available ? `${data.score}%` : "0%", backgroundColor: getStatColor(data.score * 2.55) }}
+                              />
+                            </div>
+                            <p className="text-[13px] text-slate-500 leading-snug">{desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  }
+                >
+                  <div className="flex flex-col items-center gap-1 cursor-default">
+                    <div className="relative h-[88px] w-[88px] sm:h-[104px] sm:w-[104px]">
+                      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="9" />
+                        <circle
+                          cx="50" cy="50" r="42" fill="none"
+                          stroke={teamScore.grade.color}
+                          strokeWidth="9"
+                          strokeLinecap="round"
+                          strokeDasharray={`${(teamScore.total / 100) * 263.9} 263.9`}
+                          style={{ transition: "stroke-dasharray 0.6s ease-out", filter: `drop-shadow(0 0 6px ${teamScore.grade.color}66)` }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl sm:text-3xl font-extrabold tabular-nums leading-none" style={{ color: teamScore.grade.color }}>{teamScore.total}</span>
+                        <span className="text-[9px] text-slate-500 leading-none mt-0.5">/100</span>
+                      </div>
+                    </div>
+                    <div
+                      className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                      style={{ color: teamScore.grade.color, backgroundColor: `${teamScore.grade.color}18`, border: `1px solid ${teamScore.grade.color}40` }}
+                    >
+                      {teamScore.grade.label}
+                    </div>
+                    <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">{t.teamScore}</span>
+                  </div>
+                </FloatingTooltip>
+              </div>
+            )}
+
             {/* Live team stats */}
-            <div className="flex gap-2 shrink-0 overflow-x-auto pb-0.5 sm:pb-0">
+            <div className="flex gap-2 shrink-0 overflow-x-auto pb-0.5 sm:pb-0 sm:flex-col sm:flex-1 sm:items-end">
               {(() => {
                 const filled = team.filter(s => s.name).length;
                 const typesInTeam = Array.from(new Set(team.flatMap(s => s.types.filter(Boolean))));
@@ -2802,12 +3095,12 @@ const merged = matches.slice(0, 8);
                   ["🔷", lang === "es" ? "Tipos" : "Types", `${typesInTeam.length}`],
                   ["📊", lang === "es" ? "Con stats" : "With stats", `${withStats}`],
                 ] as [string, string, string][]).map(([icon, label, value]) => (
-                  <div key={label} className="flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 py-1.5 shrink-0">
-                    <span className="text-sm shrink-0">{icon}</span>
-                    <div>
-                      <div className="text-[9px] uppercase tracking-[0.18em] text-slate-500 leading-none mb-0.5">{label}</div>
-                      <div className="text-[11px] font-semibold text-slate-200">{value}</div>
-                    </div>
+                  <div key={label} className="flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 py-1.5 shrink-0 w-full sm:max-w-[160px] sm:justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sm shrink-0">{icon}</span>
+                      <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500 leading-none">{label}</span>
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-200">{value}</span>
                   </div>
                 ));
               })()}
@@ -2912,7 +3205,7 @@ const merged = matches.slice(0, 8);
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="text-base font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
-                        {slot.stats ? (
+                        {slot.stats && isAdvanced ? (
                           <div className="relative inline-flex items-center group">
                             <span
                               className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-[14px] text-slate-300 cursor-pointer"
@@ -2999,7 +3292,7 @@ const merged = matches.slice(0, 8);
                             </div>
                           </div>
                         ) : null}
-                        {slot.stats && (() => {
+                        {slot.stats && isAdvanced && (() => {
                           const role = getRole(slot.stats, lang);
                           return role ? <RoleBadge label={role.label} color={role.color} /> : null;
                         })()}
@@ -3323,7 +3616,7 @@ const enSlug =
                                 })}
                               </div>
                             )}
-                            {isHP && (
+                            {isHP && isAdvanced && (
                               <div className="mt-3 rounded-lg border border-sky-900/50 bg-sky-950/20 p-2">
                                 <button
                                   type="button"
@@ -3353,12 +3646,14 @@ const enSlug =
                         )}
 
                         <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-800/70 pt-3">
+                          {isAdvanced ? (
                           <div className="flex items-center gap-1.5 min-w-0 shrink-0">
                             <span className="shrink-0"><CategoryIcon cat={m.category} /></span>
                             <span className="text-[10px] leading-none font-medium uppercase tracking-[0.06em] text-slate-400 whitespace-nowrap">
                               {m.category === "Physical" ? t.catPhysical : m.category === "Special" ? t.catSpecial : t.catStatus}
                             </span>
                           </div>
+                          ) : <span />}
                           <span className="flex-1 min-w-0" />
                           {isHP && m.hiddenPowerType ? (
                             <span className={`${badgeClass(m.hiddenPowerType)} ml-auto min-h-7 px-2.5 py-0.5 text-[12px] whitespace-nowrap shrink-0`}>{tn(m.hiddenPowerType)}</span>
@@ -3411,7 +3706,7 @@ const enSlug =
                             .sort(([, a], [, b]) => b - a)
                             .map(([ty, c]) => {
                               const detail = typeDetail[ty];
-                              const hasDetail = detail && (detail.weak.length > 0 || detail.resist.length > 0 || detail.immune.length > 0);
+                              const hasDetail = isAdvanced && detail && (detail.weak.length > 0 || detail.resist.length > 0 || detail.immune.length > 0);
                               return (
                                 <FloatingTooltip
                                   key={ty}
@@ -3489,7 +3784,7 @@ const enSlug =
                             .sort(([, a], [, b]) => b - a)
                             .map(([ty, c]) => {
                               const detail = typeDetail[ty];
-                              const hasDetail = detail && (detail.weak.length > 0 || detail.resist.length > 0 || detail.immune.length > 0);
+                              const hasDetail = isAdvanced && detail && (detail.weak.length > 0 || detail.resist.length > 0 || detail.immune.length > 0);
                               return (
                                 <FloatingTooltip
                                   key={ty}
@@ -3644,6 +3939,7 @@ const enSlug =
                 )}
             </CollapsibleSection>
 
+            {isAdvanced && (<>
             <CollapsibleSection
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden"
@@ -3801,11 +4097,13 @@ const enSlug =
                 </div>
               )}
             </CollapsibleSection>
+            </>)}
           </div>
           </div>{/* end flex conductor */}
         </section>
       </div>
-      {/* ── DASHBOARD + POKÉMON IDEAL (fila 1) ──────────────────────── */}
+      {/* ── DASHBOARD + POKÉMON IDEAL (fila 1) — solo modo avanzado ──── */}
+      {isAdvanced && (
       <div className={`grid grid-cols-1 gap-4 items-stretch ${dashboard && teamSummary ? "md:grid-cols-[1.05fr_0.95fr]" : ""}`}>
       {dashboard && (
         <div className="pokedex-panel p-3 sm:p-4 rounded-lg h-full flex flex-col">
@@ -4065,6 +4363,7 @@ const enSlug =
           </div>
       )}
       </div>
+      )}
       {/* ── POKÉMON RECOMENDADOS (fila 2 — ancho completo) ───────────── */}
       {teamSummary && (
       <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
@@ -4077,10 +4376,10 @@ const enSlug =
                   <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null) && (
+                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null)) && (
                     <button
                       type="button"
-                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterGen(null); }}
+                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterGen(null); setRecFilterRoleManual(null); }}
                       className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition"
                     >
                       {t.recFilterReset}
@@ -4105,13 +4404,13 @@ const enSlug =
               {/* Panel de filtros desplegable */}
               {recShowFilters && (
                 <div className="rounded-xl border border-slate-700/60 bg-slate-900/80 p-4 space-y-4">
-                  {/* Switches rápidos */}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {/* Switches rápidos — grilla 2×2 */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {[
                       { key: "finalEvo", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
                       { key: "legendary", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
                       { key: "noDup", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
-                      { key: "matchRole", label: t.recFilterMatchRole, value: recFilterMatchRole, setter: setRecFilterMatchRole },
+                      { key: "prioritizeCoverage", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
                     ].map(({ key, label, value, setter }) => (
                       <label key={key} className="flex items-center gap-2.5 cursor-pointer select-none">
                         <button
@@ -4206,12 +4505,44 @@ const enSlug =
                       ))}
                     </div>
                   </div>
+                  {/* Filtro por rol */}
+                  {isAdvanced && (
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-2">
+                      {lang === "es" ? "Filtrar por rol" : "Filter by role"}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setRecFilterRoleManual(null)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition ${recFilterRoleManual === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                      >
+                        {lang === "es" ? "Cualquier rol" : "Any role"}
+                      </button>
+                      {ROLES.map((role) => {
+                        const label = role[lang as "es" | "en"];
+                        const active = recFilterRoleManual === label;
+                        return (
+                          <button
+                            key={role.en}
+                            type="button"
+                            onClick={() => setRecFilterRoleManual(active ? null : label)}
+                            className={`rounded-full border px-3 py-1 text-xs font-medium transition ${active ? "" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                            style={active ? { borderColor: role.color, backgroundColor: `${role.color}22`, color: role.color } : {}}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  )}
                 </div>
               )}
 
               {/* Lista de recomendaciones — grid compacto */}
               {pokemonRecommendations.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-stretch">
                   {pokemonRecommendations.map(({ candidate, name, reasons, noNewCritical, addsResistances, immunities, newResistances, reduces, neededRole, realRole, candidateFitsRole }) => {
                     const allCandidateWeaknesses = getCandidateWeaknesses(candidate.types as string[], typeRelations);
                     const reasonWeakTypes = new Set(reasons.filter((r) => !r.positive).map((r) => r.weakType));
@@ -4246,12 +4577,22 @@ const enSlug =
                         {/* ── CUERPO PRINCIPAL: sprite izq + info der ── */}
                         <div className="flex">
 
-                          {/* Columna izquierda: sprite cuadrado fijo, mismo estilo que tarjetas del equipo */}
-                          <div className="shrink-0 w-44 self-stretch bg-[#031421] flex items-center justify-center rounded-tl-xl overflow-hidden">
+                          {/* Columna izquierda: sprite cuadrado fijo con fondo de color del tipo primario */}
+                          <div className="shrink-0 w-44 self-stretch bg-[#031421] flex items-center justify-center rounded-tl-xl overflow-hidden relative">
+                            {/* Círculo de color del tipo primario como fondo */}
+                            <div
+                              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                              aria-hidden="true"
+                            >
+                              <div
+                                className="w-36 h-36 rounded-full opacity-15"
+                                style={{ background: TYPE_COLORS[candidate.types[0]] ?? "#334155" }}
+                              />
+                            </div>
                             <img
                               src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`}
                               alt={name}
-                              className="w-32 h-32 object-contain"
+                              className="w-32 h-32 object-contain relative z-10"
                               style={{ imageRendering: "pixelated" }}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                             />
@@ -4260,9 +4601,53 @@ const enSlug =
                           {/* Columna derecha: toda la info */}
                           <div className="flex-1 min-w-0 p-3 flex flex-col gap-2">
 
-                            {/* Fila 1: Nombre + botón descartar */}
+                            {/* Fila 1: Nombre + tooltip de stats + botón descartar */}
                             <div className="flex items-start justify-between gap-1">
-                              <span className="text-[15px] font-bold text-white leading-tight">{name}</span>
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-[15px] font-bold text-white leading-tight truncate">{name}</span>
+                                {candidate.stats && isAdvanced && (
+                                  <FloatingTooltip
+                                    preferredPlacement="right"
+                                    content={
+                                      <div className="w-64 rounded-xl border border-slate-700 bg-slate-950/98 p-3 shadow-xl shadow-black/50 text-sm text-slate-100">
+                                        <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500 mb-2">
+                                          {lang === "es" ? "Stats base" : "Base stats"}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                          {statLabels.map(([key]) => {
+                                            const value = candidate.stats![key];
+                                            const statNames = STAT_NAMES_I18N[lang];
+                                            return (
+                                              <div key={key} className="space-y-0.5">
+                                                <div className="flex items-center justify-between text-[12px] text-slate-300">
+                                                  <span className="uppercase tracking-wide">{statNames[key]}</span>
+                                                  <span className="font-semibold tabular-nums">{value}</span>
+                                                </div>
+                                                <div className="h-1.5 rounded-full bg-slate-800">
+                                                  <div
+                                                    className="h-full rounded-full transition-all"
+                                                    style={{ width: `${Math.round((value / 255) * 100)}%`, backgroundColor: getStatColor(value) }}
+                                                  />
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                        <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                                          <span>{lang === "es" ? "Total" : "Total"}</span>
+                                          <span className="font-semibold text-slate-300 tabular-nums">
+                                            {STAT_ORDER.reduce((sum, k) => sum + (candidate.stats![k] ?? 0), 0)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    }
+                                  >
+                                    <span
+                                      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-[12px] text-slate-300 cursor-pointer"
+                                    >ⓘ</span>
+                                  </FloatingTooltip>
+                                )}
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => setRecDiscarded((prev) => new Set([...prev, candidate.slug]))}
@@ -4278,36 +4663,22 @@ const enSlug =
                               ))}
                             </div>
 
-                            {/* Fila 3: Rol propio → Rol recomendado */}
+                            {/* Fila 3: Rol del candidato (solo modo avanzado; requiere entender el sistema de roles) */}
+                            {isAdvanced && (
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {realRole && (
-                                <RoleBadge label={realRole.label} color={realRole.color} size="text-[10px]" />
-                              )}
-                              {realRole && neededRole && (
-                                <span className="text-slate-600 text-[10px]">→</span>
-                              )}
-                              {neededRole && (
-                                <RoleBadge
-                                  label={neededRole.label}
-                                  color={neededRole.color}
-                                  size="text-[10px]"
-                                  dimmed={candidateFitsRole === false}
-                                  extra={
-                                    candidateFitsRole === false ? (
-                                      <div className="mt-1.5 pt-1.5 border-t border-slate-800 text-amber-300 text-xs">
-                                        {lang === "es" ? "Su perfil de stats apunta a otro rol." : "Its stat profile points to a different role."}
-                                      </div>
-                                    ) : undefined
-                                  }
-                                />
-                              )}
-                              {candidateFitsRole === true && <span className="text-[10px] text-emerald-500">✓</span>}
-                              {candidateFitsRole === false && (
-                                <span className="text-[12px] text-slate-400 italic">
-                                  {lang === "es" ? "perfil distinto" : "different profile"}
-                                </span>
-                              )}
+                              {realRole ? (
+                                <>
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500 shrink-0">{t.recRealRole}</span>
+                                  <RoleBadge label={realRole.label} color={realRole.color} size="text-[10px]" />
+                                </>
+                              ) : neededRole ? (
+                                <>
+                                  <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500 shrink-0">{t.recRole}</span>
+                                  <RoleBadge label={neededRole.label} color={neededRole.color} size="text-[10px]" />
+                                </>
+                              ) : null}
                             </div>
+                            )}
 
                             {/* Separador */}
                             <div className="border-t border-slate-800/60" />
@@ -4316,10 +4687,13 @@ const enSlug =
                             <div className="flex flex-col gap-1">
                               {groupedReasons.map((g, gi) => {
                                 const label   = g.isImmune ? (lang === "es" ? "Inmune" : "Immune") : g.positive ? (lang === "es" ? "Cubre" : "Covers") : (lang === "es" ? "Añade" : "Adds");
+                                const icon    = g.isImmune ? "🛡️" : g.positive ? "✅" : "⚠️";
                                 const labelCl = g.isImmune ? "text-blue-400" : g.positive ? "text-emerald-400" : "text-amber-400";
                                 return (
                                   <div key={gi} className="flex items-center gap-2">
-                                    <span className={`${labelCl} text-[11px] font-semibold shrink-0 w-12`}>{label}</span>
+                                    <span className={`${labelCl} text-[11px] font-semibold shrink-0 w-16 inline-flex items-center gap-1`}>
+                                      <span aria-hidden="true">{icon}</span>{label}
+                                    </span>
                                     <div className="flex flex-wrap gap-1">
                                       {g.types.map((ty) => (
                                         <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
@@ -4333,21 +4707,22 @@ const enSlug =
                               )}
                             </div>
 
-                            {/* Fila 5: botón expandible */}
-                            {(immunities.length > 0 || allResistances.length > 0 || candidateWeaknesses.length > 0) && (
+                            {/* Fila 5: botón expandible — solo modo avanzado */}
+                            {isAdvanced && (immunities.length > 0 || allResistances.length > 0 || candidateWeaknesses.length > 0) && (
                               <button
                                 type="button"
                                 onClick={toggleExpanded}
-                                className="self-start mt-0.5 text-[12px] text-slate-400 hover:text-slate-200 transition flex items-center gap-1"
+                                className={`self-start mt-1 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition ${isExpanded ? "border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700" : "border-sky-700/60 bg-sky-900/30 text-sky-300 hover:bg-sky-900/60 hover:border-sky-600"}`}
                               >
-                                <span>{isExpanded ? "▲" : "▼"}</span>
+                                <span className="text-[10px]">{isExpanded ? "▲" : "▼"}</span>
                                 <span>{isExpanded ? (lang === "es" ? "Ocultar detalle" : "Hide detail") : (lang === "es" ? "Ver resistencias y debilidades" : "See resistances & weaknesses")}</span>
                               </button>
                             )}
                           </div>
                         </div>
 
-                        {/* ── PANEL EXPANDIDO: todas las resistencias y debilidades ── */}
+                        {/* ── PANEL EXPANDIDO: todas las resistencias y debilidades (solo modo avanzado) ── */}
+                        {isAdvanced && (
                         <div
                           className="overflow-hidden transition-all duration-200"
                           style={{ maxHeight: isExpanded ? "300px" : "0px", opacity: isExpanded ? 1 : 0 }}
@@ -4385,6 +4760,7 @@ const enSlug =
                             )}
                           </div>
                         </div>
+                        )}
                       </div>
                     );
                   })}
