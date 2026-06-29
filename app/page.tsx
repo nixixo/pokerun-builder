@@ -648,10 +648,10 @@ const UI: Record<Lang, Record<string, string>> = {
     recReduces: "Reduce la presión frente a",
     recImmune: "Inmune a",
     recAdds: "Añade debilidad a",
-    recNoNewCritical: "No genera nuevas debilidades críticas",
+    recNoNewCritical: "Sin nuevas debilidades importantes",
     recAddsResistances: "Aporta nuevas resistencias",
-    loadingRecommendations: "Analizando todos los Pokémon disponibles…",
-    loadPokemon: "Carga Pokémon para ver sugerencias",
+    loadingRecommendations: "Buscando el mejor encaje para tu equipo…",
+    loadPokemon: "Añade Pokémon para ver sugerencias",
     // Filtros de recomendaciones
     recFilterTitle: "Filtros",
     recFilterType: "Filtrar por tipo",
@@ -659,18 +659,18 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterGenAll: "Todas",
     recFilterDiscard: "Descartar",
     recFilterDiscarded: "descartados",
-    recFilterReset: "Resetear filtros",
+    recFilterReset: "Limpiar filtros",
     recFilterNoResults: "Sin resultados con estos filtros",
     statsBalance: "Balance de stats",
-    loadStats: "Carga al menos 3 Pokémon para ver el análisis de stats",
+    loadStats: "Añade al menos 3 Pokémon para ver el análisis de estadísticas",
     statLevelHigh: "ALTO", statLevelMid: "MEDIO", statLevelLow: "BAJO",
-    redundantRoles: "⚠️ Roles redundantes",
-    redundantDesc: "Pokémon con el mismo rol", redundantNote: "— demasiada redundancia ofensiva/defensiva",
-    roleSuggTitle: "Roles que le vendrían bien al equipo",
-    roleExisting: "Ya tienes", roleExistingMid: "con este rol, pero el equipo sigue flojo en",
-    roleNew: "Carencia crítica", roleNewAlt: "Carencia", roleNewEnd: "— considera añadir un",
-    rolesBelowBest: "pts bajo el mejor", teamRoles: "Roles del equipo",
-    basedOn: "Basado en", basedOnEnd: "Pokémon con stats", balancedOk: "✅ ¡Tu equipo tiene stats y roles bien balanceados!",
+    redundantRoles: "⚠️ Roles repetidos",
+    redundantDesc: "con el mismo perfil", redundantNote: "— el equipo tiene demasiada concentración en un mismo rol",
+    roleSuggTitle: "Roles que le faltan al equipo",
+    roleExisting: "Ya tienes", roleExistingMid: "con este rol, pero el equipo aún flojea en",
+    roleNew: "Hueco crítico", roleNewAlt: "Hueco", roleNewEnd: "— podrías añadir un",
+    rolesBelowBest: "por debajo", teamRoles: "Roles del equipo",
+    basedOn: "Calculado con", basedOnEnd: "Pokémon con estadísticas", balancedOk: "✅ ¡Buen trabajo! Tu equipo tiene stats y roles bien balanceados.",
     // Summary + nuevos filtros de recomendaciones
     summaryTitle: "Pokémon ideal para completar el equipo",
     bestSingle: "Mejor tipo individual", bestDual: "✨ Mejor doble tipo",
@@ -743,9 +743,9 @@ const UI: Record<Lang, Record<string, string>> = {
     recReduces: "Reduces pressure from",
     recImmune: "Immune to",
     recAdds: "Adds weakness to",
-    recNoNewCritical: "Doesn't add new critical weaknesses",
+    recNoNewCritical: "No new major weaknesses",
     recAddsResistances: "Adds new resistances",
-    loadingRecommendations: "Analyzing every available Pokémon…",
+    loadingRecommendations: "Finding the best fit for your team…",
     loadPokemon: "Add Pokémon to see suggestions",
     // Recommendation filters
     recFilterTitle: "Filters",
@@ -754,18 +754,18 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterGenAll: "All",
     recFilterDiscard: "Discard",
     recFilterDiscarded: "discarded",
-    recFilterReset: "Reset filters",
+    recFilterReset: "Clear filters",
     recFilterNoResults: "No results with these filters",
     statsBalance: "Stats balance",
-    loadStats: "Add at least 3 Pokémon to see stats analysis",
+    loadStats: "Add at least 3 Pokémon to see the stats breakdown",
     statLevelHigh: "HIGH", statLevelMid: "MID", statLevelLow: "LOW",
-    redundantRoles: "⚠️ Redundant roles",
-    redundantDesc: "Pokémon with the same role", redundantNote: "— too much role overlap",
-    roleSuggTitle: "Roles that would help your team",
+    redundantRoles: "⚠️ Overlapping roles",
+    redundantDesc: "with the same profile", redundantNote: "— your team is leaning too hard on one role",
+    roleSuggTitle: "Missing roles in your team",
     roleExisting: "You already have", roleExistingMid: "with this role, but the team is still weak in",
     roleNew: "Critical gap", roleNewAlt: "Gap", roleNewEnd: "— consider adding a",
-    rolesBelowBest: "pts below best", teamRoles: "Team roles",
-    basedOn: "Based on", basedOnEnd: "Pokémon with stats", balancedOk: "✅ Your team has well-balanced stats and roles!",
+    rolesBelowBest: "behind", teamRoles: "Team roles",
+    basedOn: "Calculated from", basedOnEnd: "Pokémon with stats", balancedOk: "✅ Great job! Your team has well-balanced stats and roles.",
     summaryTitle: "Ideal Pokémon to complete the team",
     bestSingle: "Best single type", bestDual: "✨ Best dual type",
     summaryResists: "resists:", summaryCovers: "covers:",
@@ -1296,6 +1296,7 @@ export default function Home() {
   const [loadingAllPokemonData, setLoadingAllPokemonData] = useState(false);
   // ─── Estados de filtros para recomendaciones ────────────────────────────────
   const [recDiscarded, setRecDiscarded] = useState<Set<string>>(new Set());
+  const [expandedRec, setExpandedRec] = useState<Set<string>>(new Set());
   const [recFilterTypes, setRecFilterTypes] = useState<string[]>([]); // tipos incluidos (vacío = todos)
   const [recFilterType2, setRecFilterType2] = useState<string>(""); // segundo tipo para filtro dual
   const [recFilterGen, setRecFilterGen] = useState<number | null>(null); // null = todas las gens
@@ -2767,50 +2768,61 @@ const merged = matches.slice(0, 8);
           </div>
         </div>
 
-        {/* Main hero block */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 via-[#050f1f] to-[#03091a] px-4 py-5 sm:px-10 sm:py-9 shadow-xl shadow-black/40">
+        {/* Main hero block — compact */}
+        <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 via-[#050f1f] to-[#03091a] px-4 py-3 sm:px-8 sm:py-4 shadow-xl shadow-black/40">
           {/* Decorative rings */}
           <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full border-[3px] border-slate-700/20 opacity-40" />
           <div className="pointer-events-none absolute -right-8 -top-8 h-48 w-48 rounded-full border-[2px] border-blue-700/15 opacity-40" />
           <div className="pointer-events-none absolute -right-2 -top-2 h-32 w-32 rounded-full border border-blue-600/10 opacity-40" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 32px)" }} />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5">
-            <div>
-              <div className="flex flex-wrap items-baseline gap-2 mb-1.5 sm:mb-2">
-                <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
-                <span className="text-2xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
-                <span className="text-xl sm:text-2xl">✨</span>
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+            {/* Title + subtitle */}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-1.5 mb-0.5">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
+                <span className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
+                <span className="text-base">✨</span>
               </div>
-              <p className="text-xs sm:text-base text-slate-400 max-w-md leading-relaxed">{t.appSubtitle}</p>
-              <div className="mt-2 sm:mt-3 flex flex-wrap gap-1.5 sm:gap-2">
+              <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-snug hidden sm:block">{t.appSubtitle}</p>
+              <div className="mt-1 flex flex-wrap gap-1">
                 {[t.tagTypes, t.tagCoverage, t.tagRoles, t.tagFakemons].map((tag) => (
-                  <span key={tag} className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/60 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-slate-400 tracking-wide">{tag}</span>
+                  <span key={tag} className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-800/60 px-2 py-0.5 text-[9px] sm:text-[10px] font-medium text-slate-400 tracking-wide">{tag}</span>
                 ))}
               </div>
             </div>
-            <div className="flex sm:flex-col gap-2 sm:gap-3 shrink-0 overflow-x-auto pb-1 sm:pb-0">
-              {([["🏆", t.labelSlots, t.statSlots], ["⚔️", t.labelMoves, t.statMoves], ["📊", t.labelAnalysis, t.statAnalysis]] as [string,string,string][]).map(([icon, label, value]) => (
-                <div key={label} className="flex items-center gap-2 sm:gap-2.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 sm:px-3 py-1.5 sm:py-2 min-w-[110px] sm:min-w-[140px] shrink-0">
-                  <span className="text-base sm:text-lg shrink-0">{icon}</span>
-                  <div>
-                    <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-slate-500 leading-none mb-0.5">{label}</div>
-                    <div className="text-[11px] sm:text-xs font-semibold text-slate-200">{value}</div>
+            {/* Live team stats */}
+            <div className="flex gap-2 shrink-0 overflow-x-auto pb-0.5 sm:pb-0">
+              {(() => {
+                const filled = team.filter(s => s.name).length;
+                const typesInTeam = Array.from(new Set(team.flatMap(s => s.types.filter(Boolean))));
+                const withStats = team.filter(s => s.stats).length;
+                return ([
+                  ["🏆", lang === "es" ? "Equipo" : "Team", `${filled}/6`],
+                  ["🔷", lang === "es" ? "Tipos" : "Types", `${typesInTeam.length}`],
+                  ["📊", lang === "es" ? "Con stats" : "With stats", `${withStats}`],
+                ] as [string, string, string][]).map(([icon, label, value]) => (
+                  <div key={label} className="flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 py-1.5 shrink-0">
+                    <span className="text-sm shrink-0">{icon}</span>
+                    <div>
+                      <div className="text-[9px] uppercase tracking-[0.18em] text-slate-500 leading-none mb-0.5">{label}</div>
+                      <div className="text-[11px] font-semibold text-slate-200">{value}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </div>
       </header>
       {isMounted && (
-      <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr] gap-6">
+      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr] gap-4">
         <CollapsibleSection
           as="section"
           className="pokedex-panel p-3 sm:p-4 rounded-lg h-full"
           headerClassName="mb-4"
-          icon={<span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>}
+          icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>}
           title={t.myTeam}
           storageKey="my-team"
           headerExtra={
@@ -2838,12 +2850,12 @@ const merged = matches.slice(0, 8);
             </>
           }
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             {team.map((slot, idx) => (
               <div
                 key={idx}
                 data-slot-idx={idx}
-                className={`pokedex-card relative hover:z-20 p-2 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-2 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30" : ""} ${dragFromIdx === idx ? "opacity-50" : ""}`}
+                className={`pokedex-card relative hover:z-20 p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30" : ""} ${dragFromIdx === idx ? "opacity-50" : ""}`}
                 onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
                 onDragLeave={() => setDragOverIdx(null)}
                 onDrop={(e) => { e.preventDefault(); if (dragFromIdx !== null) swapSlots(dragFromIdx, idx); setDragFromIdx(null); setDragOverIdx(null); }}
@@ -2876,30 +2888,30 @@ const merged = matches.slice(0, 8);
                     setDragFromIdx(null);
                     setDragOverIdx(null);
                   }}
-                  className="touch-drag-handle flex items-center justify-between text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing select-none py-1"
+                  className="touch-drag-handle flex items-center justify-between text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing select-none py-0.5"
                   title="Arrastra para reordenar"
                 >
                   <span className="text-lg tracking-widest">⠿</span>
                   <span className="text-[11px] sm:text-[13px] uppercase tracking-widest opacity-50">{t.dragHandle}</span>
                 </div>
-                <div className="flex gap-3 items-start">
-                  <div className="w-20 h-20 sm:w-32 sm:h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
+                <div className="flex gap-2 items-start">
+                  <div className="w-16 h-16 sm:w-32 sm:h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
                     {slot.sprite ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={slot.sprite}
                         alt={slot.name}
-                        className="w-16 h-16 sm:w-28 sm:h-28 object-contain"
+                        className="w-14 h-14 sm:w-28 sm:h-28 object-contain"
                         style={buildSpriteStyle(slot.spriteTransform)}
                       />
                     ) : (
                       <div className="text-xs text-slate-400">{t.noSprite}</div>
                     )}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex flex-col gap-1">
+                  <div className="flex-1 space-y-0.5">
+                    <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-lg font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
+                        <div className="text-base font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
                         {slot.stats ? (
                           <div className="relative inline-flex items-center group">
                             <span
@@ -3112,7 +3124,7 @@ const merged = matches.slice(0, 8);
                   </div>
                 ) : null}
 
-                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                   {slot.moves.map((m, mi) => {
                     const isHP = /hidden.?power|poder.?oculto/i.test(m.name);
                     const CategoryIcon = ({ cat }: { cat: string }) => {
@@ -3138,8 +3150,8 @@ const merged = matches.slice(0, 8);
                       );
                     };
                     return (
-                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2.5 sm:p-3 overflow-hidden" style={moveBgStyle(m.category, m.type)}>
-                        <div className="mb-2 flex items-center justify-between gap-3">
+                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5 overflow-hidden" style={moveBgStyle(m.category, m.type)}>
+                        <div className="mb-1.5 flex items-center justify-between gap-3">
                           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
                           <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
                             <input
@@ -3365,17 +3377,19 @@ const enSlug =
           </div>
         </CollapsibleSection>
 
-        <section className="pokedex-panel p-3 sm:p-4 rounded-lg h-full flex flex-col gap-4 min-h-0 overflow-hidden">
-          <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-semibold tracking-tight mb-1 sm:mb-2 text-slate-100">
-            <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📊</span>
-            {lang === "es" ? "Análisis" : "Analysis"}
+        <section className="pokedex-panel p-3 sm:p-4 rounded-lg h-full flex flex-col gap-3 min-h-0 overflow-hidden">
+          <h2 className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-semibold tracking-tight text-slate-100">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📊</span>
+            {lang === "es" ? "Análisis del equipo" : "Team Analysis"}
           </h2>
+          <div className="flex gap-0 flex-1 min-h-0 overflow-hidden">
+          <div className="w-px bg-gradient-to-b from-blue-700/40 via-slate-700/20 to-transparent shrink-0 mr-3 ml-1" />
           <div className="grid gap-2 flex-1 min-h-0 overflow-hidden">
             <CollapsibleSection
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 overflow-hidden"
               headerClassName="mb-2 sm:mb-3"
-              icon={<span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚔️</span>}
+              icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚔️</span>}
               title={lang === "es" ? "Tipos" : "Types"}
               storageKey="defensive-coverage"
             >
@@ -3385,7 +3399,12 @@ const enSlug =
                 <div className="grid grid-cols-1 gap-2">
                   <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20">
-                      <div className="font-semibold text-slate-100 mb-2">{t.weaknesses} (×2 {lang === "es" ? "o más" : "or more"})</div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold text-slate-100">{t.weaknesses} (×2+)</span>
+                        {Object.values(analysis.weaknesses).some(c => c >= 4) && (
+                          <span className="inline-flex items-center rounded-full bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-300 uppercase tracking-wider">⚠ ×4</span>
+                        )}
+                      </div>
                     <div className="flex flex-wrap gap-2">
                         {Object.entries(analysis.weaknesses).length ? (
                           Object.entries(analysis.weaknesses)
@@ -3441,9 +3460,15 @@ const enSlug =
                                     ) : null
                                   }
                                 >
-                                  <div className={`flex items-center gap-1.5 h-10 rounded-lg bg-slate-900/80 px-2.5 py-1 text-slate-200 whitespace-nowrap w-fit cursor-default ${c >= 3 ? "border border-amber-500/30 shadow-sm shadow-amber-500/10" : ""}`}>
-                                    <span className={`${badgeClass(ty)} text-[14px]`}>{tn(ty)}</span>
-                                    <span className={`text-xs font-semibold ${c >= 3 ? "text-amber-200" : "text-slate-300"}`}>{c}×</span>
+                                  <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-slate-200 whitespace-nowrap w-fit cursor-default transition-all
+                                    ${c >= 4
+                                      ? "h-11 bg-red-950/60 border border-red-500/50 shadow shadow-red-900/40 ring-1 ring-red-500/20"
+                                      : c >= 3
+                                      ? "h-10 bg-red-950/30 border border-red-700/40"
+                                      : "h-9 bg-slate-900/80 border border-slate-800/60"
+                                    }`}>
+                                    <span className={`${badgeClass(ty)} ${c >= 4 ? "text-[15px]" : "text-[13px]"}`}>{tn(ty)}</span>
+                                    <span className={`font-bold tabular-nums ${c >= 4 ? "text-sm text-red-300" : c >= 3 ? "text-xs text-red-400/80" : "text-xs text-slate-400"}`}>{c}×</span>
                                   </div>
                                 </FloatingTooltip>
                               );
@@ -3537,17 +3562,39 @@ const enSlug =
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden"
               headerClassName="mb-2 sm:mb-3"
-              icon={<span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚡</span>}
+              icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚡</span>}
               title={t.coverageTitle}
               storageKey="offensive-coverage"
               bodyClassName="flex-1 grid gap-3 min-h-0 overflow-hidden"
             >
                 <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20 text-slate-200">
                   <div className="text-sm uppercase tracking-[0.2em] text-slate-400 mb-1">{t.coverageTypesCovered}</div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-semibold">{coverage.supCount}</span>
                     <span className="text-slate-500 text-sm">/ {Object.keys(typeRelations).length} {t.coverageOf}</span>
                   </div>
+                  {/* Tipos NO cubiertos — protagonismo principal */}
+                  {Object.keys(typeRelations).length > 0 && (() => {
+                    const uncovered = Object.keys(typeRelations).filter(
+                      (ty) => !coverage.canHitSupereffective[ty] || coverage.canHitSupereffective[ty] === 0
+                    );
+                    return uncovered.length > 0 ? (
+                      <div className="mt-1 rounded-lg border border-red-800/40 bg-red-950/20 px-2.5 py-2">
+                        <div className="text-[11px] uppercase tracking-[0.2em] text-red-400 mb-1.5 font-medium">
+                          {lang === "es" ? "Sin cobertura frente a" : "No coverage against"}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {uncovered.map((ty) => (
+                            <span key={ty} className={`${badgeClass(ty)} text-[13px] px-2 py-0.5 ring-1 ring-red-500/30`}>{tn(ty)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-1 rounded-lg border border-emerald-800/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-400">
+                        ✓ {lang === "es" ? "Cobertura completa" : "Full coverage"}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div>
                   <div className="font-semibold text-slate-100 mb-2 text-sm">{t.superEffective}</div>
@@ -3601,7 +3648,7 @@ const enSlug =
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden"
               headerClassName="mb-2 sm:mb-3"
-              icon={<span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">💡</span>}
+              icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">💡</span>}
               title={t.balanceSugg}
               storageKey="balance-suggestions"
               bodyClassName="flex-1 min-h-0 overflow-y-auto space-y-2"
@@ -3664,7 +3711,7 @@ const enSlug =
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 min-h-0 flex flex-col"
               headerClassName="mb-2 sm:mb-3"
-              icon={<span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📈</span>}
+              icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📈</span>}
               title={t.statsBalance}
               storageKey="stats-balance"
             >
@@ -3706,7 +3753,7 @@ const enSlug =
                             <div key={role.label} className="flex items-center gap-3 rounded-xl border border-amber-800/40 bg-amber-950/30 px-3 py-2.5">
                               <RoleBadge label={role.label} color={role.color} size="text-[14px]" pokemonList={pokemon} />
                               <div className="text-xs text-amber-300 leading-relaxed">
-                                <span className="font-semibold">{rc} {t.redundantDesc}</span> ({pokemon.join(", ")}) {t.redundantNote}
+                                <span className="font-semibold">{rc} {lang === "es" ? "Pokémon" : "Pokémon"} {t.redundantDesc}</span> ({pokemon.join(", ")}) {t.redundantNote}
                               </div>
                             </div>
                           ))}
@@ -3755,16 +3802,17 @@ const enSlug =
               )}
             </CollapsibleSection>
           </div>
+          </div>{/* end flex conductor */}
         </section>
       </div>
       {/* ── DASHBOARD + POKÉMON IDEAL (fila 1) ──────────────────────── */}
-      <div className={`grid grid-cols-1 gap-6 items-stretch ${dashboard && teamSummary ? "md:grid-cols-[1.05fr_0.95fr]" : ""}`}>
+      <div className={`grid grid-cols-1 gap-4 items-stretch ${dashboard && teamSummary ? "md:grid-cols-[1.05fr_0.95fr]" : ""}`}>
       {dashboard && (
-        <div className="pokedex-panel p-4 rounded-lg h-full flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">🧭</span>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-100">
-              {lang === "es" ? "Dashboard del Equipo" : "Team Dashboard"}
+        <div className="pokedex-panel p-3 sm:p-4 rounded-lg h-full flex flex-col">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">🧭</span>
+            <h2 className="text-base sm:text-lg font-semibold tracking-tight text-slate-100">
+              {lang === "es" ? "Dashboard del equipo" : "Team Dashboard"}
             </h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 flex-1">
@@ -3890,9 +3938,9 @@ const enSlug =
       {/* Team Summary Panel — incluye análisis de tipo ideal + recomendaciones */}
       {teamSummary && (
         <div className="p-3 sm:p-4 pokedex-panel rounded-lg h-full flex flex-col">
-            <div className="flex items-center gap-2 text-base font-semibold tracking-tight mb-3 text-slate-100">
+            <div className="flex items-center gap-2 mb-3 text-slate-100">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">🎯</span>
-              {t.summaryTitle}
+              <h2 className="text-base font-semibold tracking-tight">{t.summaryTitle}</h2>
             </div>
             {/* ── Análisis de tipo ideal ── */}
             <div className="grid gap-3 sm:grid-cols-2">
@@ -4019,12 +4067,15 @@ const enSlug =
       </div>
       {/* ── POKÉMON RECOMENDADOS (fila 2 — ancho completo) ───────────── */}
       {teamSummary && (
-      <div className="mt-6 pokedex-panel p-4 sm:p-5 rounded-lg">
+      <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
             {/* ── Pokémon recomendados ── */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Header */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-300">⭐ {t.recommendedPokemon}</div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">⭐</span>
+                  <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
+                </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null) && (
                     <button
@@ -4158,25 +4209,17 @@ const enSlug =
                 </div>
               )}
 
-              {/* Lista de recomendaciones — grid adaptativo hasta 6 tarjetas */}
+              {/* Lista de recomendaciones — grid compacto */}
               {pokemonRecommendations.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                   {pokemonRecommendations.map(({ candidate, name, reasons, noNewCritical, addsResistances, immunities, newResistances, reduces, neededRole, realRole, candidateFitsRole }) => {
-                    // Debilidades reales del candidato. Se excluyen las que ya se
-                    // mencionan arriba en "reasons" (criticalAdds, con el signo ⚠)
-                    // para no mostrar el mismo tipo dos veces en la misma tarjeta.
                     const allCandidateWeaknesses = getCandidateWeaknesses(candidate.types as string[], typeRelations);
                     const reasonWeakTypes = new Set(reasons.filter((r) => !r.positive).map((r) => r.weakType));
                     const candidateWeaknesses = allCandidateWeaknesses.filter((ty) => !reasonWeakTypes.has(ty));
-                    // Resistencias e inmunidades para mostrar (no duplicar con reasons)
-                    // "reasons" ya menciona los tipos de los que el candidato es inmune/resiste
-                    // si el equipo era débil a ellos. Aquí mostramos SÓLO las que no aparecen
-                    // en reasons (resistencias nuevas no relacionadas con debilidades del equipo).
                     const reasonTypes = new Set(reasons.map((r) => r.weakType));
                     const extraImmunities = immunities.filter((ty) => !reasonTypes.has(ty));
                     const extraResistances = newResistances.filter((ty) => !immunities.includes(ty) && !reasonTypes.has(ty));
 
-                    // Agrupa razones consecutivas del mismo signo (evita repetir el label)
                     const groupedReasons: Array<{ positive: boolean; isImmune?: boolean; types: string[] }> = [];
                     reasons.forEach((r) => {
                       const last = groupedReasons[groupedReasons.length - 1];
@@ -4187,131 +4230,161 @@ const enSlug =
                       }
                     });
 
+                    const isExpanded = expandedRec.has(candidate.slug);
+                    const toggleExpanded = () => setExpandedRec((prev) => {
+                      const next = new Set(prev);
+                      next.has(candidate.slug) ? next.delete(candidate.slug) : next.add(candidate.slug);
+                      return next;
+                    });
+
+                    // Todas las resistencias e inmunidades del candidato (para el panel expandido)
+                    const allResistances = newResistances.filter((ty) => !immunities.includes(ty));
+
                     return (
-                      <div key={candidate.slug} className="rounded-xl border border-blue-800/20 bg-slate-900/70 p-3 flex gap-3 items-start">
-                        {/* Sprite */}
-                        <img
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`}
-                          alt={name}
-                          className="w-14 h-14 object-contain shrink-0 rounded-lg bg-slate-950/60"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                        <div className="flex-1 min-w-0 space-y-1.5">
-                          {/* Nombre + tipos */}
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-base font-semibold text-slate-100">{name}</span>
-                            {candidate.types.map((ty) => (
-                              <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
-                            ))}
+                      <div key={candidate.slug} className="rounded-xl border border-blue-800/20 bg-slate-900/75 overflow-hidden">
+
+                        {/* ── CUERPO PRINCIPAL: sprite izq + info der ── */}
+                        <div className="flex">
+
+                          {/* Columna izquierda: sprite cuadrado fijo, mismo estilo que tarjetas del equipo */}
+                          <div className="shrink-0 w-44 self-stretch bg-[#031421] flex items-center justify-center rounded-tl-xl overflow-hidden">
+                            <img
+                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`}
+                              alt={name}
+                              className="w-32 h-32 object-contain"
+                              style={{ imageRendering: "pixelated" }}
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            />
                           </div>
 
-                          {/* Rol REAL del Pokémon (siempre se muestra, sea cual sea el
-                              estado del filtro). Es el mismo rol que tendría si estuviera
-                              dentro del equipo — nunca el rol que el equipo necesita. */}
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">{t.recRealRole}:</span>
-                            {realRole ? (
-                              <RoleBadge label={realRole.label} color={realRole.color} size="text-[12px]" />
-                            ) : (
-                              <span className="text-[11px] text-slate-600 italic">
-                                {lang === "es" ? "sin datos suficientes" : "not enough data"}
-                              </span>
-                            )}
-                          </div>
+                          {/* Columna derecha: toda la info */}
+                          <div className="flex-1 min-w-0 p-3 flex flex-col gap-2">
 
-                          {/* Rol que el EQUIPO necesita (referencia del análisis), con
-                              indicador de si este Pokémon realmente cumple ese rol o no */}
-                          {neededRole && (
+                            {/* Fila 1: Nombre + botón descartar */}
+                            <div className="flex items-start justify-between gap-1">
+                              <span className="text-[15px] font-bold text-white leading-tight">{name}</span>
+                              <button
+                                type="button"
+                                onClick={() => setRecDiscarded((prev) => new Set([...prev, candidate.slug]))}
+                                title={t.recFilterDiscard}
+                                className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-600 hover:text-red-400 hover:bg-red-900/30 transition text-[11px] mt-0.5"
+                              >✕</button>
+                            </div>
+
+                            {/* Fila 2: Tipos del Pokémon */}
+                            <div className="flex flex-wrap gap-1">
+                              {candidate.types.map((ty) => (
+                                <span key={ty} className={`${badgeClass(ty)} text-[11px] px-2 py-0.5`}>{tn(ty)}</span>
+                              ))}
+                            </div>
+
+                            {/* Fila 3: Rol propio → Rol recomendado */}
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] uppercase tracking-[0.18em] text-slate-500">{t.recRole}:</span>
-                              <RoleBadge
-                                label={neededRole.label}
-                                color={neededRole.color}
-                                size="text-[12px]"
-                                dimmed={candidateFitsRole === false}
-                                extra={
-                                  candidateFitsRole === false ? (
-                                    <div className="mt-1.5 pt-1.5 border-t border-slate-800 text-amber-300">
-                                      {lang === "es" ? "El rol real de este Pokémon no coincide con este." : "This Pokémon's real role doesn't match this one."}
-                                    </div>
-                                  ) : undefined
-                                }
-                              />
-                              {candidateFitsRole === true && (
-                                <span className="text-[10px] text-emerald-400" title={lang === "es" ? "Coincide con su rol real" : "Matches its real role"}>✓</span>
+                              {realRole && (
+                                <RoleBadge label={realRole.label} color={realRole.color} size="text-[10px]" />
                               )}
+                              {realRole && neededRole && (
+                                <span className="text-slate-600 text-[10px]">→</span>
+                              )}
+                              {neededRole && (
+                                <RoleBadge
+                                  label={neededRole.label}
+                                  color={neededRole.color}
+                                  size="text-[10px]"
+                                  dimmed={candidateFitsRole === false}
+                                  extra={
+                                    candidateFitsRole === false ? (
+                                      <div className="mt-1.5 pt-1.5 border-t border-slate-800 text-amber-300 text-xs">
+                                        {lang === "es" ? "Su perfil de stats apunta a otro rol." : "Its stat profile points to a different role."}
+                                      </div>
+                                    ) : undefined
+                                  }
+                                />
+                              )}
+                              {candidateFitsRole === true && <span className="text-[10px] text-emerald-500">✓</span>}
                               {candidateFitsRole === false && (
-                                <span className="text-[10px] text-slate-600 italic">
-                                  {lang === "es" ? "(no coincide con su rol real)" : "(doesn't match its real role)"}
+                                <span className="text-[12px] text-slate-400 italic">
+                                  {lang === "es" ? "perfil distinto" : "different profile"}
                                 </span>
                               )}
                             </div>
-                          )}
 
-                          {/* Razones: inmunidades / reducciones / debilidades nuevas
-                              (no se repiten más abajo) */}
-                          <div className="space-y-0.5">
-                            {groupedReasons.map((g, gi) => (
-                              <div key={gi} className={`flex items-center gap-1.5 flex-wrap text-[12px] ${g.positive ? "text-emerald-300" : "text-red-300"}`}>
-                                <span>{g.positive ? (g.isImmune ? "⚡" : "✓") : "⚠"}</span>
-                                <span>{g.isImmune ? t.recImmune : g.positive ? t.recReduces : t.recAdds}</span>
-                                {g.types.map((ty, ti) => (
-                                  <React.Fragment key={ty}>
-                                    {ti > 0 && <span className="text-slate-500">·</span>}
-                                    <span className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
-                                  </React.Fragment>
-                                ))}
+                            {/* Separador */}
+                            <div className="border-t border-slate-800/60" />
+
+                            {/* Fila 4: Razones — etiqueta corta fija + badges */}
+                            <div className="flex flex-col gap-1">
+                              {groupedReasons.map((g, gi) => {
+                                const label   = g.isImmune ? (lang === "es" ? "Inmune" : "Immune") : g.positive ? (lang === "es" ? "Cubre" : "Covers") : (lang === "es" ? "Añade" : "Adds");
+                                const labelCl = g.isImmune ? "text-blue-400" : g.positive ? "text-emerald-400" : "text-amber-400";
+                                return (
+                                  <div key={gi} className="flex items-center gap-2">
+                                    <span className={`${labelCl} text-[11px] font-semibold shrink-0 w-12`}>{label}</span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {g.types.map((ty) => (
+                                        <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              {noNewCritical && groupedReasons.length === 0 && (
+                                <span className="text-[11px] text-emerald-500">✓ {t.recNoNewCritical}</span>
+                              )}
+                            </div>
+
+                            {/* Fila 5: botón expandible */}
+                            {(immunities.length > 0 || allResistances.length > 0 || candidateWeaknesses.length > 0) && (
+                              <button
+                                type="button"
+                                onClick={toggleExpanded}
+                                className="self-start mt-0.5 text-[12px] text-slate-400 hover:text-slate-200 transition flex items-center gap-1"
+                              >
+                                <span>{isExpanded ? "▲" : "▼"}</span>
+                                <span>{isExpanded ? (lang === "es" ? "Ocultar detalle" : "Hide detail") : (lang === "es" ? "Ver resistencias y debilidades" : "See resistances & weaknesses")}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ── PANEL EXPANDIDO: todas las resistencias y debilidades ── */}
+                        <div
+                          className="overflow-hidden transition-all duration-200"
+                          style={{ maxHeight: isExpanded ? "300px" : "0px", opacity: isExpanded ? 1 : 0 }}
+                        >
+                          <div className="border-t border-slate-700/50 px-3 py-2.5 bg-slate-950/50 flex flex-col gap-2">
+                            {immunities.length > 0 && (
+                              <div className="flex items-start gap-2">
+                                <span className="text-[14px] font-semibold text-blue-400 shrink-0 w-16 mt-0.5">{lang === "es" ? "Inmune" : "Immune"}</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {immunities.map((ty) => (
+                                    <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
+                                  ))}
+                                </div>
                               </div>
-                            ))}
-                            {noNewCritical && (
-                              <div className="flex items-center gap-1.5 text-[12px] text-slate-400">
-                                <span>✅</span>
-                                <span>{t.recNoNewCritical}</span>
+                            )}
+                            {allResistances.length > 0 && (
+                              <div className="flex items-start gap-2">
+                                <span className="text-[14px] font-semibold text-emerald-500 shrink-0 w-16 mt-0.5">{lang === "es" ? "Resiste" : "Resists"}</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {allResistances.map((ty) => (
+                                    <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {candidateWeaknesses.length > 0 && (
+                              <div className="flex items-start gap-2">
+                                <span className="text-[14px] font-semibold text-red-400 shrink-0 w-16 mt-0.5">{lang === "es" ? "Débil a" : "Weak to"}</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {candidateWeaknesses.map((ty) => (
+                                    <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
-
-                          {/* Inmunidades/resistencias adicionales (no mencionadas arriba) */}
-                          {(extraImmunities.length > 0 || extraResistances.length > 0) && (
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 border-t border-slate-800/40">
-                              {extraImmunities.length > 0 && (
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  <span className="text-[10px] uppercase tracking-[0.15em] text-blue-400 shrink-0">{t.recNewImmunities}:</span>
-                                  {extraImmunities.slice(0, 4).map((ty) => (
-                                    <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1 py-0.5`}>{tn(ty)}</span>
-                                  ))}
-                                </div>
-                              )}
-                              {extraResistances.length > 0 && (
-                                <div className="flex items-center gap-1 flex-wrap">
-                                  <span className="text-[10px] uppercase tracking-[0.15em] text-emerald-400 shrink-0">{t.recNewResistances}:</span>
-                                  {extraResistances.slice(0, 4).map((ty) => (
-                                    <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1 py-0.5`}>{tn(ty)}</span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Debilidades del candidato (siempre al final, separadas) */}
-                          {candidateWeaknesses.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-1 pt-0.5 border-t border-slate-800/60">
-                              <span className="text-[10px] uppercase tracking-[0.15em] text-red-400 shrink-0">{t.recCandidateWeaknesses}:</span>
-                              {candidateWeaknesses.map((ty) => (
-                                <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1 py-0.5`}>{tn(ty)}</span>
-                              ))}
-                            </div>
-                          )}
                         </div>
-                        {/* Botón descartar */}
-                        <button
-                          type="button"
-                          onClick={() => setRecDiscarded((prev) => new Set([...prev, candidate.slug]))}
-                          title={t.recFilterDiscard}
-                          className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-600 hover:text-red-400 hover:bg-red-900/30 transition text-xs"
-                        >
-                          ✕
-                        </button>
                       </div>
                     );
                   })}
