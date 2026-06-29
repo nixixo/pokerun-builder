@@ -619,7 +619,7 @@ const UI: Record<Lang, Record<string, string>> = {
   es: {
     // Header
     appTitle: "PokéRun Builder",
-    appSubtitle: "Arma tu equipo, descubre qué tan bien cubre y encuentra sus puntos débiles.",
+    appSubtitle: "Arma tu equipo, analízalo y encuentra sus puntos débiles.",
     statSlots: "6 slots", statMoves: "4 por slot", statAnalysis: "En tiempo real",
     labelSlots: "Equipos", labelMoves: "Movimientos", labelAnalysis: "Análisis",
     // Equipo
@@ -678,7 +678,7 @@ const UI: Record<Lang, Record<string, string>> = {
     summaryResists: "resiste:", summaryCovers: "cubre:",
     recFilterFinalEvo: "Solo últimas evoluciones",
     recFilterLegendary: "Mostrar legendarios",
-    recFilterNoDupTypes: "Evitar recomendaciones repetidas",
+    recFilterNoDupTypes: "Evitar tipos repetidos",
     recFilterMatchRole: "Mostrar solo Pokémon del rol recomendado",
     recFilterPrioritizeCoverage: "Priorizar cobertura de tipos",
     recRealRole: "Rol",
