@@ -5783,7 +5783,7 @@ const enSlug =
 
               {/* Lista de recomendaciones — grid compacto */}
               {pokemonRecommendations.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-start">
                   {pokemonRecommendations.map(({ candidate, name, reasons, noNewCritical, addsResistances, immunities, newResistances, reduces, neededRole, realRole, candidateFitsRole }) => {
                     const allCandidateWeaknesses = getCandidateWeaknesses(candidate.types as string[], typeRelations);
                     const reasonWeakTypes = new Set(reasons.filter((r) => !r.positive).map((r) => r.weakType));
@@ -5801,6 +5801,22 @@ const enSlug =
                         groupedReasons.push({ positive: r.positive, isImmune: r.isImmune, types: [r.weakType] });
                       }
                     });
+
+                    // Filas fijas Inmune / Cubre / Añade, siempre en el mismo orden
+                    // y siempre presentes (aunque vacías) para que todas las tarjetas
+                    // midan lo mismo sin depender de items-stretch.
+                    const immuneTypes: string[] = [];
+                    const coverTypes: string[] = [];
+                    const addTypes: string[] = [];
+                    groupedReasons.forEach((g) => {
+                      const arr = g.isImmune ? immuneTypes : g.positive ? coverTypes : addTypes;
+                      g.types.forEach((ty) => { if (!arr.includes(ty)) arr.push(ty); });
+                    });
+                    const fixedReasonRows = [
+                      { key: "immune", label: lang === "es" ? "Inmune" : "Immune", icon: "🛡️", labelCl: "text-blue-400", types: immuneTypes },
+                      { key: "cover", label: lang === "es" ? "Cubre" : "Covers", icon: "✅", labelCl: "text-emerald-400", types: coverTypes },
+                      { key: "add", label: lang === "es" ? "Añade" : "Adds", icon: "⚠️", labelCl: "text-amber-400", types: addTypes },
+                    ];
 
                     const isExpanded = expandedRec.has(candidate.slug);
                     const toggleExpanded = () => setExpandedRec((prev) => {
@@ -6011,25 +6027,30 @@ const enSlug =
                             {/* Separador */}
                             <div className="border-t border-slate-800/60" />
 
-                            {/* Fila 4: Razones — etiqueta corta fija + badges */}
+                            {/* Fila 4: Razones — etiqueta corta fija + badges.
+                                Siempre se renderizan las 3 filas (Inmune/Cubre/Añade) en el
+                                mismo orden, aunque una esté vacía, para que todas las tarjetas
+                                tengan la misma altura sin depender de items-stretch. */}
                             <div className="flex flex-col gap-1">
-                              {groupedReasons.map((g, gi) => {
-                                const label   = g.isImmune ? (lang === "es" ? "Inmune" : "Immune") : g.positive ? (lang === "es" ? "Cubre" : "Covers") : (lang === "es" ? "Añade" : "Adds");
-                                const icon    = g.isImmune ? "🛡️" : g.positive ? "✅" : "⚠️";
-                                const labelCl = g.isImmune ? "text-blue-400" : g.positive ? "text-emerald-400" : "text-amber-400";
-                                return (
-                                  <div key={gi} className="flex items-center gap-2">
-                                    <span className={`${labelCl} text-[11px] font-semibold shrink-0 w-16 inline-flex items-center gap-1`}>
-                                      <span aria-hidden="true">{icon}</span>{label}
-                                    </span>
-                                    <div className="flex flex-wrap gap-1">
-                                      {g.types.map((ty) => (
+                              {fixedReasonRows.map((row) => (
+                                <div key={row.key} className="flex items-center gap-2">
+                                  <span className={`${row.labelCl} text-[11px] font-semibold shrink-0 w-16 inline-flex items-center gap-1 ${row.types.length === 0 ? "invisible" : ""}`}>
+                                    <span aria-hidden="true">{row.icon}</span>{row.label}
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {row.types.length > 0 ? (
+                                      row.types.map((ty) => (
                                         <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5`}>{tn(ty)}</span>
-                                      ))}
-                                    </div>
+                                      ))
+                                    ) : (
+                                      // Badge fantasma: mismas clases/paddings que un badge real
+                                      // pero invisible, para que la fila mida exactamente lo mismo
+                                      // que una fila con contenido real.
+                                      <span className={`${badgeClass("normal")} invisible text-[11px] px-1.5 py-0.5`} aria-hidden="true">·</span>
+                                    )}
                                   </div>
-                                );
-                              })}
+                                </div>
+                              ))}
                               {noNewCritical && groupedReasons.length === 0 && (
                                 <span className="text-[11px] text-emerald-500">✓ {t.recNoNewCritical}</span>
                               )}
