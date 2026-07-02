@@ -341,6 +341,16 @@ const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
   90103: "_6", // Rotom Guillotina
 };
 
+// Algunos sprites, aun después del auto-recorte por bounding box, quedan con
+// más margen "vacío" dentro de su propio arte que el resto (ej. efectos con
+// alpha bajo —como el fuego de Mega Delphox Z— que no llegan al umbral de
+// recorte de 10 y dejan colchón alrededor). Para esos casos puntuales se
+// aplica un factor de zoom extra sobre el tamaño ya calculado, en vez de
+// tocar el umbral general (que afectaría a todos los demás sprites).
+const Z_SPRITE_ZOOM_OVERRIDES: Record<number, number> = {
+  90005: 1.4, // Mega Delphox Z: se ve notablemente más chico que el resto
+};
+
 // Resuelve la URL real del sprite Battlers para una entrada del JSON Pokémon Z,
 // corrigiendo el caso especial de las 8 Megas (ver Z_MEGA_SPRITE_SUFFIX arriba).
 // Para el resto de entradas (incluidas las normales y las "Z" de Z_FORM_SPECIES)
@@ -1317,15 +1327,34 @@ const normalizeMoveSearch = (text: string) =>
 
 // ─── Sprite transform helpers ────────────────────────────────────────────────
 
+// Igual que Z_SPRITE_ZOOM_OVERRIDES (arriba, usado en las tarjetas de
+// recomendación por id), pero para los slots del equipo: ahí no se guarda
+// el id del Pokémon Z en el Slot (solo name/sprite/spriteTransform), así
+// que el override puntual se resuelve por el nombre final ya formateado
+// (getZDisplayName es determinístico y no depende del idioma para estos
+// casos: "Mega <especie> Z"). Mismo caso, mismo factor, ahora también con
+// offset de posición (x/y en %, mismo sistema que SpriteTransform) para
+// recentrar el arte cuando el zoom extra descentra el sprite dentro del
+// frame (ej. el fuego de Mega Delphox Z queda desplazado tras el zoom).
+type ZSlotSpriteOverride = { zoom?: number; x?: number; y?: number };
+const Z_SLOT_SPRITE_ZOOM_OVERRIDES: Record<string, ZSlotSpriteOverride> = {
+  "Mega Delphox Z": { zoom: 1.6, x: -7, y: -20 },
+};
+
 /** Convert a SpriteTransform into CSS object-position + scale values.
  *  frameSize = the rendered frame size in px (e.g. 112 for w-28 h-28).
+ *  override = ajuste puntual adicional (ver Z_SLOT_SPRITE_ZOOM_OVERRIDES):
+ *  zoom se multiplica sobre el scale del usuario, x/y (en %) se suman a su
+ *  pan manual — ninguno de los dos pisa lo que el usuario guardó.
  */
-function buildSpriteStyle(transform: SpriteTransform | null | undefined): React.CSSProperties {
+function buildSpriteStyle(transform: SpriteTransform | null | undefined, override?: ZSlotSpriteOverride): React.CSSProperties {
   const tx = transform ?? DEFAULT_TRANSFORM;
   // zoom: 0 → scale 1.0, +100 → scale 2.0, -100 → scale 0.5
-  const scale = tx.zoom >= 0 ? 1 + tx.zoom / 100 : 1 + tx.zoom / 200;
+  const scale = (tx.zoom >= 0 ? 1 + tx.zoom / 100 : 1 + tx.zoom / 200) * (override?.zoom ?? 1);
+  const posX = tx.x + (override?.x ?? 0);
+  const posY = tx.y + (override?.y ?? 0);
   return {
-    transform: `translate(${tx.x}%, ${tx.y}%) scale(${scale})`,
+    transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
     transformOrigin: "center center",
   };
 }
@@ -4338,7 +4367,7 @@ export default function Home() {
                         src={slot.sprite}
                         alt={slot.name}
                         className="w-14 h-14 sm:w-28 sm:h-28 object-contain"
-                        style={buildSpriteStyle(slot.spriteTransform)}
+                        style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
                       />
                     ) : (
                       <div className="text-xs text-slate-400">{t.noSprite}</div>
@@ -5805,7 +5834,11 @@ const enSlug =
                                       const size = zSpriteNaturalSizes[String(candidate.id)];
                                       // Escalar al doble del tamaño trimmeado, con techo en 112px,
                                       // para que los sprites pequeños no queden diminutos.
-                                      const display = size ? Math.min(size * 2, 112) : 80;
+                                      const base = size ? Math.min(size * 2, 112) : 80;
+                                      // Zoom extra puntual para sprites cuyo arte deja margen
+                                      // vacío dentro del bounding box (ver Z_SPRITE_ZOOM_OVERRIDES).
+                                      const zoom = Z_SPRITE_ZOOM_OVERRIDES[candidate.id] ?? 1;
+                                      const display = Math.min(base * zoom, 128);
                                       return { width: display, height: display, objectFit: "contain" as const };
                                     })()
                                   : { width: 128, height: 128, objectFit: "contain" as const }),
