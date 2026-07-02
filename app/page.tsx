@@ -3368,9 +3368,19 @@ export default function Home() {
       const reasons: Array<{ positive: boolean; weakType: string; isImmune?: boolean }> = [];
 
       // Positivo: inmunidades primero, luego reducciones de debilidad,
-      // ordenadas por cuántos Pokémon del equipo ya eran débiles a ese tipo
-      [...immunities, ...reduces.filter((t) => !immunities.includes(t))]
-        .sort((a, b) => (teamWeaknesses[b] ?? 0) - (teamWeaknesses[a] ?? 0))
+      // cada bloque ordenado por separado por cuántos Pokémon del equipo ya
+      // eran débiles a ese tipo (un sort global sobre ambos bloques juntos
+      // los intercalaría cuando una inmunidad tiene menos peso que una
+      // reducción, rompiendo el agrupamiento visual en la tarjeta —
+      // ej. "Cubre fuego" / "Inmune tierra" / "Cubre roca" en vez de un
+      // solo grupo "Cubre fuego, roca").
+      const immunitiesSorted = [...immunities].sort(
+        (a, b) => (teamWeaknesses[b] ?? 0) - (teamWeaknesses[a] ?? 0)
+      );
+      const reducesSorted = reduces
+        .filter((t) => !immunities.includes(t))
+        .sort((a, b) => (teamWeaknesses[b] ?? 0) - (teamWeaknesses[a] ?? 0));
+      [...immunitiesSorted, ...reducesSorted]
         .slice(0, 3)
         .forEach((t) => reasons.push({ positive: true, weakType: t, isImmune: immunities.includes(t) }));
 
