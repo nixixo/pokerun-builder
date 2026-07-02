@@ -45,6 +45,30 @@ type Slot = {
 
 const EMPTY_MOVE = (): Move => ({ name: "", category: "Physical", type: null });
 
+// ─── Icono de Pokéball (SVG inline, sin dependencias externas) ──────────────
+const PokeballIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
+  <svg viewBox="0 0 40 40" className={className} aria-hidden="true">
+    <defs>
+      <clipPath id="pokeball-top-clip">
+        <rect x="0" y="0" width="40" height="19" />
+      </clipPath>
+      <clipPath id="pokeball-bottom-clip">
+        <rect x="0" y="21" width="40" height="19" />
+      </clipPath>
+    </defs>
+    <circle cx="20" cy="20" r="18" fill="#f8fafc" stroke="#0f172a" strokeWidth="2" />
+    <g clipPath="url(#pokeball-top-clip)">
+      <circle cx="20" cy="20" r="18" fill="#ef4444" stroke="#0f172a" strokeWidth="2" />
+    </g>
+    <g clipPath="url(#pokeball-bottom-clip)">
+      <circle cx="20" cy="20" r="18" fill="#f8fafc" stroke="#0f172a" strokeWidth="2" />
+    </g>
+    <rect x="1" y="18.5" width="38" height="3" fill="#0f172a" />
+    <circle cx="20" cy="20" r="6.5" fill="#f8fafc" stroke="#0f172a" strokeWidth="2.2" />
+    <circle cx="20" cy="20" r="3" fill="#f8fafc" stroke="#0f172a" strokeWidth="1.6" />
+  </svg>
+);
+
 const EMPTY_SLOT = (): Slot => ({
   name: "",
   isFake: false,
@@ -66,7 +90,270 @@ const EMPTY_STAT_INPUT: BaseStatsInput = {
 const STORAGE_KEY = "pokerun-builder-team";
 const SAVED_TEAMS_KEY = "pokerun-builder-saved-teams";
 const VIEW_MODE_KEY = "pokerun-builder-view-mode";
+const POKEDEX_KEY = "pokerun-builder-active-pokedex";
+const FAKEMON_MODE_KEY = "pokerun-builder-fakemon-mode";
 const MAX_PLANTILLAS = 5;
+
+// ─── Pokedex selector ────────────────────────────────────────────────────────
+type PokedexId = "standard" | "pokemon-z";
+
+const POKEDEX_OPTIONS: { id: PokedexId; label: string; emoji: string }[] = [
+  { id: "standard", label: "Pokedex", emoji: "🔵" },
+  { id: "pokemon-z", label: "Pokémon Z", emoji: "⚡" },
+];
+
+// Mapa de tipos en español (JSON de Pokémon Z) → slug de PokéAPI en inglés
+const TYPE_ES_TO_API: Record<string, string> = {
+  "Normal": "normal", "Fuego": "fire", "Agua": "water", "Eléctrico": "electric",
+  "Electrico": "electric", "Planta": "grass", "Hielo": "ice", "Lucha": "fighting",
+  "Veneno": "poison", "Tierra": "ground", "Volador": "flying", "Psíquico": "psychic",
+  "Psiquico": "psychic", "Bicho": "bug", "Roca": "rock", "Fantasma": "ghost",
+  "Dragón": "dragon", "Dragon": "dragon", "Siniestro": "dark", "Acero": "steel",
+  "Hada": "fairy",
+};
+
+// Especies cuya entrada en pokemon_z_completo.json tiene stats/habilidades
+// realmente alteradas respecto a los juegos oficiales (según el documento
+// "Formas y nuevas evoluciones" de Pokémon Z), y por lo tanto tiene sentido
+// ofrecer también su forma "estándar" (PokéAPI) como opción separada en el
+// buscador. El resto de la PokédPokedexex Z (~990 especies) es una copia 1:1 de los
+// stats oficiales, así que para esas no se duplica nada (se sigue mostrando
+// una sola entrada, como antes).
+//
+// NOTA: Entei, Volcarona, Florges y Grimmsnarl NO van acá aunque tengan mega
+// exclusiva: su entrada base es 1:1 igual a la oficial (solo cambia su Mega),
+// así que su nombre no debe llevar sufijo " Z" — solo "Mega X Z". Ver
+// Z_MEGA_ONLY_SPECIES más abajo.
+const Z_FORM_SPECIES = new Set(
+  [
+    "Pikachu", "Raichu",
+    "Paras", "Parasect",
+    "Cubone", "Marowak",
+    "Porygon", "Porygon2", "Porygon-Z",
+    "Wailmer", "Wailord",
+    "Vibrava", "Flygon",
+    "Bidoof", "Bibarel",
+    "Kricketot", "Kricketune",
+    "Lilligant",
+    "Yamask", "Cofagrigus",
+    "Gothitelle",
+    "Solosis", "Duosion", "Reuniclus",
+    "Quilladin", "Chesnaught",
+    "Braixen", "Delphox",
+    "Frogadier", "Greninja",
+    "Sirfetch'd",
+  ].map((n) => n.toLowerCase())
+);
+
+// Las 4 especies con mega exclusiva de Z cuya entrada base NO está alterada
+// (es 1:1 igual a los stats oficiales). El JSON les pone `formLabel: "Z"` en
+// la entrada base por error/consistencia interna, pero no debe traducirse en
+// un sufijo " Z" visible: solo su Mega lleva sufijo ("Mega Entei Z", etc.).
+const Z_MEGA_ONLY_SPECIES = new Set(
+  ["Entei", "Volcarona", "Florges", "Grimmsnarl"].map((n) => n.toLowerCase())
+);
+
+// ─── Formas regionales / alternas de PokéAPI ────────────────────────────────
+// Mapeo general (no exclusivo de Pokémon Z) para cuando la contraparte
+// "estándar" de una especie no es su forma base de Kanto/nacional, sino una
+// variante regional/alterna específica (ej. Raichu → Raichu-Alola). Útil en
+// cualquier punto de la app que busque el slug oficial de PokéAPI a partir
+// de un nombre de especie: en vez de asumir siempre `nombre.toLowerCase()`,
+// se consulta este mapeo primero. Clave: nombre de especie en minúsculas tal
+// como aparece en el JSON de Pokémon Z. Valor: { slug, display } de la forma
+// de PokéAPI que se debe usar en su lugar.
+// Para agregar un nuevo caso (otra especie con forma regional/alterna),
+// simplemente se agrega una entrada más acá; no hace falta tocar nada más.
+// (Definido debajo de formatForDisplay porque depende de ella.)
+
+// Calcula el nombre a mostrar para una entrada del JSON Pokémon Z, centralizando
+// las reglas de Z_FORM_SPECIES y Z_MEGA_ONLY_SPECIES para no repetir esta
+// lógica en cada punto del código que arma un displayName.
+const getZDisplayName = (p: any): string => {
+  const baseName: string = p?.name ?? p?.internalName ?? "";
+  const key = baseName.toLowerCase();
+  const id: number = p?.id ?? 0;
+
+  // Megas curadas Z (90001–90008): siempre "Mega <nombre> Z"
+  if (id >= 90001 && id <= 90008) return `Mega ${baseName} Z`;
+  // Mega Lucario Z (90078): Mega exclusiva de Pokémon Z (no reemplaza a la
+  // Mega Lucario oficial, que sigue disponible vía PokéAPI por separado).
+  if (id === 90078) return `Mega ${baseName} Z`;
+
+  // Megas oficiales con stats ajustados por planilla (90059–90077): NO son
+  // exclusivas de Pokémon Z (existen en los juegos originales), solo tienen
+  // el delta de stats aplicado — así que llevan "Mega <nombre>" sin sufijo
+  // " Z" (a diferencia de las 90001-90008, que sí son Megas exclusivas de Z).
+  if (id >= 90059 && id <= 90077) {
+    const clean = baseName.replace(/^Mega-?\s*/i, "");
+    return `Mega ${clean}`;
+  }
+
+  // Gigamax curados Z (90009–90025): sin sufijo Z, solo "Gigamax <nombre>"
+  if (id >= 90009 && id <= 90025) return `Gigamax ${baseName}`;
+
+  // Formas regionales / renombradas Z (90026–90058): nombre tal cual del JSON,
+  // sin sufijo Z ("Raichu Alola", "Wugtrio", etc.)
+  if (id >= 90026 && id <= 90058) return baseName;
+
+  // Resto de la Pokedex (IDs normales). No dependemos de formLabel porque
+  // el JSON lo pone mal en varios casos (ej. entradas base con formLabel "Z").
+  if (Z_MEGA_ONLY_SPECIES.has(key)) return baseName;
+  if (Z_FORM_SPECIES.has(key)) return `${baseName} Z`;
+  return baseName;
+};
+
+
+// Las 8 entradas "Mega" del JSON Pokémon Z (id 90001-90008) traen el campo
+// `sprite` apuntando al archivo BASE de su especie (bug del JSON fuente: ej.
+// Delphox Mega trae "655.png" en vez de "655_1.png"). El sprite real de cada
+// Mega vive en el mismo bucket pero con un sufijo "_N" sobre el dexId,
+// confirmado manualmente en la página de Fakedex (cada especie tiene un
+// número de formas previas distinto, así que el sufijo no es uniforme):
+//   Raichu  → _2   (Forma 1 = Raichu Alola, Forma 2 = Mega Z)
+//   Entei   → _1
+//   Volcarona → _3 (Formas 1 y 2 son las Paradojas pasado/futuro, no son Mega)
+//   Chesnaught → _1 (Forma 2 es la Mega oficial, vía PokéAPI aparte)
+//   Delphox → _1    (Forma 2 es la Mega oficial, vía PokéAPI aparte)
+//   Greninja → _2   (Forma 1 es Greninja Z oscuro, Forma 3 Ash-Greninja, Forma 4 Mega oficial)
+//   Florges → _1
+//   Grimmsnarl → _1
+const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
+  90001: "_2", // Raichu
+  90002: "_1", // Entei
+  90003: "_3", // Volcarona
+  90004: "_1", // Chesnaught
+  90005: "_1", // Delphox
+  90006: "_2", // Greninja
+  90007: "_1", // Florges
+  90008: "_1", // Grimmsnarl
+  // 90009-90025: Gigamax curados (forma 1 = Gmax en todas las especies de
+  // esta tanda, confirmado en Fakedex; a diferencia de las Megas de arriba
+  // no hay ambigüedad de forma previa que resolver).
+  90009: "_1", // Butterfree
+  90010: "_1", // Machamp
+  90011: "_1", // Kingler
+  90012: "_1", // Lapras
+  90013: "_1", // Garbodor
+  90014: "_1", // Corviknight
+  90015: "_1", // Orbeetle
+  90016: "_1", // Drednaw
+  90017: "_1", // Coalossal
+  90018: "_1", // Flapple
+  90019: "_1", // Appletun
+  90020: "_1", // Sandaconda
+  90021: "_1", // Toxtricity
+  90022: "_1", // Centiskorch
+  90023: "_1", // Hatterene
+  90024: "_1", // Alcremie
+  90025: "_1", // Copperajah
+  // 90026-90058: Formas regionales / renombradas (Alola, Galar, Hisui,
+  // Paldea, y las 7 especies estilo Paradoja). Todas usan "forma 1" del
+  // sprite sheet de su especie base, confirmado para el caso Volcarona
+  // (forma 1 = Reptalada, forma 2 = otra paradoja, forma 3 = Mega).
+  90026: "_1", // Raticate Alola
+  90027: "_1", // Raichu Alola
+  90028: "_1", // Sandslash Alola
+  90029: "_1", // Ninetales Alola
+  90030: "_1", // Persian Alola
+  90031: "_1", // Golem Alola
+  90032: "_1", // Muk Alola
+  90033: "_1", // Exeggutor Alola
+  90034: "_1", // Marowak Alola
+  90035: "_1", // Rapidash Galar
+  90036: "_1", // Slowbro Galar
+  90037: "_1", // Weezing Galar
+  90038: "_1", // Slowking Galar
+  90039: "_1", // Darmanitan Galar
+  90040: "_1", // Stunfisk Galar
+  90041: "_1", // Arcanine Hisui
+  90042: "_1", // Electrode Hisui
+  90043: "_1", // Typhlosion Hisui
+  90044: "_1", // Samurott Hisui
+  90045: "_1", // Lilligant Hisui
+  90046: "_1", // Zoroark Hisui
+  90047: "_1", // Braviary Hisui
+  90048: "_1", // Goodra Hisui
+  90049: "_1", // Avalugg Hisui
+  90050: "_1", // Decidueye Hisui
+  90051: "_1", // Tauros Paldea
+  90052: "_1", // Wugtrio (Dugtrio)
+  90053: "_1", // Toedscruel (Tentacruel)
+  90054: "_1", // Colmilargo (Donphan)
+  90055: "_1", // Pelarena (Magnezone)
+  90056: "_1", // Reptalada (Volcarona)
+  90057: "_1", // Ferrosaco (Delibird)
+  90058: "_1", // Ferropalmas (Hariyama)
+  // 90059-90077: Megas curadas Z con stats ajustados por planilla (delta
+  // sobre stats oficiales). Sufijo de sprite puesto en "_1" como placeholder
+  // — falta CONFIRMAR A MANO en Fakedex cuál es la forma real (igual que se
+  // hizo con 90001-90008), ya que puede variar según cuántas formas previas
+  // tenga cada especie en su spritesheet.
+  90059: "_1", // Mega Venusaur
+  90060: "_1", // Mega Charizard X
+  90061: "_1", // Mega Charizard Y
+  90062: "_1", // Mega Blastoise
+  90063: "_1", // Mega Gengar
+  90064: "_1", // Mega Kangaskhan
+  90065: "_1", // Mega Steelix
+  90066: "_1", // Mega Sceptile
+  90067: "_1", // Mega Blaziken
+  90068: "_1", // Mega Swampert
+  90069: "_1", // Mega Gardevoir
+  90070: "_1", // Mega Sableye
+  90071: "_1", // Mega Mawile
+  90072: "_1", // Mega Camerupt
+  90073: "_1", // Mega Altaria
+  90074: "_1", // Mega Banette
+  90075: "_1", // Mega Glalie
+  90076: "_1", // Mega Gallade
+  90077: "_1", // Mega Audino
+  90078: "_2", // Mega Lucario Z (original, exclusiva de Pokémon Z)
+  // 90079-90093: formas agregadas tras el cruce contra Fakedex (Sneasel Hisui,
+  // Rotom apliance, Zygarde, Kyurem B/W, Necrozma, Melmetal Gmax). Usan dexId
+  // + sufijo, igual que el resto — sin esta entrada, getZSpriteUrl caía al
+  // fallback de abajo (usaba el id de la entrada en vez del dexId) y rompía
+  // la URL del sprite (ej. pedía "90086.png" en vez de "718_2.png").
+  90079: "_1", // Sneasel Hisui
+  90080: "_1", // Rotom Heat
+  90081: "_2", // Rotom Wash
+  90082: "_3", // Rotom Frost
+  90083: "_4", // Rotom Fan
+  90084: "_5", // Rotom Mow
+  90085: "_1", // Zygarde 10
+  90086: "_2", // Zygarde Complete
+  90087: "_1", // Kyurem Black
+  90088: "_2", // Kyurem White
+  90089: "_1", // Necrozma Dusk Mane
+  90090: "_2", // Necrozma Dawn Wings
+  90091: "_3", // Necrozma Ultra
+  90092: "_1", // Melmetal Gmax
+  90093: "_3", // Zygarde Mega
+  90094: "_1", // Furfrou (Corazón)
+  90095: "_2", // Furfrou (Estrella)
+  90096: "_3", // Furfrou (Rombo)
+  90097: "_4", // Furfrou (Señorita)
+  90098: "_5", // Furfrou (Dama)
+  90099: "_6", // Furfrou (Caballero)
+  90100: "_7", // Furfrou (Aristócrata)
+  90101: "_8", // Furfrou (Kabuki)
+  90102: "_9", // Furfrou (Faraón)
+  90103: "_6", // Rotom Guillotina
+};
+
+// Resuelve la URL real del sprite Battlers para una entrada del JSON Pokémon Z,
+// corrigiendo el caso especial de las 8 Megas (ver Z_MEGA_SPRITE_SUFFIX arriba).
+// Para el resto de entradas (incluidas las normales y las "Z" de Z_FORM_SPECIES)
+// usa simplemente dexId/id con padding de 3 dígitos, como siempre.
+const getZSpriteUrl = (p: any): string => {
+  const base = "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers";
+  const suffix = Z_MEGA_SPRITE_SUFFIX[p?.id];
+  if (suffix) {
+    const dexId = p.dexId ?? p.id;
+    return `${base}/${String(dexId).padStart(3, "0")}${suffix}.png`;
+  }
+  return `${base}/${String(p?.id ?? 0).padStart(3, "0")}.png`;
+};
 
 type SavedTeam = {
   id: number;
@@ -169,29 +456,149 @@ const getBulk = (stats: BaseStats) => ({
   offensive: Math.round((Math.max(stats.ATK, stats["SP.ATK"]) * stats.SPE) / 100),
 });
 
+// Rol especial para Pokémon con estadísticas parejas (ej. Mew, Arceus).
+// A diferencia de los roles de arriba (combinación lineal de pesos), este
+// rol mide explícitamente qué tan parejas están las 6 stats entre sí, para
+// no depender del orden de ROLES ni de un desempate arbitrario.
+const BALANCED_ROLE: RoleDefinition = {
+  es: "Todoterreno Puro", en: "Pure All-Rounder", color: "#059669",
+  weights: {}, // no aplica: se calcula con getBalanceScore, no con pesos lineales
+  descEs: "Todas las estadísticas parejas: no destaca en un área específica, pero no tiene puntos débiles.",
+  descEn: "All stats evenly matched: no specific standout area, but no weak points either.",
+};
+
+// score = promedio_normalizado × factor_de_balance
+// - promedio_normalizado: qué tan poderoso es en general (promedio de las 6 stats / 255)
+// - factor_de_balance: qué tan parejas están entre sí (1 si spread=0, 0 si spread>=25)
+// Divisor 25 = criterio estricto: solo casos casi perfectos (Mew, Arceus) califican.
+const getBalanceScore = (stats: BaseStats): number => {
+  const values = [stats.HP, stats.ATK, stats.DEF, stats["SP.ATK"], stats["SP.DEF"], stats.SPE];
+  const avg = values.reduce((a, b) => a + b, 0) / 6;
+  const spread = Math.max(...values) - Math.min(...values);
+
+  const normAvg = Math.min(avg / 255, 1);
+  const balanceFactor = Math.max(0, 1 - spread / 25);
+
+  return Math.round(normAvg * balanceFactor * 100);
+};
+
 // Score a Pokémon against each role formula, return all scores 0–100
 const scoreAllRoles = (stats: BaseStats): { role: RoleDefinition; score: number }[] => {
   // Normalize each stat to 0–1 using realistic max of 255
   const norm = (v: number) => Math.min(v / 255, 1);
-  return ROLES.map((role) => {
+  const linearScores = ROLES.map((role) => {
     const score = Object.entries(role.weights).reduce((acc, [key, w]) => {
       return acc + norm(stats[key as keyof BaseStats]) * (w ?? 0);
     }, 0);
     return { role, score: Math.round(score * 100) };
   });
+  const balancedScore = { role: BALANCED_ROLE, score: getBalanceScore(stats) };
+  return [...linearScores, balancedScore];
 };
 
 const getRole = (stats: BaseStats, lang: Lang = "es"): { label: string; color: string } | null => {
   const scores = scoreAllRoles(stats);
-  const best = scores.reduce((a, b) => a.score > b.score ? a : b);
+  // Nota: con spread=0 (Mew, Arceus), el score de "Todoterreno Puro" queda
+  // matemáticamente empatado con cualquier rol lineal (ambos dan el promedio
+  // de las stats). Por eso el desempate usa >= en vez de >: como scoreAllRoles
+  // agrega el rol de balance al FINAL del array, en un empate exacto gana el
+  // último evaluado, que es justamente el rol de balance.
+  const best = scores.reduce((a, b) => (b.score >= a.score ? b : a));
   if (best.score < 20) return null;
   return { label: best.role[lang], color: best.role.color };
+};
+
+// ─── Filtro de rol por stats núcleo ────────────────────────────────────────────
+// Cada rol define las stats mínimas que un Pokémon DEBE tener para calificar.
+// Reemplaza el sistema de margen/ranking, que fallaba con stats comprimidas.
+// Ejemplo: Tanque Defensivo requiere DEF >= 80 y HP >= 70; Rotom (DEF:77, HP:50)
+// no pasa. Luvourne (SP.DEF:95, SPE:97) si pasa Defensor Especial Veloz.
+
+type RoleCoreRequirement = {
+  stat: keyof BaseStats;
+  min: number;
+};
+
+type RoleCoreFilter = {
+  required: RoleCoreRequirement[];
+};
+
+const ROLE_CORE_FILTERS: Record<string, RoleCoreFilter> = {
+  "Atacante Físico Veloz":        { required: [{ stat: "ATK",    min: 85 }, { stat: "SPE",    min: 85 }] },
+  "Atacante Especial Veloz":      { required: [{ stat: "SP.ATK", min: 85 }, { stat: "SPE",    min: 85 }] },
+  "Atacante Versátil":            { required: [{ stat: "ATK",    min: 75 }, { stat: "SP.ATK", min: 75 }, { stat: "SPE", min: 80 }] },
+  "Tanque Defensivo":             { required: [{ stat: "DEF",    min: 80 }, { stat: "HP",     min: 70 }] },
+  "Tanque Especial":              { required: [{ stat: "SP.DEF", min: 80 }, { stat: "HP",     min: 70 }] },
+  "Muralla Resistente":           { required: [{ stat: "HP",     min: 80 }, { stat: "DEF",    min: 75 }, { stat: "SP.DEF", min: 75 }] },
+  "Tanque Físico Agresivo":       { required: [{ stat: "HP",     min: 75 }, { stat: "ATK",    min: 85 }, { stat: "DEF",    min: 65 }] },
+  "Tanque Especial Agresivo":     { required: [{ stat: "HP",     min: 75 }, { stat: "SP.ATK", min: 85 }, { stat: "SP.DEF", min: 65 }] },
+  "Pívot Resistente":             { required: [{ stat: "HP",     min: 80 }, { stat: "SPE",    min: 80 }] },
+  "Defensor Veloz":               { required: [{ stat: "DEF",    min: 80 }, { stat: "SPE",    min: 85 }] },
+  "Defensor Especial Veloz":      { required: [{ stat: "SP.DEF", min: 80 }, { stat: "SPE",    min: 85 }] },
+  "Todoterreno Físico":           { required: [{ stat: "ATK",    min: 75 }, { stat: "DEF",    min: 75 }, { stat: "HP", min: 70 }] },
+  "Todoterreno Especial":         { required: [{ stat: "SP.ATK", min: 75 }, { stat: "SP.DEF", min: 75 }, { stat: "HP", min: 70 }] },
+  "Atacante Físico Resistente":   { required: [{ stat: "ATK",    min: 90 }, { stat: "SP.DEF", min: 70 }, { stat: "HP", min: 65 }] },
+  "Atacante Especial Resistente": { required: [{ stat: "SP.ATK", min: 90 }, { stat: "DEF",    min: 70 }, { stat: "HP", min: 65 }] },
+};
+
+type RoleMatchResult = {
+  passes: boolean;
+  score: number;      // score del rol pedido (0–100), para debug
+  topScore: number;   // score del rol #1 del Pokémon, para debug
+  reason: "exact" | "margin" | "minimum" | "fail";
+};
+
+// Devuelve el ranking (1 = más alta) de cada stat DENTRO del propio Pokémon.
+// Ej: si SP.ATK es la stat más alta de sus 6 stats, statRank(stats, "SP.ATK") === 1.
+const statRank = (stats: BaseStats, stat: keyof BaseStats): number => {
+  const sorted = (Object.keys(stats) as (keyof BaseStats)[])
+    .sort((a, b) => stats[b] - stats[a]);
+  return sorted.indexOf(stat) + 1; // 1-indexed
+};
+
+// Cuántas stats como máximo pueden estar "por delante" de la stat núcleo
+// dentro del propio Pokémon para que el rol siga siendo válido.
+// TOP_N=3 significa: la stat núcleo debe estar entre las 3 más altas de sus 6 stats.
+const ROLE_CORE_TOP_N = 3;
+
+const matchesRole = (stats: BaseStats, roleLabel: string): RoleMatchResult => {
+  // Score sigue calculándose para el debug panel y getRole()
+  const scores = scoreAllRoles(stats).sort((a, b) => b.score - a.score);
+  const topScore = scores[0].score;
+  const entryIdx = scores.findIndex((s) => s.role.es === roleLabel || s.role.en === roleLabel);
+  const score = entryIdx >= 0 ? scores[entryIdx].score : 0;
+
+  // Buscar el filtro de stats núcleo para este rol
+  const roleDef = ROLES.find((r) => r.es === roleLabel || r.en === roleLabel);
+  const filter = roleDef ? (ROLE_CORE_FILTERS[roleDef.es] ?? null) : null;
+
+  if (!filter) {
+    // Sin filtro definido: fallback conservador (solo pasa si es rol #1)
+    const passes = entryIdx === 0;
+    return { passes, score, topScore, reason: passes ? "exact" : "fail" };
+  }
+
+  // (A) El Pokémon debe cumplir TODOS los umbrales absolutos del rol
+  //     (evita stats genuinamente bajas, ej. Rotom con DEF:77 para Tanque Defensivo).
+  const passesAbsolute = filter.required.every((req) => stats[req.stat] >= req.min);
+  if (!passesAbsolute) return { passes: false, score, topScore, reason: "fail" };
+
+  // (B) Cada stat núcleo debe estar entre el top-N de las 6 stats DEL PROPIO
+  //     Pokémon (evita stats "altas pero secundarias", ej. Luvourne con DEF:85
+  //     que es solo su 4ta stat, muy por detrás de SP.ATK:120).
+  const passesRelative = filter.required.every(
+    (req) => statRank(stats, req.stat) <= ROLE_CORE_TOP_N
+  );
+  if (!passesRelative) return { passes: false, score, topScore, reason: "fail" };
+
+  const reason = entryIdx === 0 ? "exact" : score >= 28 ? "margin" : "minimum";
+  return { passes: true, score, topScore, reason };
 };
 
 // Devuelve la descripción ("por qué es este rol") a partir de su label
 // (en cualquiera de los dos idiomas), para mostrarla en el tooltip de hover.
 const getRoleDescription = (label: string, lang: Lang): string | null => {
-  const role = ROLES.find((r) => r.es === label || r.en === label);
+  const role = [...ROLES, BALANCED_ROLE].find((r) => r.es === label || r.en === label);
   if (!role) return null;
   return lang === "es" ? role.descEs : role.descEn;
 };
@@ -260,7 +667,11 @@ const STAT_ORDER: (keyof BaseStats)[] = ["HP", "ATK", "DEF", "SP.ATK", "SP.DEF",
 
 type AvailablePokemon = {
   slug: string;            // PokéAPI slug (clave interna + usado para el sprite)
+  name: string;            // nombre display (igual al del JSON; usado para filtros por nombre)
   id: number;               // national dex ID (también usado para el sprite)
+  dexId?: number;           // dexId real del JSON Z (distinto de id para las 8 entradas Mega,
+                             // cuyo id es 90001-90008); usado por getZSpriteUrl para resolver
+                             // el sprite correcto.
   types: [string] | [string, string];
   stats?: BaseStats | null; // stats base reales (cuando están disponibles) — se usan
                              // para calcular el rol real con el mismo helper `getRole`
@@ -268,9 +679,10 @@ type AvailablePokemon = {
                              // real del candidato simplemente no se muestra/filtra.
   isFinalEvo: boolean;      // true si es última evolución (o no evoluciona). Calculado
                              // dinámicamente desde la API — nunca desde lista manual.
+  sprite?: string | null;   // URL o dataURL de sprite (usado en modo Pokémon Z)
 };
 
-// Rangos de ID por generación (Pokédex nacional)
+// Rangos de ID por generación (Pokedex nacional)
 const GEN_RANGES: { gen: number; label: string; min: number; max: number }[] = [
   { gen: 1, label: "Gen I",   min: 1,    max: 151  },
   { gen: 2, label: "Gen II",  min: 152,  max: 251  },
@@ -618,12 +1030,13 @@ const getMoveName = (move: Move, lang: Lang): string => {
 const UI: Record<Lang, Record<string, string>> = {
   es: {
     // Header
-    appTitle: "PokéRun Builder",
+    appTitle: "PokeRun Builder",
     appSubtitle: "Arma tu equipo, analízalo y encuentra sus puntos débiles.",
     statSlots: "6 slots", statMoves: "4 por slot", statAnalysis: "En tiempo real",
     labelSlots: "Equipos", labelMoves: "Movimientos", labelAnalysis: "Análisis",
     // Equipo
     myTeam: "Mi Equipo", saveTemplates: "Plantillas", clearTeam: "Limpiar equipo",
+    fakemonModeLabel: "Fakemon",
     dragHandle: "arrastrar", noSprite: "Sin sprite", noTypes: "Sin tipos",
     searchPokemon: "Buscar Pokémon por nombre", searchFakemon: "Nombre de Fakemon",
     btnSearch: "Buscar", checkFakemon: "Fakemon", btnConfigure: "Configurar",
@@ -678,6 +1091,7 @@ const UI: Record<Lang, Record<string, string>> = {
     summaryResists: "resiste:", summaryCovers: "cubre:",
     recFilterFinalEvo: "Solo últimas evoluciones",
     recFilterLegendary: "Mostrar legendarios",
+    recFilterOnlyOriginals: "originales",
     recFilterNoDupTypes: "Evitar tipos repetidos",
     recFilterMatchRole: "Mostrar solo Pokémon del rol recomendado",
     recFilterPrioritizeCoverage: "Priorizar cobertura de tipos",
@@ -737,11 +1151,12 @@ const UI: Record<Lang, Record<string, string>> = {
     editorEditFrame: "✎ Ajustar encuadre",
   },
   en: {
-    appTitle: "PokéRun Builder",
-    appSubtitle: "Build your team, see how well it covers, and find its weak spots.",
+    appTitle: "PokeRun Builder",
+    appSubtitle: "Build your team, analyze, and find its weak spots.",
     statSlots: "6 slots", statMoves: "4 per slot", statAnalysis: "Real-time",
     labelSlots: "Team slots", labelMoves: "Moves", labelAnalysis: "Analysis",
     myTeam: "My Team", saveTemplates: "Templates", clearTeam: "Clear team",
+    fakemonModeLabel: "Fakemon mode",
     dragHandle: "drag", noSprite: "No sprite", noTypes: "No types",
     searchPokemon: "Search Pokémon by name", searchFakemon: "Fakemon name",
     btnSearch: "Search", checkFakemon: "Fakemon", btnConfigure: "Configure",
@@ -793,6 +1208,7 @@ const UI: Record<Lang, Record<string, string>> = {
     summaryResists: "resists:", summaryCovers: "covers:",
     recFilterFinalEvo: "Final evolutions only",
     recFilterLegendary: "Show legendaries",
+    recFilterOnlyOriginals: "originals",
     recFilterNoDupTypes: "Avoid type duplicates",
     recFilterMatchRole: "Show only Pokémon with the recommended role",
     recFilterPrioritizeCoverage: "Prioritize type coverage",
@@ -862,6 +1278,32 @@ const formatForDisplay = (name: string): string =>
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+
+// ─── Formas regionales / alternas de PokéAPI ────────────────────────────────
+// Mapeo general (no exclusivo de Pokémon Z) para cuando la contraparte
+// "estándar" de una especie no es su forma base de Kanto/nacional, sino una
+// variante regional/alterna específica (ej. Raichu → Raichu-Alola). Útil en
+// cualquier punto de la app que busque el slug oficial de PokéAPI a partir
+// de un nombre de especie: en vez de asumir siempre `nombre.toLowerCase()`,
+// se consulta este mapeo primero. Clave: nombre de especie en minúsculas tal
+// como aparece en el JSON de Pokémon Z. Valor: { slug, display } de la forma
+// de PokéAPI que se debe usar en su lugar.
+// Para agregar un nuevo caso (otra especie con forma regional/alterna),
+// simplemente se agrega una entrada más acá; no hace falta tocar nada más.
+const REGIONAL_FORM_OVERRIDE: Record<string, { slug: string; display: string }> = {
+  raichu: { slug: "raichu-alola", display: "Raichu Alola" },
+};
+
+// Dado el nombre "plano" de una especie (sin sufijos " Z"/"Mega"), devuelve
+// el slug de PokéAPI y el nombre a mostrar que corresponden a su forma
+// "estándar" relevante: la regional/alterna si está en REGIONAL_FORM_OVERRIDE,
+// o si no, la forma base normal (slug = nombre con guiones).
+const getStandardForm = (speciesName: string): { slug: string; display: string } => {
+  const key = speciesName.toLowerCase();
+  if (REGIONAL_FORM_OVERRIDE[key]) return REGIONAL_FORM_OVERRIDE[key];
+  const slug = speciesName.toLowerCase().replace(/\s+/g, "-");
+  return { slug, display: formatForDisplay(slug) };
+};
 
 const normalizeMoveSearch = (text: string) =>
   text
@@ -1309,9 +1751,97 @@ function CollapsibleSection({
   );
 }
 
+// ─── Fakemon / formas originales de Pokémon Z ────────────────────────────────
+const POKEMON_Z_ORIGINALS = new Set<string>([
+  // Pokémon reales con formas Z (nombre exacto del JSON, sin sufijo)
+  "Pikachu", "Raichu", "Paras", "Parasect", "Cubone", "Marowak",
+  "Porygon", "Porygon2", "Porygon-Z",
+  "Wailmer", "Wailord", "Vibrava", "Flygon", "Bidoof", "Bibarel",
+  "Kricketot", "Kricketune", "Lilligant", "Yamask", "Cofagrigus",
+  "Gothitelle", "Solosis", "Duosion", "Reuniclus", "Quilladin", "Chesnaught",
+  "Braixen", "Delphox", "Frogadier", "Greninja", "Sirfetch'd",
+  // Fakemon nuevos (exclusivos del juego)
+  "Cefireon", "Royaleon", "Cherrilier", "Gourmaus", "Halcombate", "Serdupla",
+  "Zanghoul", "Freyjynx", "Fobeto", "Constellar", "Luvourne", "Marolier", "Sudrasil", "Auretosk",
+]);
+
+// ─── Pre-evoluciones en la Pokedex Z ─────────────────────────────────────────
+// IDs (Pokedex nacional) de pokémon que tienen una evolución también presente
+// en el JSON de Pokémon Z. Generado cruzando los IDs del JSON con las cadenas
+// de evolución canónicas de PokéAPI. Los fakemon (id >= 899) no están aquí
+// porque siempre se tratan como última evolución.
+const POKEMON_Z_PRE_EVOS = new Set<number>([
+  1, 2, 4, 5, 7, 8, 10, 11, 13, 14,
+  16, 17, 19, 21, 23, 25, 27, 29, 30, 32,
+  33, 35, 37, 39, 41, 43, 44, 46, 48, 50,
+  52, 54, 56, 58, 60, 61, 63, 64, 66, 67,
+  69, 70, 72, 74, 75, 77, 79, 80, 81, 84,
+  86, 88, 90, 92, 93, 95, 96, 98, 100, 102,
+  104, 108, 109, 111, 112, 113, 114, 116, 117, 118,
+  120, 123, 127, 129, 133, 137, 138, 140, 147, 148,
+  // Gen II (faltaban en el rango 149–171, causaba que Bayleef/Quilava/etc.
+  // aparecieran como "última evolución" siendo en realidad pre-evos):
+  // 152=Chikorita→154, 153=Bayleef→154, 155=Cyndaquil→157, 156=Quilava→157,
+  // 158=Totodile→160, 159=Croconaw→160, 161=Sentret→162, 163=Hoothoot→164,
+  // 165=Ledyba→166, 167=Spinarak→168, 170=Chinchou→171
+  152, 153, 155, 156, 158, 159, 161, 163, 165, 167, 170,
+  172, 173, 174, 175, 177, 179, 180, 183, 187, 188,
+  190, 191, 194, 200, 204, 207, 209, 216, 218, 220,
+  221, 223, 228, 231, 233, 236, 238, 239, 240, 246,
+  247, 252, 253, 255, 256, 258, 259, 261, 263, 265,
+  266, 268, 270, 271, 273, 274, 276, 278, 280, 281,
+  283, 285, 287, 288, 290, 293, 294, 296, 299, 300,
+  304, 305, 307, 309, 315, 316, 318, 320, 322, 325,
+  328, 329, 331, 333, 339, 341, 343, 345, 347, 349,
+  353, 355, 356, 361, 363, 364, 366, 367, 371, 372,
+  374, 375, 387, 388, 390, 391, 393, 394, 396, 397,
+  399, 401, 403, 404, 406, 408, 410, 412, 418, 420,
+  422, 425, 427, 431, 433, 434, 436, 438, 439, 440,
+  443, 444, 446, 447, 449, 451, 453, 456, 458, 459,
+  489, 495, 496, 498, 499, 501, 502, 504, 506, 507,
+  509, 511, 513, 515, 517, 519, 520, 522, 524, 525,
+  527, 529, 532, 533, 535, 536, 540, 541, 543, 544,
+  546, 548, 551, 552, 554, 557, 559, 562, 564, 566,
+  568, 570, 572, 574, 575, 577, 578, 580, 582, 583,
+  585, 588, 590, 592, 595, 597, 599, 600, 602, 603,
+  605, 607, 608, 610, 611, 613, 616, 619, 622, 624,
+  627, 629, 633, 634, 636, 650, 651, 653, 654, 656,
+  657, 659, 661, 662, 664, 665, 667, 669, 670, 672,
+  674, 677, 679, 680, 682, 684, 686, 688, 690, 692,
+  694, 696, 698, 704, 705, 708, 710, 712, 714, 722,
+  723, 725, 726, 728, 729, 731, 732, 734, 736, 737,
+  739, 742, 744, 747, 749, 751, 753, 755, 757, 759,
+  761, 762, 767, 769, 777, 781, 782, 783, 789, 790,
+  803, 804, 808, 810, 811, 813, 814, 816, 817, 819,
+  821, 822, 824, 825, 827, 829, 831, 833, 834, 837,
+  838, 840, 841, 843, 846, 848, 850, 852, 854, 856,
+  857, 859, 860, 868, 872, 878, 885, 886, 891,
+  // Pokémon que en Z ganan una nueva evolución (fakemon) inexistente en el dex estándar:
+  // 83=Farfetch'd→Sirfetch'd Z, 97=Hypno→Fobeto, 105=Marowak(Z)→Marolier,
+  // 124=Jynx→Freyjynx, 185=Sudowoodo→Sudrasil, 335=Zangoose→Zanghoul,
+  // 336=Seviper→Serdupla, 337=Lunatone→Constellar, 338=Solrock→Constellar,
+  // 370=Luvdisc→Luvourne, 421=Cherrim→Cherrilier, 701=Hawlucha→Halcombate,
+  // 925=Maushold→Gourmaus
+  83, 97, 105, 124, 185, 335, 336, 337, 338, 370, 421, 701, 925,
+]); // 402 pre-evoluciones
+
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lang, setLang] = useState<Lang>("es");
+  const [activePokedex, setActivePokedex] = useState<PokedexId>("standard");
+  const [pokedexDropdownOpen, setPokedexDropdownOpen] = useState(false);
+  const pokedexDropdownRef = useRef<HTMLDivElement>(null);
+  const [pokemonZData, setPokemonZData] = useState<any[]>([]);
+  const [movesZData, setMovesZData] = useState<any[]>([]);
+  // Cache de sprites recortados para las tarjetas de recomendación en modo Z
+  // key = id del Pokémon Z (string), value = dataURL del primer frame
+  const [zSpritesCache, setZSpritesCache] = useState<Record<string, string>>({});
+  // Tamaño natural (px) de cada sprite Z una vez que carga, para escalar dinámicamente
+  const [zSpriteNaturalSizes, setZSpriteNaturalSizes] = useState<Record<string, number>>({});
+  // Cache de sprites Z con bounding box recortado (sin transparencia vacía alrededor)
+  // Generado en el onLoad del <img> a partir de zSpritesCache
+  const [zSpritesTrimmed, setZSpritesTrimmed] = useState<Record<string, string>>({});
   const t = UI[lang];
   const tn = (apiKey: string) => getTypeName(apiKey, lang);
   // Modo de vista: "simple" para usuarios casuales (oculta detalle técnico),
@@ -1330,6 +1860,42 @@ export default function Home() {
       window.localStorage.setItem(VIEW_MODE_KEY, viewMode);
     } catch {}
   }, [viewMode]);
+  // Restaurar la Pokedex seleccionada. Se valida contra POKEDEX_OPTIONS para
+  // que, si en el futuro se agrega/quita una Pokedex, un valor guardado
+  // obsoleto no deje la app en un estado inválido (cae de vuelta a "standard").
+  // El useEffect de más abajo (carga de pokemon_z_completo.json / moves_z_completo.json)
+  // depende de `activePokedex`, así que en cuanto se restaura aquí, ese efecto
+  // se dispara solo y carga los datos correctos — no queda "seleccionada" la Z
+  // mostrando datos de la estándar.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(POKEDEX_KEY);
+      if (saved && POKEDEX_OPTIONS.some((p) => p.id === saved)) {
+        setActivePokedex(saved as PokedexId);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(POKEDEX_KEY, activePokedex);
+    } catch {}
+  }, [activePokedex]);
+  // Interruptor maestro: muestra/oculta los checks de "Fakemon" (por Pokémon)
+  // y "Movimiento inventado" (por ataque) en toda la sección Mi Equipo, para
+  // no saturar visualmente cuando no se están usando fakemon. Se persiste en
+  // localStorage para recordar la preferencia entre visitas.
+  const [fakemonModeOn, setFakemonModeOn] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(FAKEMON_MODE_KEY);
+      if (saved === "1" || saved === "0") setFakemonModeOn(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(FAKEMON_MODE_KEY, fakemonModeOn ? "1" : "0");
+    } catch {}
+  }, [fakemonModeOn]);
   const [team, setTeam] = useState<Slot[]>(() => Array.from({ length: 6 }, EMPTY_SLOT));
   const [allTypes, setAllTypes] = useState<string[]>([]);
   const [typeRelations, setTypeRelations] = useState<Record<string, any>>({});
@@ -1363,6 +1929,7 @@ export default function Home() {
   const [recShowFilters, setRecShowFilters] = useState(false);
   const [recFilterFinalEvo, setRecFilterFinalEvo] = useState(true);   // solo últimas evoluciones
   const [recFilterLegendary, setRecFilterLegendary] = useState(false); // ocultar legendarios por defecto
+  const [recFilterOnlyOriginals, setRecFilterOnlyOriginals] = useState(false); // solo originales de Pokémon Z
   const [recFilterNoDupTypes, setRecFilterNoDupTypes] = useState(true); // evitar duplicados de tipo
   const [recFilterMatchRole, setRecFilterMatchRole] = useState(false); // solo Pokémon cuyo rol REAL coincida con el recomendado
   const [recFilterPrioritizeCoverage, setRecFilterPrioritizeCoverage] = useState(true); // priorizar cobertura de debilidades en el scoring
@@ -1411,6 +1978,24 @@ export default function Home() {
   const touchDragEl = useRef<HTMLElement | null>(null);
   // Stat tooltip open state per slot (tap on mobile, hover on desktop)
   const [statsTooltipOpen, setStatsTooltipOpen] = useState<boolean[]>(() => Array(6).fill(false));
+  // Timeouts para cerrar el tooltip de stats con un pequeño margen de gracia:
+  // así, al mover el mouse desde el ícono ⓘ hacia el propio tooltip (hay un
+  // pequeño espacio/gap entre ambos), no se cierra de golpe antes de llegar.
+  // Se cancela si el mouse vuelve a entrar (al ícono o al tooltip) a tiempo.
+  const statsTooltipCloseTimers = useRef<Record<number, ReturnType<typeof setTimeout> | undefined>>({});
+  const openStatsTooltip = (idx: number) => {
+    if (statsTooltipCloseTimers.current[idx]) {
+      clearTimeout(statsTooltipCloseTimers.current[idx]);
+      statsTooltipCloseTimers.current[idx] = undefined;
+    }
+    setStatsTooltipOpen((prev) => prev.map((v, i) => (i === idx ? true : v)));
+  };
+  const scheduleCloseStatsTooltip = (idx: number) => {
+    if (statsTooltipCloseTimers.current[idx]) clearTimeout(statsTooltipCloseTimers.current[idx]);
+    statsTooltipCloseTimers.current[idx] = setTimeout(() => {
+      setStatsTooltipOpen((prev) => prev.map((v, i) => (i === idx ? false : v)));
+    }, 180);
+  };
   // Type picker open state per slot and move.
   const [hpTypeOpen, setHpTypeOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
   const [fakeTypeOpen, setFakeTypeOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
@@ -1494,6 +2079,53 @@ export default function Home() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Load Pokémon Z data when that Pokedex is selected
+  useEffect(() => {
+    if (activePokedex !== "pokemon-z") return;
+    if (pokemonZData.length === 0) {
+      fetch("/pokemon_z_completo.json")
+        .then((r) => r.json())
+        .then((data) => setPokemonZData(data))
+        .catch((err) => console.error("[PokeRun] Error loading Pokémon Z data:", err));
+    }
+    if (movesZData.length === 0) {
+      fetch("/moves_z_completo.json")
+        .then((r) => r.json())
+        .then((data) => setMovesZData(data))
+        .catch((err) => console.error("[PokeRun] Error loading moves Z data:", err));
+    }
+  }, [activePokedex, pokemonZData.length, movesZData.length]);
+
+  // Precargar sprites Z recortados en background cuando los datos estén listos
+  // Se hace en lotes para no bloquear el hilo principal
+  useEffect(() => {
+    if (activePokedex !== "pokemon-z" || pokemonZData.length === 0) return;
+    const BATCH = 20;
+    let cancelled = false;
+
+    const loadOne = async (p: any) => {
+      const key = String(p.id);
+      if (zSpritesCache[key]) return;
+      const url = getZSpriteUrl(p);
+      const cropped = await cropFirstFrame(url);
+      if (!cancelled) setZSpritesCache((prev) => ({ ...prev, [key]: cropped }));
+    };
+
+    const loadBatch = async (startIdx: number) => {
+      if (cancelled) return;
+      const slice = pokemonZData.slice(startIdx, startIdx + BATCH);
+      await Promise.all(slice.map(loadOne));
+      if (!cancelled && startIdx + BATCH < pokemonZData.length) {
+        setTimeout(() => loadBatch(startIdx + BATCH), 30);
+      }
+    };
+
+    loadBatch(0);
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePokedex, pokemonZData]);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1620,7 +2252,7 @@ export default function Home() {
 
     // Dataset dinámico de TODOS los Pokémon (id + tipos + stats) — base del motor
     // de recomendaciones. Se intenta vía GraphQL (una sola consulta masiva,
-    // limitada a la Pokédex nacional para evitar formas regionales/mega/gmax
+    // limitada a la Pokedex nacional para evitar formas regionales/mega/gmax
     // que distorsionarían el análisis); si falla, se recurre a REST por lotes
     // sobre los primeros Pokémon de `pokemonList` como red de seguridad.
     // Las stats base se incluyen para poder calcular el ROL REAL de cada
@@ -1715,6 +2347,7 @@ export default function Home() {
               const isFinalEvo = speciesId === null || !speciesIdsThatEvolveFrom.has(speciesId);
               return {
                 slug: row.name,
+                name: row.name,
                 id: row.id,
                 types: (types.length === 1 ? [types[0]] : [types[0], types[1]]) as [string] | [string, string],
                 stats,
@@ -1723,7 +2356,7 @@ export default function Home() {
             })
             .filter(Boolean) as AvailablePokemon[];
           if (parsed.length === 0) continue;
-          console.log(`[PokéRun] Dataset de recomendaciones cargado vía GraphQL: ${parsed.length} Pokémon`);
+          console.log(`[PokeRun] Dataset de recomendaciones cargado vía GraphQL: ${parsed.length} Pokémon`);
           setAllPokemonData(parsed);
           setLoadingAllPokemonData(false);
           return;
@@ -1731,10 +2364,10 @@ export default function Home() {
       }
 
       // Ambas variantes de GraphQL fallaron — fallback REST por lotes sobre
-      // la Pokédex nacional (#1–1025), evitando saturar la API pública.
+      // la Pokedex nacional (#1–1025), evitando saturar la API pública.
       // Paso 1: cargamos todos los pokemon + species en paralelo para poder
       // calcular isFinalEvo dinámicamente (sin lista manual).
-      console.warn("[PokéRun] GraphQL no disponible, usando fallback REST para el dataset de recomendaciones");
+      console.warn("[PokeRun] GraphQL no disponible, usando fallback REST para el dataset de recomendaciones");
       const chunkSize = 25;
       const maxId = 1025;
 
@@ -1778,13 +2411,14 @@ export default function Home() {
       );
       const parsed: AvailablePokemon[] = rawList.map((p) => ({
         slug: p.slug,
+        name: p.slug,
         id: p.id,
         types: (p.types.length === 1 ? [p.types[0]] : [p.types[0], p.types[1]]) as [string] | [string, string],
         stats: p.stats,
         isFinalEvo: p.speciesId === null || !speciesIdsThatEvolveFrom.has(p.speciesId),
       }));
 
-      console.log(`[PokéRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
+      console.log(`[PokeRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
       setAllPokemonData(parsed);
       setLoadingAllPokemonData(false);
     };
@@ -1829,7 +2463,7 @@ export default function Home() {
             }
           });
           if (Object.keys(esToEn).length === 0) continue;
-          console.log(`[PokéRun] ES moves loaded via GraphQL: ${Object.keys(esToEn).length}`);
+          console.log(`[PokeRun] ES moves loaded via GraphQL: ${Object.keys(esToEn).length}`);
           setMoveEsMap(esToEn);
           setMoveEsDisplay(enToEs);
           return;
@@ -1837,7 +2471,7 @@ export default function Home() {
       }
 
       // Both GraphQL failed — batch load via REST for common moves
-      console.warn("[PokéRun] GraphQL unavailable, using REST fallback for ES move names");
+      console.warn("[PokeRun] GraphQL unavailable, using REST fallback for ES move names");
       const commonMoves = [
         "flamethrower","fire-blast","thunderbolt","thunder","surf","hydro-pump",
         "ice-beam","blizzard","psychic","shadow-ball","earthquake","stone-edge",
@@ -1891,7 +2525,7 @@ export default function Home() {
           } catch { /* skip */ }
         }));
       }
-      console.log(`[PokéRun] REST fallback: ${Object.keys(esToEn).length} ES move names loaded`);
+      console.log(`[PokeRun] REST fallback: ${Object.keys(esToEn).length} ES move names loaded`);
       setMoveEsMap(esToEn);
       setMoveEsDisplay(enToEs);
     };
@@ -1903,6 +2537,9 @@ export default function Home() {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
         setPokemonOpen((prev) => prev.map(() => false));
         setMoveOpen((prev) => prev.map((arr) => arr.map(() => false)));
+      }
+      if (pokedexDropdownRef.current && !pokedexDropdownRef.current.contains(event.target as Node)) {
+        setPokedexDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -1927,9 +2564,83 @@ export default function Home() {
       const isFake = team[idx]?.isFake;
       if (query.trim().length >= 2 && !isFake) {
         const timer = setTimeout(() => {
-          const filtered = pokemonList
-            .filter((name) => name.toLowerCase().includes(query.toLowerCase()))
-            .slice(0, 8);
+          let filtered: string[];
+          if (activePokedex === "pokemon-z" && pokemonZData.length > 0) {
+            // Buscar en el JSON de Pokémon Z por nombre crudo O por el label
+            // ya formateado (ej. "Gigamax", "Mega", "Alola"), para que el
+            // buscador devuelva resultados tanto al escribir "Butterfree" como
+            // al escribir "Gigamax".
+            const matches = pokemonZData.filter((p: any) => {
+              const label = getZDisplayName(p).toLowerCase();
+              return (
+                label.includes(query.toLowerCase()) ||
+                p.name?.toLowerCase().includes(query.toLowerCase())
+              );
+            });
+            // Solo las especies con una forma Z realmente distinta (lista
+            // curada Z_FORM_SPECIES) se etiquetan con el sufijo " Z" y reciben
+            // su contraparte "estándar" vía PokéAPI. Las 4 especies "solo
+            // mega" (Z_MEGA_ONLY_SPECIES) muestran su entrada base sin
+            // sufijo, ya que es 1:1 igual a la oficial; solo su Mega lleva
+            // sufijo " Z". El resto de la Pokedex Z (copia 1:1 de stats
+            // oficiales, sin mega) se muestra igual que antes: una sola
+            // entrada, sin sufijo. getZDisplayName centraliza estas reglas,
+            // incluyendo el caso especial de Raichu → "Raichu Alola".
+            const zMatches = matches.map((p: any) => {
+              const label = getZDisplayName(p);
+              return `${label}#z:${p.id}`;
+            });
+            // Para las especies de la lista curada (forma Z realmente
+            // alterada), además ofrecemos su forma "estándar" (Pokedex
+            // normal) buscada en vivo contra PokéAPI. Las 4 especies "solo
+            // mega" (Z_MEGA_ONLY_SPECIES) NO entran acá: su entrada base del
+            // JSON Z ya es 1:1 igual a la oficial, así que pedirla de nuevo
+            // a PokéAPI generaría una entrada duplicada con el mismo nombre.
+            // Si esa forma estándar todavía no existe en PokéAPI, simplemente
+            // no se agrega (sin romper nada).
+            const stdBaseNames = new Set(
+              matches
+                .filter((p: any) => Z_FORM_SPECIES.has(p.name?.toLowerCase() ?? ""))
+                .map((p: any) => p.name?.toLowerCase())
+                .filter(Boolean)
+            );
+            const stdMegaBaseNames = new Set(
+              matches
+                .filter((p: any) => p.formLabel === "Mega")
+                .map((p: any) => p.name?.toLowerCase())
+                .filter(Boolean)
+            );
+            const stdMatches: string[] = [];
+            stdBaseNames.forEach((baseName: any) => {
+              // getStandardForm resuelve el slug/nombre correctos de PokéAPI,
+              // usando REGIONAL_FORM_OVERRIDE cuando la especie tiene una
+              // forma regional/alterna como contraparte "estándar" relevante
+              // (ej. Raichu → Raichu-Alola) en vez de su forma base nacional.
+              const { slug, display } = getStandardForm(baseName);
+              if (!pokemonList.includes(slug)) return; // no existe esa forma en PokéAPI
+              stdMatches.push(`${display}#std:${slug}`);
+            });
+            stdMegaBaseNames.forEach((baseName: any) => {
+              const slug = baseName.replace(/\s+/g, "-");
+              const display = formatForDisplay(slug);
+              // Algunas especies tienen una sola mega oficial ("-mega"), otras
+              // tienen mega dual ("-mega-x" / "-mega-y", ej. Raichu, Charizard).
+              // Probamos los 3 sufijos posibles y agregamos los que existan
+              // realmente en PokéAPI.
+              ["-mega", "-mega-x", "-mega-y"].forEach((suffix) => {
+                const megaSlug = `${slug}${suffix}`;
+                if (pokemonList.includes(megaSlug)) {
+                  const suffixLabel = suffix === "-mega" ? "" : suffix.endsWith("x") ? " X" : " Y";
+                  stdMatches.push(`Mega ${display}${suffixLabel}#std:${megaSlug}`);
+                }
+              });
+            });
+            filtered = [...zMatches, ...stdMatches].slice(0, 12);
+          } else {
+            filtered = pokemonList
+              .filter((name) => name.toLowerCase().includes(query.toLowerCase()))
+              .slice(0, 8);
+          }
           setPokemonResults((prev) => prev.map((list, i) => (i === idx ? filtered : list)));
           setPokemonOpen((prev) => prev.map((open, i) => (i === idx ? true : open)));
         }, 300);
@@ -1940,7 +2651,7 @@ export default function Home() {
       }
     });
     return () => timers.forEach((timer) => clearTimeout(timer));
-  }, [pokemonSearch, pokemonList, team]);
+  }, [pokemonSearch, pokemonList, team, activePokedex, pokemonZData]);
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -1954,20 +2665,25 @@ export default function Home() {
         }
         const timer = setTimeout(() => {
           const query = normalizeMoveSearch(draft);
+          let merged: string[];
 
-const matches = moveList.filter((enSlug) => {
-  const en = normalizeMoveSearch(
-    enSlug.replace(/-/g, " ")
-  );
-
-  const es = normalizeMoveSearch(
-    moveEsDisplay[enSlug] ?? ""
-  );
-
-  return en.includes(query) || es.includes(query);
-});
-
-const merged = matches.slice(0, 8);
+          if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+            // En modo Z: buscar por nombre español o internalName en el JSON Z
+            merged = movesZData
+              .filter((m: any) =>
+                normalizeMoveSearch(m.name ?? "").includes(query) ||
+                normalizeMoveSearch(m.internalName ?? "").includes(query)
+              )
+              .map((m: any) => m.name)
+              .slice(0, 8);
+          } else {
+            const matches = moveList.filter((enSlug) => {
+              const en = normalizeMoveSearch(enSlug.replace(/-/g, " "));
+              const es = normalizeMoveSearch(moveEsDisplay[enSlug] ?? "");
+              return en.includes(query) || es.includes(query);
+            });
+            merged = matches.slice(0, 8);
+          }
 
           setMoveResults((prev) => prev.map((s, si) => si === idx ? s.map((l, mj) => mj === mi ? merged : l) : s));
           setMoveOpen((prev) => prev.map((s, si) => si === idx ? s.map((o, mj) => mj === mi ? merged.length > 0 : o) : s));
@@ -1976,7 +2692,7 @@ const merged = matches.slice(0, 8);
       });
     });
     return () => timers.forEach(clearTimeout);
-  }, [moveInputDraft, moveList, moveEsDisplay]);
+  }, [moveInputDraft, moveList, moveEsDisplay, activePokedex, movesZData]);
 
   const updateMove = (slotIdx: number, moveIdx: number, patch: Partial<Move>) => {
     setTeam((t) =>
@@ -2031,7 +2747,12 @@ const merged = matches.slice(0, 8);
     setPokemonResults((prev) => prev.map((list, i) => (i === idx ? [] : list)));
     setPokemonOpen((prev) => prev.map((open, i) => (i === idx ? false : open)));
     setPokemonSelectedIdx((prev) => prev.map((sel, i) => (i === idx ? -1 : sel)));
-    updateSlot(idx, { name, isFake: false });
+    // `name` puede venir codificado como "Label#id" (formas/megas Z). Guardamos
+    // el label limpio de inmediato para evitar parpadeo; fetchPokemon resuelve
+    // la forma exacta por id y confirma el nombre final al terminar.
+    const hashIdx = name.lastIndexOf("#");
+    const displayLabel = hashIdx >= 0 ? name.slice(0, hashIdx) : name;
+    updateSlot(idx, { name: displayLabel, isFake: false });
     fetchPokemon(name, idx);
   };
 
@@ -2053,8 +2774,109 @@ const merged = matches.slice(0, 8);
     fetchMove(name, slotIdx, moveIdx);
   };
 
+  // Recorta el primer frame de un spritesheet horizontal.
+  // El alto del sprite = ancho de un frame (siempre cuadrado).
+  // Devuelve una dataURL del frame recortado, o la URL original si falla.
+  const cropFirstFrame = (url: string): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const size = img.naturalHeight; // alto = tamaño del frame cuadrado
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { resolve(url); return; }
+          ctx.drawImage(img, 0, 0, size, size, 0, 0, size, size);
+          resolve(canvas.toDataURL("image/png"));
+        } catch {
+          resolve(url); // CORS u otro error: usar URL original
+        }
+      };
+      img.onerror = () => resolve(url);
+      img.src = url;
+    });
+
   const fetchPokemon = async (name: string, idx: number) => {
     if (!name) return;
+
+    // ── Pokémon Z: usar datos del JSON local ─────────────────────────────────
+    if (activePokedex === "pokemon-z" && pokemonZData.length > 0) {
+      // El selector codifica la forma exacta como "Label#z:id" (entradas del
+      // JSON local de Pokémon Z, ej. "Mega Delphox Z#z:90005") o como
+      // "Label#std:slug" (formas estándar/oficiales buscadas en PokéAPI, ej.
+      // "Mega Delphox#std:delphox-mega"). Si no viene codificado así (flujos
+      // viejos), caemos al match por nombre dentro del JSON local.
+      const hashIdx = name.lastIndexOf("#");
+      const encoded = hashIdx >= 0 ? name.slice(hashIdx + 1) : "";
+      const needle = (hashIdx >= 0 ? name.slice(0, hashIdx) : name).toLowerCase().trim();
+
+      // Forma estándar/oficial (Pokedex normal o su Mega real) vía PokéAPI,
+      // aunque estemos en modo Pokémon Z.
+      if (encoded.startsWith("std:")) {
+        const slug = encoded.slice(4);
+        try {
+          const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`);
+          if (!r.ok) throw new Error("not found");
+          const data = await r.json();
+          const types = data.types.map((t: any) => t.type.name);
+          const sprite = data.sprites.front_default || data.sprites.other?.["official-artwork"]?.front_default || null;
+          const stats: BaseStats = {
+            HP: data.stats.find((s: any) => s.stat.name === "hp")?.base_stat ?? 0,
+            ATK: data.stats.find((s: any) => s.stat.name === "attack")?.base_stat ?? 0,
+            DEF: data.stats.find((s: any) => s.stat.name === "defense")?.base_stat ?? 0,
+            "SP.ATK": data.stats.find((s: any) => s.stat.name === "special-attack")?.base_stat ?? 0,
+            "SP.DEF": data.stats.find((s: any) => s.stat.name === "special-defense")?.base_stat ?? 0,
+            SPE: data.stats.find((s: any) => s.stat.name === "speed")?.base_stat ?? 0,
+          };
+          const isMega = /-mega(-x|-y)?$/.test(slug);
+          const baseSlug = isMega ? slug.replace(/-mega(-x|-y)?$/, "") : slug;
+          const xyMatch = slug.match(/-mega-(x|y)$/);
+          const megaSuffix = xyMatch ? ` ${xyMatch[1].toUpperCase()}` : "";
+          const displayName = isMega ? `Mega ${formatForDisplay(baseSlug)}${megaSuffix}` : formatForDisplay(baseSlug);
+          updateSlot(idx, { name: displayName, types, sprite, stats });
+        } catch (e) {
+          alert("Pokémon no encontrado: " + name);
+        }
+        return;
+      }
+
+      const encodedId = encoded.startsWith("z:") ? parseInt(encoded.slice(2), 10) : NaN;
+
+      const zEntry = !isNaN(encodedId)
+        ? pokemonZData.find((p: any) => p.id === encodedId)
+        : pokemonZData.find(
+            (p: any) =>
+              p.name?.toLowerCase() === needle ||
+              p.internalName?.toLowerCase() === needle ||
+              formatForDisplay(p.name ?? "").toLowerCase() === needle
+          );
+      if (zEntry) {
+        // Tipos del JSON vienen en español → convertir a slugs de API
+        const types = (zEntry.types as string[])
+          .map((t) => TYPE_ES_TO_API[t] ?? t.toLowerCase())
+          .filter(Boolean)
+          .slice(0, 2);
+        const stats: BaseStats = zEntry.stats ?? null;
+        // Corregir URL: usar id con padding de 3 dígitos (001.png en vez de 1.png),
+        // salvo las 8 entradas Mega Z (id 90001-90008), cuyo sprite real tiene un
+        // sufijo "_N" distinto del dexId base (ver Z_MEGA_SPRITE_SUFFIX).
+        const rawSprite = getZSpriteUrl(zEntry);
+        // Recortar primer frame del spritesheet
+        const sprite = rawSprite ? await cropFirstFrame(rawSprite) : null;
+        // Nombre final centralizado en getZDisplayName: Z_FORM_SPECIES lleva
+        // sufijo " Z", Z_MEGA_ONLY_SPECIES no, Megas llevan "Mega X Z", y
+        // Raichu base se muestra como "Raichu Alola" (ver definición arriba).
+        const displayName = getZDisplayName(zEntry);
+        updateSlot(idx, { name: displayName, types, sprite, stats });
+        return;
+      }
+      // Si no está en el JSON Z, cae al fetch normal de la API
+    }
+
+    // ── Estándar: PokéAPI ────────────────────────────────────────────────────
     try {
       const apiName = formatForAPI(name);
       const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${apiName}`);
@@ -2084,6 +2906,33 @@ const merged = matches.slice(0, 8);
       updateMove(slotIdx, moveIdx, { name: moveName, category: "Special", type: "normal" });
       return;
     }
+
+    // ── Pokémon Z: buscar en el JSON de movimientos ──────────────────────────
+    if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+      const needle = moveName.toLowerCase().trim();
+      const zMove = movesZData.find(
+        (m: any) =>
+          m.internalName?.toLowerCase() === needle ||
+          m.name?.toLowerCase() === needle ||
+          // también buscar por slug estilo API (guiones → sin espacios)
+          m.internalName?.toLowerCase().replace(/_/g, "") === needle.replace(/[-\s]/g, "")
+      );
+      if (zMove) {
+        const category: Move["category"] =
+          zMove.categoryEn === "Special" ? "Special" :
+          zMove.categoryEn === "Status"  ? "Status"  : "Physical";
+        updateMove(slotIdx, moveIdx, {
+          type: zMove.typeApi ?? null,
+          category,
+          name: zMove.name,       // nombre en español del juego Z
+          nameEs: zMove.name,
+        });
+        return;
+      }
+      // Si no está en el JSON Z, cae al fetch normal de la API
+    }
+
+    // ── Estándar: PokéAPI ────────────────────────────────────────────────────
     try {
       const apiName = formatForAPI(moveName);
       const r = await fetch(`https://pokeapi.co/api/v2/move/${apiName}`);
@@ -2277,9 +3126,34 @@ const merged = matches.slice(0, 8);
   // Para cada uno se simula cómo cambiaría el perfil defensivo del equipo,
   // se puntúa según las prioridades del motor de scoring, y se muestran
   // únicamente los mejores candidatos pasando todos los filtros activos.
+
+  // Candidatos activos según la Pokedex seleccionada.
+  // En modo Z: convierte pokemonZData al mismo formato AvailablePokemon.
+  // En modo estándar: usa allPokemonData cargado desde PokéAPI/GraphQL.
+  const activeCandidates = useMemo((): AvailablePokemon[] => {
+    if (activePokedex === "pokemon-z" && pokemonZData.length > 0) {
+      return pokemonZData.map((p: any) => {
+        const displayName = getZDisplayName(p);
+        return {
+          slug: displayName.toLowerCase().replace(/\s+/g, "-"),
+          name: displayName,
+          id: p.id ?? 0,
+          dexId: p.dexId ?? p.id ?? 0,
+          types: ((p.types as string[]) ?? [])
+            .map((t) => TYPE_ES_TO_API[t] ?? t.toLowerCase())
+            .filter(Boolean)
+            .slice(0, 2) as [string] | [string, string],
+          stats: p.stats ?? null,
+          isFinalEvo: p.id >= 899 || !POKEMON_Z_PRE_EVOS.has(p.id), // fakemon/megas siempre true; reales: true si no tiene evo en el JSON
+        };
+      });
+    }
+    return allPokemonData;
+  }, [activePokedex, pokemonZData, allPokemonData]);
+
   const pokemonRecommendations = useMemo(() => {
     if (!Object.keys(typeRelations).length) return [];
-    if (!allPokemonData.length) return [];
+    if (!activeCandidates.length) return [];
     const hasTeam = team.some((s) => s.types.filter(Boolean).length > 0);
     if (!hasTeam) return [];
 
@@ -2327,14 +3201,21 @@ const merged = matches.slice(0, 8);
     // Score todos los candidatos, aplicando filtros previos al scoring para eficiencia.
     // El rol real de cada candidato se calcula una sola vez aquí (reutilizando el
     // mismo getRole que usa el equipo) para no duplicar el cálculo entre el filtro
-    // estricto de rol y el bonus de puntuación.
-    const withRealRole = allPokemonData.map((c) => ({
+    // suavizado de rol y el bonus de puntuación.
+    const withRealRole = activeCandidates.map((c) => ({
       candidate: c,
       realRole: c.stats ? getRole(c.stats, lang) : null,
+      // Precalculamos el match del filtro manual (si hay) para reutilizarlo en
+      // el bonus sin llamar a scoreAllRoles dos veces.
+      roleMatch: (c.stats && recFilterRoleManual)
+        ? matchesRole(c.stats, recFilterRoleManual)
+        : (c.stats && recFilterMatchRole && neededRole)
+          ? matchesRole(c.stats, neededRole.label)
+          : null,
     }));
 
     const scored = withRealRole
-      .filter(({ candidate: c, realRole: candidateRealRole }) => {
+      .filter(({ candidate: c, roleMatch }) => {
         // Excluir los del equipo
         if (teamSlugs.has(c.slug)) return false;
         // Excluir descartados manualmente
@@ -2358,33 +3239,39 @@ const merged = matches.slice(0, 8);
         if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
-        // Filtro de rol: manual tiene prioridad sobre el toggle automático.
-        // recFilterRoleManual: el usuario eligió un rol concreto → filtra por ese rol real.
-        // recFilterMatchRole (fallback, sin selector manual): solo Pokémon cuyo rol real
-        //   coincida con el rol recomendado por el algoritmo.
-        if (recFilterRoleManual) {
-          if (!candidateRealRole || candidateRealRole.label !== recFilterRoleManual) return false;
-        } else if (recFilterMatchRole) {
-          if (!neededRole) return false;
-          if (!candidateRealRole || candidateRealRole.label !== neededRole.label) return false;
+        // Filtro: solo originales de Pokémon Z
+        if (recFilterOnlyOriginals && !POKEMON_Z_ORIGINALS.has(c.name)) return false;
+        // Filtro de rol suavizado (Opción D):
+        // manual tiene prioridad sobre el toggle automático.
+        // Se usa matchesRole en vez de comparación exacta → pasan también Pokémon
+        // cuyo rol seleccionado está cerca del top (margen) o supera un mínimo absoluto.
+        if (recFilterRoleManual || recFilterMatchRole) {
+          if (!c.stats) return false;          // sin stats no podemos evaluar
+          if (!roleMatch) return false;         // no se pudo calcular (neededRole null)
+          if (!roleMatch.passes) return false;
         }
         return true;
       })
-      .map(({ candidate, realRole }) => {
+      .map(({ candidate, realRole, roleMatch }) => {
         const result = scorePokemonCandidate(team, candidate.types as string[], typeRelations);
-        // Bonus de priorización hacia el rol que el equipo necesita:
-        // - Coincidencia de ROL REAL (stats reales) → bonus máximo, es la señal fuerte.
-        // - Sin stats: afinidad de tipo como proxy más débil (igual que antes),
-        //   para no perder candidatos sin stats disponibles.
+        // Bonus de priorización hacia el rol que el equipo necesita.
+        // Graduado según qué tan bien encaja el candidato en el rol:
+        //   exact   → rol #1 del Pokémon coincide con el buscado  → bonus máximo
+        //   margin  → rol muy cercano al top (≤15 pts)            → bonus alto
+        //   minimum → supera el mínimo absoluto (≥28 pts)         → bonus moderado
+        //   sin stats → proxy por tipo (igual que antes)          → bonus bajo
         const roleEnLabel = neededRole
           ? ROLES.find((r) => r.es === neededRole!.label || r.en === neededRole!.label)?.en ?? neededRole!.label
           : null;
         let roleBonus = 0;
         if (neededRole) {
-          if (realRole && realRole.label === neededRole.label) {
-            roleBonus = 80;
-          } else if (!realRole && roleEnLabel && typeMatchesRole(candidate.types as string[], roleEnLabel)) {
-            roleBonus = 50;
+          const matchForBonus = roleMatch ?? (candidate.stats ? matchesRole(candidate.stats, neededRole.label) : null);
+          if (matchForBonus) {
+            if      (matchForBonus.reason === "exact"  ) roleBonus = 80;
+            else if (matchForBonus.reason === "margin" ) roleBonus = 55;
+            else if (matchForBonus.reason === "minimum") roleBonus = 30;
+          } else if (!candidate.stats && roleEnLabel && typeMatchesRole(candidate.types as string[], roleEnLabel)) {
+            roleBonus = 20;
           }
         }
         const finalScore = recFilterPrioritizeCoverage
@@ -2419,6 +3306,8 @@ const merged = matches.slice(0, 8);
 
     // Construye las explicaciones de cada recomendación
     return top.map(({ candidate, score, reduces, immunities, newResistances, criticalAdds, addsWeakness, realRole }) => {
+      // En modo Z el slug ya viene del nombre en español; formatForDisplay lo capitaliza bien.
+      // En modo estándar es el slug de PokéAPI (guiones → espacios con mayúsculas).
       const name = formatForDisplay(candidate.slug);
       const reasons: Array<{ positive: boolean; weakType: string; isImmune?: boolean }> = [];
 
@@ -2460,7 +3349,24 @@ const merged = matches.slice(0, 8);
         candidateFitsRole, // true/false/null: si el rol real coincide con el necesitado
       };
     });
-  }, [team, analysis, typeRelations, allPokemonData, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual]);
+  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual]);
+
+  // Priorizar la carga de sprites de los candidatos visibles actualmente
+  useEffect(() => {
+    if (activePokedex !== "pokemon-z" || pokemonZData.length === 0) return;
+    let cancelled = false;
+    const priorityEntries = pokemonRecommendations.map(({ candidate }: any) => candidate);
+    if (priorityEntries.length === 0) return;
+    Promise.all(priorityEntries.map(async (c: any) => {
+      const key = String(c.id);
+      if (zSpritesCache[key]) return;
+      const url = getZSpriteUrl(c);
+      const cropped = await cropFirstFrame(url);
+      if (!cancelled) setZSpritesCache((prev) => ({ ...prev, [key]: cropped }));
+    }));
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePokedex, pokemonRecommendations]);
 
   // Stats balance analysis with role-based suggestions
   const statsAnalysis = useMemo(() => {
@@ -2736,6 +3642,13 @@ const merged = matches.slice(0, 8);
     const hasTeamWithTypes = team.some((s) => s.types.filter(Boolean).length > 0);
     if (!totalTypes || !hasTeamWithTypes) return null;
 
+    // No mostrar puntuación hasta que al menos 3 Pokémon del equipo tengan
+    // los 4 movimientos cargados (evita puntuar equipos a medio armar).
+    const slotsWithFullMoves = team.filter(
+      (s) => s.moves.filter((m) => m.name && m.name.trim() !== "").length >= 4
+    );
+    if (slotsWithFullMoves.length < 3) return null;
+
     const pillars: { key: "offense" | "defense" | "stats" | "roles"; score: number; available: boolean }[] = [];
 
     // 1. Cobertura ofensiva: % de tipos que el equipo golpea superefectivamente
@@ -2917,7 +3830,7 @@ const merged = matches.slice(0, 8);
   return (
     <div ref={rootRef} className="min-h-screen px-3 py-4 sm:p-6 bg-linear-to-b from-slate-900 via-[#041229] to-[#031022] text-slate-100">
       <style>{`
-        /* ── PokéRun custom scrollbars ── */
+        /* ── PokeRun custom scrollbars ── */
         :root {
           --sb-track: #0a1628;
           --sb-thumb: #1e3a5f;
@@ -2934,6 +3847,105 @@ const merged = matches.slice(0, 8);
         * { scrollbar-width: thin; scrollbar-color: var(--sb-thumb) var(--sb-track); }
         /* Touch drag for slot reorder */
         .touch-drag-handle { touch-action: none; }
+        /* ── Switch custom "Fakemon" ── */
+        .fm-switch {
+          --fm-w: 40px;
+          --fm-h: 22px;
+          --fm-pad: 2px;
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          width: var(--fm-w);
+          height: var(--fm-h);
+          border-radius: 999px;
+          border: 1px solid rgba(56, 189, 248, 0.25);
+          background: linear-gradient(180deg, #0a1628 0%, #0d1f38 100%);
+          cursor: pointer;
+          transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+          flex-shrink: 0;
+        }
+        .fm-switch:hover { border-color: rgba(56, 189, 248, 0.45); }
+        .fm-switch:focus-visible {
+          outline: none;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(56, 189, 248, 0.5);
+        }
+        .fm-switch[data-on="true"] {
+          background: linear-gradient(180deg, #0369a1 0%, #075985 100%);
+          border-color: rgba(56, 189, 248, 0.6);
+        }
+        .fm-switch-thumb {
+          position: absolute;
+          top: var(--fm-pad);
+          left: var(--fm-pad);
+          width: calc(var(--fm-h) - 2 * var(--fm-pad));
+          height: calc(var(--fm-h) - 2 * var(--fm-pad));
+          border-radius: 50%;
+          background: #cbd5e1;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+          transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .fm-switch[data-on="true"] .fm-switch-thumb {
+          transform: translateX(calc(var(--fm-w) - var(--fm-h)));
+          background: #f0f9ff;
+        }
+        .fm-switch-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        /* ── Checkbox custom (Fakemon / Movimiento inventado) ── */
+        .pr-checkbox {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 17px;
+          height: 17px;
+          flex-shrink: 0;
+        }
+        .pr-checkbox input {
+          position: absolute;
+          inset: 0;
+          margin: 0;
+          opacity: 0;
+          cursor: pointer;
+        }
+        .pr-checkbox-box {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 5px;
+          border: 1.5px solid #3b5578;
+          background: #0a1628;
+          transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+        .pr-checkbox-box::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 46%;
+          width: 5px;
+          height: 9px;
+          border: solid #0a1628;
+          border-width: 0 2px 2px 0;
+          transform: translate(-50%, -50%) rotate(45deg) scale(0);
+          transition: transform 0.12s ease;
+        }
+        .pr-checkbox input:checked ~ .pr-checkbox-box {
+          background: #38bdf8;
+          border-color: #38bdf8;
+        }
+        .pr-checkbox input:checked ~ .pr-checkbox-box::after {
+          transform: translate(-50%, -50%) rotate(45deg) scale(1);
+        }
+        .pr-checkbox input:hover ~ .pr-checkbox-box {
+          border-color: #60a5fa;
+        }
+        .pr-checkbox input:focus-visible ~ .pr-checkbox-box {
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(56, 189, 248, 0.5);
+        }
         /* xs breakpoint (≥420px) */
         @media (min-width: 420px) {
           .xs\\:inline { display: inline !important; }
@@ -2945,10 +3957,108 @@ const merged = matches.slice(0, 8);
         {/* Top bar */}
         <div className="flex items-center justify-between mb-4 sm:mb-5">
           <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-600/20 border border-red-500/30 text-base">⬤</span>
-            <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">PokéRun</span>
+            <img
+              src="/logo.png"
+              alt="Pokerun Builder"
+              className="h-14 w-14 shrink-0 object-contain drop-shadow"
+            />
+            <span className="text-[11px] uppercase tracking-[0.25em] text-slate-500 font-medium">PokeRun Builder</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Pokedex selector — dropdown personalizado con opciones "gordas" */}
+            <div className="relative" ref={pokedexDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setPokedexDropdownOpen((v) => !v)}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                  activePokedex === "pokemon-z"
+                    ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                    : "border-slate-700/60 bg-slate-900/70 text-slate-200"
+                } hover:brightness-110`}
+              >
+                {activePokedex === "pokemon-z" ? (
+                  <img
+                    src="/pokemon-z-logo.webp"
+                    alt="Pokémon Z"
+                    className="h-6 w-6 shrink-0 object-contain drop-shadow"
+                  />
+                ) : (
+                  <PokeballIcon className="h-5 w-5 shrink-0" />
+                )}
+                <span className="hidden xs:inline">
+                  {POKEDEX_OPTIONS.find((p) => p.id === activePokedex)?.label}
+                </span>
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${pokedexDropdownOpen ? "rotate-180" : ""}`}
+                >
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {pokedexDropdownOpen && (
+                <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 rounded-2xl border border-slate-700/70 bg-slate-950/98 p-2 shadow-2xl shadow-black/60 z-50">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePokedex("standard");
+                      setPokedexDropdownOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
+                      activePokedex === "standard"
+                        ? "border-blue-500/50 bg-blue-500/10"
+                        : "border-transparent hover:bg-slate-800/70"
+                    }`}
+                  >
+                    <PokeballIcon className="h-9 w-9 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-slate-100">Pokedex</span>
+                      <span className="block text-[11px] text-slate-500 leading-snug">
+                        {lang === "es" ? "Pokedex Nacional" : "National Pokedex"}
+                      </span>
+                    </span>
+                    {activePokedex === "standard" && (
+                      <span className="ml-auto shrink-0 text-blue-400">✓</span>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePokedex("pokemon-z");
+                      setPokedexDropdownOpen(false);
+                    }}
+                    className={`mt-1.5 flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
+                      activePokedex === "pokemon-z"
+                        ? "border-yellow-500/50 bg-yellow-500/10"
+                        : "border-transparent hover:bg-slate-800/70"
+                    }`}
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center">
+                      <img
+                        src="/pokemon-z-logo.webp"
+                        alt="Pokémon Z"
+                        className="h-full w-full object-contain drop-shadow"
+                      />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-slate-100">Pokémon Z</span>
+                      <span className="block text-[11px] text-slate-500 leading-snug">
+                        {pokemonZData.length > 0 && movesZData.length > 0
+                          ? `${pokemonZData.length} Pokémon · ${movesZData.length} ${lang === "es" ? "movimientos" : "moves"}`
+                          : pokemonZData.length > 0
+                          ? lang === "es" ? "Cargando movimientos…" : "Loading moves…"
+                          : lang === "es" ? "Pokémon Customizados" : "Custom Pokemon"}
+                      </span>
+                    </span>
+                    {activePokedex === "pokemon-z" && (
+                      <span className="ml-auto shrink-0 text-yellow-400">✓</span>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
             {/* Mode toggle: simple / advanced */}
             <FloatingTooltip
               preferredPlacement="bottom"
@@ -3007,7 +4117,7 @@ const merged = matches.slice(0, 8);
             {/* Title + subtitle */}
             <div className="min-w-0 sm:flex-1">
               <div className="flex flex-wrap items-baseline gap-1.5 mb-0.5">
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokéRun</h1>
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokeRun</h1>
                 <span className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
                 <span className="text-base">✨</span>
               </div>
@@ -3107,6 +4217,8 @@ const merged = matches.slice(0, 8);
             </div>
           </div>
         </div>
+
+        {/* Selector de Pokedex movido arriba, a la barra superior del header */}
       </header>
       {isMounted && (
       <div className="flex flex-col gap-4">
@@ -3140,6 +4252,20 @@ const merged = matches.slice(0, 8);
               >
                 {t.clearTeam}
               </button>
+              <div className="fm-switch-wrap rounded-full border border-slate-700/60 bg-slate-900/60 px-2.5 sm:px-3 py-1.5 sm:py-2">
+                <span className="text-xs sm:text-sm font-semibold text-slate-300 whitespace-nowrap">{t.fakemonModeLabel}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={fakemonModeOn}
+                  aria-label={t.fakemonModeLabel}
+                  data-on={fakemonModeOn}
+                  onClick={() => setFakemonModeOn((v) => !v)}
+                  className="fm-switch"
+                >
+                  <span className="fm-switch-thumb" />
+                </button>
+              </div>
             </>
           }
         >
@@ -3206,18 +4332,22 @@ const merged = matches.slice(0, 8);
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="text-base font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
                         {slot.stats && isAdvanced ? (
-                          <div className="relative inline-flex items-center group">
+                          <div
+                            className="relative inline-flex items-center group"
+                            onMouseEnter={() => openStatsTooltip(idx)}
+                            onMouseLeave={() => scheduleCloseStatsTooltip(idx)}
+                          >
                             <span
                               className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-[14px] text-slate-300 cursor-pointer"
                               onClick={() => setStatsTooltipOpen((prev) => prev.map((v, i) => i === idx ? !v : v))}
                             >ⓘ</span>
-                            {/* Desktop: group-hover; Mobile: state toggle */}
-                            <div className={`absolute top-0 z-50 w-72 sm:w-80 rounded-2xl border border-slate-700 bg-slate-950/97 p-4 text-sm text-slate-100 shadow-xl shadow-black/50 ${statsTooltipOpen[idx] ? "block" : "hidden group-hover:block"} ${idx % 2 === 0 ? "left-full ml-2" : "right-full mr-2"}`}
+                            {/* Desktop: hover con margen de gracia (onMouseEnter/Leave arriba); Mobile: tap toggle */}
+                            <div className={`absolute top-0 z-50 w-72 sm:w-80 rounded-2xl border border-slate-700 bg-slate-950/97 p-4 text-sm text-slate-100 shadow-xl shadow-black/50 ${statsTooltipOpen[idx] ? "block" : "hidden"} ${idx % 2 === 0 ? "left-full ml-2" : "right-full mr-2"}`}
                               style={{ maxHeight: "70vh", overflowY: "auto" }}
                             >
                               <div className="flex justify-between items-center mb-2">
                                 <div className="text-xs uppercase tracking-[0.3em] text-slate-500">{lang === "es" ? "Stats base" : "Base stats"}</div>
-                                <button type="button" className="sm:hidden text-slate-500 hover:text-slate-300 text-xs px-1" onClick={() => setStatsTooltipOpen((prev) => prev.map((v, i) => i === idx ? false : v))}>✕</button>
+                                <button type="button" className="sm:hidden text-slate-500 hover:text-slate-300 text-xs px-1" onClick={() => { if (statsTooltipCloseTimers.current[idx]) clearTimeout(statsTooltipCloseTimers.current[idx]); setStatsTooltipOpen((prev) => prev.map((v, i) => i === idx ? false : v)); }}>✕</button>
                               </div>
                               <div className="space-y-2 mb-4">
                                 {statLabels.map(([key, label]) => {
@@ -3349,22 +4479,46 @@ const merged = matches.slice(0, 8);
                   />
                   {!slot.isFake && (
                     <button
+                      type="button"
                       onClick={() => fetchPokemon(slot.name, idx)}
-                      className="px-2.5 sm:px-3 py-1 bg-linear-to-r from-blue-700 to-indigo-900 text-white rounded btn-interactive whitespace-nowrap text-xs sm:text-sm"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-blue-700 px-2.5 sm:px-3.5 py-1.5 text-white btn-interactive whitespace-nowrap text-xs sm:text-sm font-semibold shadow-sm shadow-blue-950/40 transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
-                      {t.btnSearch}
+                      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="2" />
+                        <path d="M13.6 13.6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                      <span className="hidden xs:inline">{t.btnSearch}</span>
                     </button>
                   )}
                   <div className="inline-flex items-center gap-2 sm:gap-3">
-                    <label className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm">
-                      <input
-                        type="checkbox"
-                        checked={slot.isFake}
-                        onChange={(e) => updateSlot(idx, { isFake: e.target.checked })}
-                        className="accent-sky-500"
-                      />
-                      {t.checkFakemon}
-                    </label>
+                    {fakemonModeOn && (
+                      <label className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm cursor-pointer select-none">
+                        <span className="pr-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={slot.isFake}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              if (!checked) {
+                                // Al dejar de ser Fakemon, los movimientos inventados
+                                // ya no aplican: se limpian para que no queden
+                                // "escondidos" con isFake=true fuera de contexto.
+                                updateSlot(idx, {
+                                  isFake: false,
+                                  moves: slot.moves.map((m) =>
+                                    m.isFake ? EMPTY_MOVE() : m
+                                  ),
+                                });
+                              } else {
+                                updateSlot(idx, { isFake: true });
+                              }
+                            }}
+                          />
+                          <span className="pr-checkbox-box" />
+                        </span>
+                        {t.checkFakemon}
+                      </label>
+                    )}
                     {slot.isFake ? (
                       <button
                         type="button"
@@ -3378,10 +4532,20 @@ const merged = matches.slice(0, 8);
                 </div>
                 {!slot.isFake && pokemonOpen[idx] && pokemonResults[idx].length > 0 && (
                   <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 shadow-lg text-sm">
-                    {pokemonResults[idx].map((name, resultIdx) => (
+                    {pokemonResults[idx].map((name, resultIdx) => {
+                      // El value interno puede venir codificado como "Label#id"
+                      // (formas/megas Z); separamos para mostrar solo el label limpio.
+                      const hashIdx = name.lastIndexOf("#");
+                      const displayLabel = hashIdx >= 0 ? name.slice(0, hashIdx) : name;
+                      return (
                       <button
                         key={name}
                         type="button"
+                        ref={(el) => {
+                          if (el && pokemonSelectedIdx[idx] === resultIdx) {
+                            el.scrollIntoView({ block: "nearest" });
+                          }
+                        }}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           selectPokemonSuggestion(idx, name);
@@ -3395,9 +4559,10 @@ const merged = matches.slice(0, 8);
                           pokemonSelectedIdx[idx] === resultIdx ? "bg-blue-700/60" : "hover:bg-slate-700/80"
                         } focus:bg-slate-700/80`}
                       >
-                        {formatForDisplay(name)}
+                        {formatForDisplay(displayLabel)}
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
                 {slot.isFake ? (
@@ -3446,15 +4611,19 @@ const merged = matches.slice(0, 8);
                       <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5 overflow-hidden" style={moveBgStyle(m.category, m.type)}>
                         <div className="mb-1.5 flex items-center justify-between gap-3">
                           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
-                          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
-                            <input
-                              type="checkbox"
-                              checked={!!m.isFake}
-                              onChange={(e) => updateMove(idx, mi, { isFake: e.target.checked })}
-                              className="h-4 w-4 accent-sky-500"
-                            />
-                            {t.moveInvented}
-                          </label>
+                          {slot.isFake && (
+                            <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
+                              <span className="pr-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={!!m.isFake}
+                                  onChange={(e) => updateMove(idx, mi, { isFake: e.target.checked })}
+                                />
+                                <span className="pr-checkbox-box" />
+                              </span>
+                              {t.moveInvented}
+                            </label>
+                          )}
                         </div>
 
                         {m.isFake ? (
@@ -3594,6 +4763,11 @@ const enSlug =
                                     <button
                                       key={name}
                                       type="button"
+                                      ref={(el) => {
+                                        if (el && moveSelectedIdx[idx][mi] === resultIdx) {
+                                          el.scrollIntoView({ block: "nearest" });
+                                        }
+                                      }}
                                       onMouseDown={(e) => {
                                         e.preventDefault();
                                         selectMoveSuggestion(idx, mi, name);
@@ -4409,6 +5583,7 @@ const enSlug =
                     {[
                       { key: "finalEvo", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
                       { key: "legendary", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
+                      ...(activePokedex === "pokemon-z" ? [{ key: "onlyOriginals", label: lang === "es" ? `${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex} ${t.recFilterOnlyOriginals}` : `Original ${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
                       { key: "noDup", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
                       { key: "prioritizeCoverage", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
                     ].map(({ key, label, value, setter }) => (
@@ -4519,7 +5694,7 @@ const enSlug =
                       >
                         {lang === "es" ? "Cualquier rol" : "Any role"}
                       </button>
-                      {ROLES.map((role) => {
+                      {[...ROLES, BALANCED_ROLE].map((role) => {
                         const label = role[lang as "es" | "en"];
                         const active = recFilterRoleManual === label;
                         return (
@@ -4589,11 +5764,94 @@ const enSlug =
                                 style={{ background: TYPE_COLORS[candidate.types[0]] ?? "#334155" }}
                               />
                             </div>
+                            {/* Spinner mientras carga el sprite Z */}
+                            {activePokedex === "pokemon-z" && !zSpritesTrimmed[String(candidate.id)] && !zSpritesCache[String(candidate.id)] && (
+                              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                  <circle cx="12" cy="12" r="10" stroke="#334155" strokeWidth="3" />
+                                  <path d="M12 2a10 10 0 0 1 10 10" stroke="#60a5fa" strokeWidth="3" strokeLinecap="round" />
+                                </svg>
+                              </div>
+                            )}
                             <img
-                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`}
+                              src={
+                                activePokedex === "pokemon-z"
+                                  ? (zSpritesTrimmed[String(candidate.id)] ?? zSpritesCache[String(candidate.id)] ?? "")
+                                  : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`
+                              }
                               alt={name}
-                              className="w-32 h-32 object-contain relative z-10"
-                              style={{ imageRendering: "pixelated" }}
+                              className="relative z-10"
+                              style={{
+                                imageRendering: "pixelated",
+                                ...(activePokedex === "pokemon-z"
+                                  ? (() => {
+                                      const size = zSpriteNaturalSizes[String(candidate.id)];
+                                      // Escalar al doble del tamaño trimmeado, con techo en 112px,
+                                      // para que los sprites pequeños no queden diminutos.
+                                      const display = size ? Math.min(size * 2, 112) : 80;
+                                      return { width: display, height: display, objectFit: "contain" as const };
+                                    })()
+                                  : { width: 128, height: 128, objectFit: "contain" as const }),
+                              }}
+                              onLoad={(e) => {
+                                if (activePokedex !== "pokemon-z") return;
+                                const key = String(candidate.id);
+                                // Si ya está trimmeado, solo actualizar el tamaño
+                                if (zSpritesTrimmed[key]) {
+                                  const img = e.target as HTMLImageElement;
+                                  setZSpriteNaturalSizes((prev) => ({ ...prev, [key]: img.naturalHeight }));
+                                  return;
+                                }
+                                const img = e.target as HTMLImageElement;
+                                const w = img.naturalWidth;
+                                const h = img.naturalHeight;
+                                if (w === 0 || h === 0) return;
+                                try {
+                                  // Dibujar en canvas para leer píxeles
+                                  const canvas = document.createElement("canvas");
+                                  canvas.width = w;
+                                  canvas.height = h;
+                                  const ctx = canvas.getContext("2d");
+                                  if (!ctx) return;
+                                  ctx.drawImage(img, 0, 0);
+                                  const data = ctx.getImageData(0, 0, w, h).data;
+                                  // Detectar bounding box de píxeles no-transparentes
+                                  let minX = w, minY = h, maxX = 0, maxY = 0;
+                                  for (let y = 0; y < h; y++) {
+                                    for (let x = 0; x < w; x++) {
+                                      const alpha = data[(y * w + x) * 4 + 3];
+                                      if (alpha > 10) { // umbral de 10 para ignorar semi-transparencia
+                                        if (x < minX) minX = x;
+                                        if (x > maxX) maxX = x;
+                                        if (y < minY) minY = y;
+                                        if (y > maxY) maxY = y;
+                                      }
+                                    }
+                                  }
+                                  if (maxX < minX || maxY < minY) return; // sprite vacío
+                                  // Recortar al bounding box con 2px de padding
+                                  const PAD = 2;
+                                  const cx = Math.max(0, minX - PAD);
+                                  const cy = Math.max(0, minY - PAD);
+                                  const cw = Math.min(w, maxX + PAD + 1) - cx;
+                                  const ch = Math.min(h, maxY + PAD + 1) - cy;
+                                  // Centrar en un canvas cuadrado (lado = max(cw, ch))
+                                  const side = Math.max(cw, ch);
+                                  const out = document.createElement("canvas");
+                                  out.width = side;
+                                  out.height = side;
+                                  const octx = out.getContext("2d");
+                                  if (!octx) return;
+                                  octx.drawImage(canvas, cx, cy, cw, ch,
+                                    Math.floor((side - cw) / 2), Math.floor((side - ch) / 2), cw, ch);
+                                  const trimmedUrl = out.toDataURL("image/png");
+                                  setZSpritesTrimmed((prev) => ({ ...prev, [key]: trimmedUrl }));
+                                  setZSpriteNaturalSizes((prev) => ({ ...prev, [key]: side }));
+                                } catch {
+                                  // CORS u otro error: usar tamaño original sin trim
+                                  setZSpriteNaturalSizes((prev) => ({ ...prev, [key]: h }));
+                                }
+                              }}
                               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                             />
                           </div>
@@ -4956,6 +6214,11 @@ const enSlug =
                               <button
                                 key={name}
                                 type="button"
+                                ref={(el) => {
+                                  if (el && fakeSpriteSelectedIdx === resultIdx) {
+                                    el.scrollIntoView({ block: "nearest" });
+                                  }
+                                }}
                                 onMouseEnter={() => setFakeSpriteSelectedIdx(resultIdx)}
                                 onMouseDown={(e) => {
                                   e.preventDefault();
