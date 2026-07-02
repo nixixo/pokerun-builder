@@ -782,10 +782,20 @@ const LEGENDARY_SLUG_PREFIXES = new Set([
 ]);
 
 /** ¿Es legendario, sub-legendario, Ultra Beast o Paradox?
+ *  Capa 0: los "Fakemon nuevos" de Pokémon Z (ver POKEMON_Z_ORIGINALS) no
+ *  tienen dex id real — el JSON les asigna un id propio/secuencial que
+ *  puede coincidir por casualidad con el rango de un legendario real
+ *  (ej. Halcombate cayendo en 888-898 o 984-1025). Ninguno de ellos es
+ *  legendario por diseño, así que se descartan antes de mirar el id.
  *  Capa 1: comprueba el ID numérico (incluye formas alternativas > 10000).
  *  Capa 2: comprueba que el slug empiece por algún prefijo legendario conocido,
  *           cubriendo formas alternativas que la PokéAPI pueda añadir en el futuro. */
+const Z_FAKEMON_NEW_NAMES = new Set([
+  "Cefireon", "Royaleon", "Cherrilier", "Gourmaus", "Halcombate", "Serdupla",
+  "Zanghoul", "Freyjynx", "Fobeto", "Constellar", "Luvourne", "Marolier", "Sudrasil", "Auretosk",
+]);
 const isLegendary = (pokemon: AvailablePokemon): boolean => {
+  if (Z_FAKEMON_NEW_NAMES.has(pokemon.name)) return false;
   if (LEGENDARY_IDS.has(pokemon.id)) return true;
   return [...LEGENDARY_SLUG_PREFIXES].some((prefix) =>
     pokemon.slug.startsWith(prefix)
