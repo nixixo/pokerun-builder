@@ -1920,6 +1920,12 @@ export default function Home() {
   // absolutamente todos los Pokémon al generar recomendaciones.
   const [allPokemonData, setAllPokemonData] = useState<AvailablePokemon[]>([]);
   const [loadingAllPokemonData, setLoadingAllPokemonData] = useState(false);
+  // Set de national dex IDs (species id) que SÍ tienen una evolución posterior,
+  // calculado dinámicamente desde PokéAPI/GraphQL en la misma carga de arriba.
+  // Se reutiliza también para la Pokédex Z (mismos IDs nacionales para especies
+  // reales), reemplazando la vieja lista fija POKEMON_Z_PRE_EVOS que estaba
+  // incompleta (ej: le faltaban Golbat #42 y Murkrow #198).
+  const [speciesWithEvolution, setSpeciesWithEvolution] = useState<Set<number>>(new Set());
   // ─── Estados de filtros para recomendaciones ────────────────────────────────
   const [recDiscarded, setRecDiscarded] = useState<Set<string>>(new Set());
   const [expandedRec, setExpandedRec] = useState<Set<string>>(new Set());
@@ -2358,6 +2364,7 @@ export default function Home() {
           if (parsed.length === 0) continue;
           console.log(`[PokeRun] Dataset de recomendaciones cargado vía GraphQL: ${parsed.length} Pokémon`);
           setAllPokemonData(parsed);
+          setSpeciesWithEvolution(speciesIdsThatEvolveFrom);
           setLoadingAllPokemonData(false);
           return;
         } catch { continue; }
@@ -2420,6 +2427,7 @@ export default function Home() {
 
       console.log(`[PokeRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
       setAllPokemonData(parsed);
+      setSpeciesWithEvolution(speciesIdsThatEvolveFrom);
       setLoadingAllPokemonData(false);
     };
     loadAllPokemonData();
@@ -3144,12 +3152,21 @@ export default function Home() {
             .filter(Boolean)
             .slice(0, 2) as [string] | [string, string],
           stats: p.stats ?? null,
-          isFinalEvo: p.id >= 899 || !POKEMON_Z_PRE_EVOS.has(p.id), // fakemon/megas siempre true; reales: true si no tiene evo en el JSON
+          // fakemon/megas (id >= 899) siempre cuentan como evolución final.
+          // Para especies reales: usamos el set dinámico calculado desde
+          // PokéAPI (speciesWithEvolution), que es la fuente de verdad.
+          // Mientras ese fetch no haya terminado (set vacío), caemos como
+          // respaldo a la lista fija vieja para no dejar el filtro roto.
+          isFinalEvo:
+            p.id >= 899 ||
+            (speciesWithEvolution.size > 0
+              ? !speciesWithEvolution.has(p.id)
+              : !POKEMON_Z_PRE_EVOS.has(p.id)),
         };
       });
     }
     return allPokemonData;
-  }, [activePokedex, pokemonZData, allPokemonData]);
+  }, [activePokedex, pokemonZData, allPokemonData, speciesWithEvolution]);
 
   const pokemonRecommendations = useMemo(() => {
     if (!Object.keys(typeRelations).length) return [];
