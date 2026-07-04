@@ -782,11 +782,14 @@ const LEGENDARY_SLUG_PREFIXES = new Set([
 ]);
 
 /** ¿Es legendario, sub-legendario, Ultra Beast o Paradox?
- *  Capa 0: los "Fakemon nuevos" de Pokémon Z (ver POKEMON_Z_ORIGINALS) no
+ *  Capa 0a: los "Fakemon nuevos" de Pokémon Z (ver POKEMON_Z_ORIGINALS) no
  *  tienen dex id real — el JSON les asigna un id propio/secuencial que
  *  puede coincidir por casualidad con el rango de un legendario real
- *  (ej. Halcombate cayendo en 888-898 o 984-1025). Ninguno de ellos es
- *  legendario por diseño, así que se descartan antes de mirar el id.
+ *  (ej. Halcombate cayendo en 888-898 o 984-1025). La mayoría no son
+ *  legendarios por diseño, así que se descartan antes de mirar el id.
+ *  Capa 0b: excepción — algunos fakemon SÍ son legendarios por diseño
+ *  (ver Z_FAKEMON_LEGENDARY_NAMES, ej. Auretosk) y deben contar como tales
+ *  aunque no tengan un id real de PokéAPI.
  *  Capa 1: comprueba el ID numérico (incluye formas alternativas > 10000).
  *  Capa 2: comprueba que el slug empiece por algún prefijo legendario conocido,
  *           cubriendo formas alternativas que la PokéAPI pueda añadir en el futuro. */
@@ -794,7 +797,13 @@ const Z_FAKEMON_NEW_NAMES = new Set([
   "Cefireon", "Royaleon", "Cherrilier", "Gourmaus", "Halcombate", "Serdupla",
   "Zanghoul", "Freyjynx", "Fobeto", "Constellar", "Luvourne", "Marolier", "Sudrasil", "Auretosk",
 ]);
+// Fakemon nuevos que, dentro del lore de Pokémon Z, SÍ son legendarios.
+// Se comprueban antes que la exclusión general de Z_FAKEMON_NEW_NAMES.
+const Z_FAKEMON_LEGENDARY_NAMES = new Set([
+  "Auretosk",
+]);
 const isLegendary = (pokemon: AvailablePokemon): boolean => {
+  if (Z_FAKEMON_LEGENDARY_NAMES.has(pokemon.name)) return true;
   if (Z_FAKEMON_NEW_NAMES.has(pokemon.name)) return false;
   if (LEGENDARY_IDS.has(pokemon.id)) return true;
   return [...LEGENDARY_SLUG_PREFIXES].some((prefix) =>
@@ -951,13 +960,19 @@ const scorePokemonCandidate = (
     }
 
     // ── Prioridad 3: aumentar resistencias e inmunidades ──────────────────
+    // Mejora: rendimientos decrecientes según cuántos miembros del equipo
+    // YA resisten ese tipo (before.resist). Resistir un tipo que nadie
+    // cubre todavía vale su puntaje completo; resistir un tipo que ya tiene
+    // 2-3 resistentes en el equipo aporta cada vez menos (la cobertura
+    // real ya está resuelta, es redundancia, no progreso).
     if (!teamWasWeak) {
+      const depthFactor = 1 / (1 + before.resist);
       if (candidateMult === 0) {
         newResistances.push(atkType);
-        priority3 += 1.2;
+        priority3 += 1.2 * depthFactor;
       } else if (candidateMult <= 0.5) {
         newResistances.push(atkType);
-        priority3 += 0.6;
+        priority3 += 0.6 * depthFactor;
       }
     }
   });
@@ -3330,9 +3345,18 @@ export default function Home() {
             roleBonus = 20;
           }
         }
+        // Antes: roleBonus (máx. 80) se sumaba directo a result.score, que
+        // fácilmente anda en miles/decenas de miles — en la práctica el rol
+        // necesitado casi nunca influía en el orden real. Ahora roleBonus
+        // tiene su propio escalón en la cascada, entre priority2 y priority3:
+        //   priority1 (arreglar debilidades graves)      > todo lo demás
+        //   priority2 (no crear debilidades críticas)    > todo lo siguiente
+        //   roleBonus (rol que el equipo necesita)        > resto
+        //   priority3 (resistencias nuevas)               > priority4
+        //   priority4 (equilibrio general)
         const finalScore = recFilterPrioritizeCoverage
-          ? result.score + roleBonus                                        // comportamiento normal: prioriza cobertura de debilidades
-          : result.priority3 * 10 + result.priority4 + roleBonus;          // sin sesgo: ordena por resistencias generales + equilibrio
+          ? result.priority1 * 100000 + result.priority2 * 10000 + roleBonus * 100 + result.priority3 * 10 + result.priority4
+          : roleBonus * 100 + result.priority3 * 10 + result.priority4; // sin sesgo: ordena por rol + resistencias + equilibrio
         return { candidate, ...result, score: finalScore, realRole };
       })
       .sort((a, b) => b.score - a.score);
@@ -6028,11 +6052,15 @@ const enSlug =
                             <div className="border-t border-slate-800/60" />
 
                             {/* Fila 4: Razones — etiqueta corta fija + badges.
-                                Siempre se renderizan las 3 filas (Inmune/Cubre/Añade) en el
-                                mismo orden, aunque una esté vacía, para que todas las tarjetas
-                                tengan la misma altura sin depender de items-stretch. */}
+                                Siempre se reservan 3 filas de altura (Inmune/Cubre/Añade) para
+                                que todas las tarjetas midan lo mismo sin depender de
+                                items-stretch, pero las filas CON contenido real se muestran
+                                primero (arriba) y el relleno invisible va al final — así nunca
+                                queda un hueco vacío antes de "Cubre"/"Añade". */}
                             <div className="flex flex-col gap-1">
-                              {fixedReasonRows.map((row) => (
+                              {[...fixedReasonRows]
+                                .sort((a, b) => (b.types.length > 0 ? 1 : 0) - (a.types.length > 0 ? 1 : 0))
+                                .map((row) => (
                                 <div key={row.key} className="flex items-center gap-2">
                                   <span className={`${row.labelCl} text-[11px] font-semibold shrink-0 w-16 inline-flex items-center gap-1 ${row.types.length === 0 ? "invisible" : ""}`}>
                                     <span aria-hidden="true">{row.icon}</span>{row.label}
