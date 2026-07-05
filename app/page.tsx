@@ -1805,13 +1805,30 @@ function CollapsibleSection({
   );
 }
 
+// Normaliza cualquier variante de apóstrofe (curly ’ ‘ ´ vs recto ') a uno solo,
+// para que las comparaciones exactas de nombre (ej. "Sirfetch'd") no fallen
+// silenciosamente según qué apóstrofe use el JSON de origen.
+const normalizeApostrophe = (s: string): string => s.replace(/[\u2018\u2019\u02BC\u00B4]/g, "'");
+
+// getZDisplayName le agrega el sufijo " Z" a toda especie listada en
+// Z_FORM_SPECIES (ej. "Chesnaught" -> "Chesnaught Z"), pero POKEMON_Z_ORIGINALS
+// guarda los nombres SIN ese sufijo. Sin esto, el filtro "solo originales"
+// nunca hacía match con ninguno de ellos (Wailmer Z, Chesnaught Z, Rotom Z...),
+// aunque estuvieran bien escritos en la lista.
+const stripZSuffix = (s: string): string => s.replace(/\s+Z$/, "");
+
 // ─── Fakemon / formas originales de Pokémon Z ────────────────────────────────
 const POKEMON_Z_ORIGINALS = new Set<string>([
-  // Pokémon reales con formas Z (nombre exacto del JSON, sin sufijo)
+  // Pokémon reales con formas Z (nombre exacto del JSON, sin sufijo).
+  // Solo se incluyen las etapas que EFECTIVAMENTE tienen stats/habilidad
+  // alterada por Pokémon Z (según la tabla de datos del juego) — las
+  // pre-evoluciones sin cambios (Farfetch'd, Chespin, Fennekin, Froakie,
+  // Petilil, Gothorita) quedan afuera a propósito, ya que no tienen nada
+  // "Z" en sí mismas hasta que evolucionan.
   "Pikachu", "Raichu", "Paras", "Parasect", "Cubone", "Marowak",
   "Porygon", "Porygon2", "Porygon-Z",
   "Wailmer", "Wailord", "Vibrava", "Flygon", "Bidoof", "Bibarel",
-  "Kricketot", "Kricketune", "Lilligant", "Yamask", "Cofagrigus",
+  "Kricketot", "Kricketune", "Rotom Guillotina", "Lilligant", "Yamask", "Cofagrigus",
   "Gothitelle", "Solosis", "Duosion", "Reuniclus", "Quilladin", "Chesnaught",
   "Braixen", "Delphox", "Frogadier", "Greninja", "Sirfetch'd",
   // Fakemon nuevos (exclusivos del juego)
@@ -3207,15 +3224,17 @@ export default function Home() {
             .slice(0, 2) as [string] | [string, string],
           stats: p.stats ?? null,
           // fakemon/megas (id >= 899) siempre cuentan como evolución final.
-          // Para especies reales: usamos el set dinámico calculado desde
-          // PokéAPI (speciesWithEvolution), que es la fuente de verdad.
-          // Mientras ese fetch no haya terminado (set vacío), caemos como
-          // respaldo a la lista fija vieja para no dejar el filtro roto.
+          // Para especies reales: combinamos el set dinámico de PokéAPI
+          // (speciesWithEvolution, evoluciones "oficiales") CON la lista
+          // estática POKEMON_Z_PRE_EVOS. Antes, una vez terminaba el fetch
+          // dinámico, este pisaba por completo a la lista estática — y como
+          // PokéAPI real no sabe que, por ejemplo, Marowak(Z) evoluciona a
+          // Marolier (evolución exclusiva de Pokémon Z), Marowak quedaba mal
+          // marcado como "última evolución". Ahora un Pokémon NO es evolución
+          // final si CUALQUIERA de las dos fuentes dice que evoluciona.
           isFinalEvo:
             p.id >= 899 ||
-            (speciesWithEvolution.size > 0
-              ? !speciesWithEvolution.has(p.id)
-              : !POKEMON_Z_PRE_EVOS.has(p.id)),
+            !(speciesWithEvolution.has(p.id) || POKEMON_Z_PRE_EVOS.has(p.id)),
         };
       });
     }
@@ -3311,7 +3330,7 @@ export default function Home() {
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
         // Filtro: solo originales de Pokémon Z
-        if (recFilterOnlyOriginals && !POKEMON_Z_ORIGINALS.has(c.name)) return false;
+        if (recFilterOnlyOriginals && !POKEMON_Z_ORIGINALS.has(stripZSuffix(normalizeApostrophe(c.name)))) return false;
         // Filtro de rol suavizado (Opción D):
         // manual tiene prioridad sobre el toggle automático.
         // Se usa matchesRole en vez de comparación exacta → pasan también Pokémon
