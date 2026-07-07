@@ -2262,6 +2262,22 @@ export default function Home() {
     captureSlotRects();
     setSlotCollapsed((prev) => prev.map((v, i) => (i === idx ? !v : v)));
   };
+  // Roles expandidos dentro de "Aptitud por rol": clave `${idx}:${role.en}`.
+  // Reemplaza el tooltip de hover (poco usable en mobile) por un desplegable
+  // que se abre/cierra al tocar, mostrando descripción corta + stats clave.
+  const [openRoleKeys, setOpenRoleKeys] = useState<Set<string>>(new Set());
+  const toggleRoleOpen = (key: string) => {
+    setOpenRoleKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+  // Desplegable de descripciones de roles en el filtro "Filtrar por rol"
+  // (recomendados de equipo), para no tener que adivinar qué significa cada
+  // etiqueta de rol.
+  const [roleFilterLegendOpen, setRoleFilterLegendOpen] = useState(false);
   // Drag & drop unificado (mouse + touch) via Pointer Events, con tarjeta
   // fantasma flotante siguiendo el cursor/dedo y animación FLIP al reordenar.
   const [dragPointerPos, setDragPointerPos] = useState<{ x: number; y: number } | null>(null);
@@ -2644,7 +2660,7 @@ export default function Home() {
     fetch("https://pokeapi.co/api/v2/type?limit=100")
       .then((r) => r.json())
       .then((data) => {
-        const names = data.results.map((t: any) => t.name).filter((n: string) => n !== "shadow" && n !== "unknown");
+        const names = data.results.map((t: any) => t.name).filter((n: string) => n !== "shadow" && n !== "unknown" && n !== "stellar");
         setAllTypes(names);
       })
       .catch(() => setAllTypes([]));
@@ -5100,25 +5116,46 @@ export default function Home() {
                                 {scoreAllRoles(slot.stats!)
                                   .sort((a, b) => b.score - a.score)
                                   .slice(0, 5)
-                                  .map(({ role, score }) => (
-                                    <div key={role.en} className="flex items-center gap-2">
-                                      <FloatingTooltip
-                                        preferredPlacement="left"
-                                        content={
-                                          <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
-                                            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">{role[lang]}</div>
+                                  .map(({ role, score }) => {
+                                    const roleKey = `${idx}:${role.en}`;
+                                    const isOpen = openRoleKeys.has(roleKey);
+                                    // Stats que definen el rol (weights > 0), ordenadas de mayor a menor peso.
+                                    const keyStats = (Object.entries(role.weights) as [keyof BaseStats, number][])
+                                      .filter(([, w]) => (w ?? 0) > 0)
+                                      .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+                                    const statNames = STAT_NAMES_I18N[lang];
+                                    return (
+                                      <div key={role.en} className="rounded-lg overflow-hidden">
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleRoleOpen(roleKey)}
+                                          className="flex items-center gap-2 w-full text-left py-0.5"
+                                        >
+                                          <span className="text-[11px] text-slate-400 w-32 shrink-0 truncate">{role[lang]}</span>
+                                          <span className="flex-1 h-1.5 rounded-full bg-slate-800">
+                                            <span className="block h-full rounded-full transition-all" style={{ width: `${score}%`, backgroundColor: role.color }} />
+                                          </span>
+                                          <span className="text-[11px] text-slate-500 w-8 text-right tabular-nums">{score}%</span>
+                                          <span className={`shrink-0 text-slate-500 text-[10px] transition-transform ${isOpen ? "rotate-180" : ""}`}>▾</span>
+                                        </button>
+                                        {isOpen && (
+                                          <div className="mt-1 mb-1.5 rounded-lg border border-slate-700/60 bg-slate-900/70 p-2 text-[11px] text-slate-300 space-y-1.5">
                                             <div>{getRoleDescription(role[lang], lang) ?? ""}</div>
+                                            <div className="flex flex-wrap gap-1">
+                                              {keyStats.map(([statKey]) => (
+                                                <span
+                                                  key={statKey}
+                                                  className="inline-flex items-center rounded-full border border-slate-600 bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-200"
+                                                >
+                                                  {statNames[statKey]}
+                                                </span>
+                                              ))}
+                                            </div>
                                           </div>
-                                        }
-                                      >
-                                        <div className="text-[11px] text-slate-400 w-32 shrink-0 truncate cursor-default">{role[lang]}</div>
-                                      </FloatingTooltip>
-                                      <div className="flex-1 h-1.5 rounded-full bg-slate-800">
-                                        <div className="h-full rounded-full transition-all" style={{ width: `${score}%`, backgroundColor: role.color }} />
+                                        )}
                                       </div>
-                                      <div className="text-[11px] text-slate-500 w-8 text-right tabular-nums">{score}%</div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                               </div>
                             </div>
                           </div>
@@ -6476,8 +6513,19 @@ const enSlug =
                       {/* Filtro por rol */}
                       {isAdvanced && (
                       <div>
-                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
-                          {lang === "es" ? "Filtrar por rol" : "Filter by role"}
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                          <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500">
+                            {lang === "es" ? "Filtrar por rol" : "Filter by role"}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setRoleFilterLegendOpen((v) => !v)}
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-semibold transition ${roleFilterLegendOpen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-sky-700/60 bg-sky-950/40 text-sky-300 hover:border-sky-500 hover:bg-sky-900/50 hover:text-sky-100"}`}
+                          >
+                            <span className="text-[14px]">ⓘ</span>
+                            {lang === "es" ? "¿Qué significa cada rol?" : "What does each role mean?"}
+                            <span className={`text-[12px] transition-transform ${roleFilterLegendOpen ? "rotate-180" : ""}`}>▾</span>
+                          </button>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           <button
@@ -6503,6 +6551,37 @@ const enSlug =
                             );
                           })}
                         </div>
+                        {roleFilterLegendOpen && (
+                          <div className="mt-2 space-y-1.5 rounded-lg border border-slate-700/60 bg-slate-900/70 p-2.5">
+                            {[...ROLES, BALANCED_ROLE].map((role) => {
+                              const label = role[lang as "es" | "en"];
+                              const keyStats = (Object.entries(role.weights) as [keyof BaseStats, number][])
+                                .filter(([, w]) => (w ?? 0) > 0)
+                                .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0));
+                              const statNames = STAT_NAMES_I18N[lang];
+                              return (
+                                <div key={role.en} className="text-[14px] leading-snug">
+                                  <div className="flex flex-wrap items-baseline gap-1.5">
+                                    <span className="font-semibold" style={{ color: role.color }}>{label}:</span>
+                                    <span className="text-slate-400">{lang === "es" ? role.descEs : role.descEn}</span>
+                                  </div>
+                                  {keyStats.length > 0 && (
+                                    <div className="mt-0.5 flex flex-wrap gap-1">
+                                      {keyStats.map(([statKey]) => (
+                                        <span
+                                          key={statKey}
+                                          className="inline-flex items-center rounded-full border border-slate-600 bg-slate-800 px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-slate-200"
+                                        >
+                                          {statNames[statKey]}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                       )}
 
