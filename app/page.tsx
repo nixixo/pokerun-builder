@@ -112,6 +112,19 @@ const TYPE_ES_TO_API: Record<string, string> = {
   "Hada": "fairy",
 };
 
+// Lookup insensible a mayúsculas/espacios: algunas entradas del JSON de
+// Pokémon Z traen el tipo con capitalización distinta (ej. "HADA" en vez de
+// "Hada") o espacios extra, lo que hacía fallar el lookup exacto de
+// TYPE_ES_TO_API y dejaba el tipo mal mapeado (ej. Xerneas quedando con
+// "hada" en vez de "fairy", rompiendo el filtro de tipo silenciosamente).
+const TYPE_ES_TO_API_NORMALIZED: Record<string, string> = Object.fromEntries(
+  Object.entries(TYPE_ES_TO_API).map(([k, v]) => [k.trim().toLowerCase(), v])
+);
+const normalizeTypeToApi = (t: string): string => {
+  const key = t.trim().toLowerCase();
+  return TYPE_ES_TO_API_NORMALIZED[key] ?? key;
+};
+
 // Especies cuya entrada en pokemon_z_completo.json tiene stats/habilidades
 // realmente alteradas respecto a los juegos oficiales (según el documento
 // "Formas y nuevas evoluciones" de Pokémon Z), y por lo tanto tiene sentido
@@ -555,7 +568,7 @@ type RoleMatchResult = {
   passes: boolean;
   score: number;      // score del rol pedido (0–100), para debug
   topScore: number;   // score del rol #1 del Pokémon, para debug
-  reason: "exact" | "margin" | "minimum" | "fail";
+  reason: "exact" | "margin" | "minimum" | "partial" | "fail";
 };
 
 // Devuelve el ranking (1 = más alta) de cada stat DENTRO del propio Pokémon.
@@ -573,7 +586,23 @@ const ROLE_CORE_TOP_N = 3;
 
 const matchesRole = (stats: BaseStats, roleLabel: string): RoleMatchResult => {
   // Score sigue calculándose para el debug panel y getRole()
-  const scores = scoreAllRoles(stats).sort((a, b) => b.score - a.score);
+  // Desempate: en un empate exacto de score (ej. Mew/Arceus con spread=0),
+  // BALANCED_ROLE ("Todoterreno Puro") queda matemáticamente empatado con
+  // CUALQUIER rol lineal (ver comentario junto a getRole). Array.sort es
+  // estable, y como scoreAllRoles agrega BALANCED_ROLE al final del array,
+  // un sort plano por score dejaría a Todoterreno Puro último entre los
+  // empatados — haciendo que "entryIdx === 0" (el check de abajo) NUNCA se
+  // cumpla para Mew/Arceus, aunque getRole() sí los detecte correctamente
+  // como Todoterreno Puro. Este comparador prioriza BALANCED_ROLE en los
+  // empates, igual que getRole, para que ambas funciones coincidan.
+  const scores = scoreAllRoles(stats).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const aBal = a.role.es === BALANCED_ROLE.es;
+    const bBal = b.role.es === BALANCED_ROLE.es;
+    if (aBal && !bBal) return -1;
+    if (bBal && !aBal) return 1;
+    return 0;
+  });
   const topScore = scores[0].score;
   const entryIdx = scores.findIndex((s) => s.role.es === roleLabel || s.role.en === roleLabel);
   const score = entryIdx >= 0 ? scores[entryIdx].score : 0;
@@ -596,10 +625,17 @@ const matchesRole = (stats: BaseStats, roleLabel: string): RoleMatchResult => {
   // (B) Cada stat núcleo debe estar entre el top-N de las 6 stats DEL PROPIO
   //     Pokémon (evita stats "altas pero secundarias", ej. Luvourne con DEF:85
   //     que es solo su 4ta stat, muy por detrás de SP.ATK:120).
+  // NOTA: antes esto era una exclusión dura (passes: false), lo que dejaba
+  // afuera del todo a Pokémon con stats muy altas EN GENERAL (ej. Xerneas:
+  // ATK y SP.ATK tan altos que le "roban" el top-3 a SP.DEF, aunque SP.DEF
+  // en términos absolutos sea perfectamente buena). Ahora en vez de excluirlo,
+  // pasa igual pero como "partial": aparece en la lista, compite por el
+  // bonus de rol más bajo de todos, y así queda relegado al final en vez
+  // de desaparecer directamente.
   const passesRelative = filter.required.every(
     (req) => statRank(stats, req.stat) <= ROLE_CORE_TOP_N
   );
-  if (!passesRelative) return { passes: false, score, topScore, reason: "fail" };
+  if (!passesRelative) return { passes: true, score, topScore, reason: "partial" };
 
   const reason = entryIdx === 0 ? "exact" : score >= 28 ? "margin" : "minimum";
   return { passes: true, score, topScore, reason };
@@ -2011,6 +2047,14 @@ export default function Home() {
   const [recFilterMatchRole, setRecFilterMatchRole] = useState(false); // solo Pokémon cuyo rol REAL coincida con el recomendado
   const [recFilterPrioritizeCoverage, setRecFilterPrioritizeCoverage] = useState(true); // priorizar cobertura de debilidades en el scoring
   const [recFilterRoleManual, setRecFilterRoleManual] = useState<string | null>(null); // filtro manual de rol (null = cualquier rol)
+  const [showRestContribution, setShowRestContribution] = useState(false); // expandir el resto del ranking de "quién conviene reemplazar"
+  const [toast, setToast] = useState<string | null>(null); // notificación flotante estilo la página (reemplaza los alert() feos del navegador)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3200);
+  };
   // es_lower → en_slug  e.g. "lanzallamas" → "flamethrower"
   const [moveEsMap, setMoveEsMap] = useState<Record<string, string>>({});
   // reverse: en_slug → spanish display name  e.g. "flamethrower" → "Lanzallamas"
@@ -2835,6 +2879,30 @@ export default function Home() {
     fetchPokemon(name, idx);
   };
 
+  // Agrega un candidato de "Pokémon recomendados" directo al primer slot
+  // vacío del equipo (si hay lugar). Reutiliza el mismo pipeline de fetch
+  // que usa el buscador normal (selectPokemonSuggestion → fetchPokemon),
+  // así el sprite/stats/tipos quedan idénticos a como si lo hubieras
+  // buscado a mano.
+  const addCandidateToTeam = (candidate: AvailablePokemon) => {
+    const emptyIdx = team.findIndex((s) => s.name.trim() === "");
+    if (emptyIdx === -1) {
+      showToast(
+        lang === "es"
+          ? "Tu equipo ya está completo (6/6). Elimina alguno primero."
+          : "Your team is already full (6/6). Remove one first."
+      );
+      return;
+    }
+    const encodedName =
+      activePokedex === "pokemon-z" && pokemonZData.length > 0
+        ? `${candidate.name}#z:${candidate.id}`
+        : candidate.slug;
+    selectPokemonSuggestion(emptyIdx, encodedName);
+    // Ya no tiene sentido seguir recomendándolo una vez que está en el equipo
+    setRecDiscarded((prev) => new Set([...prev, candidate.slug]));
+  };
+
   const selectMoveSuggestion = (slotIdx: number, moveIdx: number, name: string) => {
     // Clear the draft (back to display mode)
     setMoveInputDraft((prev) =>
@@ -2935,7 +3003,7 @@ export default function Home() {
       if (zEntry) {
         // Tipos del JSON vienen en español → convertir a slugs de API
         const types = (zEntry.types as string[])
-          .map((t) => TYPE_ES_TO_API[t] ?? t.toLowerCase())
+          .map((t) => normalizeTypeToApi(t))
           .filter(Boolean)
           .slice(0, 2);
         const stats: BaseStats = zEntry.stats ?? null;
@@ -3034,8 +3102,15 @@ export default function Home() {
     const attackingTypes = Object.keys(typeRelations);
     const weaknessesCount: Record<string, number> = {};
     const strengthsCount: Record<string, number> = {};
+    // Por cada tipo atacante, qué índices del equipo (0-5) son débiles/resisten.
+    // Esto permite detectar, para un miembro dado, si es EL ÚNICO que cubre
+    // algo (crítico, no reemplazable) o si su cobertura es redundante
+    // (ya la aporta otro miembro también) — base del sistema de "quién
+    // conviene reemplazar".
+    const weakMemberIdx: Record<string, number[]> = {};
+    const resistMemberIdx: Record<string, number[]> = {};
 
-    if (!attackingTypes.length) return { weaknesses: weaknessesCount, strengths: strengthsCount };
+    if (!attackingTypes.length) return { weaknesses: weaknessesCount, strengths: strengthsCount, weakMemberIdx, resistMemberIdx };
 
     // For each attacking type, compute how many Pokémon are >=2 multiplier (weak) or <=0.5 (resistant)
     attackingTypes.forEach((atk) => {
@@ -3047,7 +3122,7 @@ export default function Home() {
 
       let weak = 0;
       let resist = 0;
-      team.forEach((poke) => {
+      team.forEach((poke, idx) => {
         const pokeTypes = poke.types.filter(Boolean);
         if (!pokeTypes.length) return;
         let mult = 1;
@@ -3056,15 +3131,15 @@ export default function Home() {
           else if (doubleTo.has(def)) mult *= 2;
           else if (halfTo.has(def)) mult *= 0.5;
         });
-        if (mult >= 2) weak++;
-        if (mult <= 0.5 && mult > 0) resist++;
+        if (mult >= 2) { weak++; (weakMemberIdx[atk] ??= []).push(idx); }
+        if (mult <= 0.5 && mult > 0) { resist++; (resistMemberIdx[atk] ??= []).push(idx); }
       });
 
       if (weak > 0) weaknessesCount[atk] = weak;
       if (resist > 0) strengthsCount[atk] = resist;
     });
 
-    return { weaknesses: weaknessesCount, strengths: strengthsCount };
+    return { weaknesses: weaknessesCount, strengths: strengthsCount, weakMemberIdx, resistMemberIdx };
   }, [team, typeRelations]);
 
   // Offense coverage
@@ -3095,6 +3170,78 @@ export default function Home() {
     const redCount = Object.values(canHitReduced).filter((v) => v > 0).length;
     return { supCount, redCount, canHitSupereffective, canHitReduced };
   }, [team, typeRelations]);
+
+  // ─── Sistema de "aporte al equipo" (quién conviene reemplazar) ───────────
+  // Para cada miembro del equipo calcula qué tanto aporta de verdad, en vez
+  // de asumir que "todos aportan igual". Se basa en 3 cosas objetivas,
+  // reutilizando los mismos datos de analysis (weakMemberIdx/resistMemberIdx)
+  // que ya se calculan para el resto de la UI, más el mismo esquema de
+  // bstBonus que ya usamos en las recomendaciones (stats totales):
+  //
+  //   1. uniqueResistances: tipos donde ESTE es el ÚNICO miembro que resiste.
+  //      Perderlo deja al equipo totalmente expuesto a ese tipo — es lo más
+  //      valioso que puede aportar un Pokémon, y pesa fuerte a favor de
+  //      mantenerlo.
+  //   2. weaknessDrag: tipos donde el equipo YA es débil compartido (2+
+  //      miembros débiles) y este es uno de ellos. Si me deshago de él y
+  //      pongo algo que no sea débil a eso, esa debilidad compartida mejora.
+  //      Pesa en contra.
+  //   3. redundantResistances: tipos que resiste pero que 2+ miembros más
+  //      también resisten — cobertura "de sobra", no se pierde nada
+  //      relevante si se va. Pesa levemente en contra.
+  //   4. bst (stats totales): a igual redundancia/drag, preferimos conservar
+  //      al más fuerte en términos brutos.
+  //
+  // El resultado es un "valor de permanencia" por miembro: cuanto MÁS bajo,
+  // más conviene reemplazarlo. Se ordena de menor a mayor (peor primero).
+  const teamContribution = useMemo(() => {
+    if (!Object.keys(typeRelations).length) return [];
+    const { weakMemberIdx, resistMemberIdx, weaknesses: teamWeaknesses } = analysis;
+
+    return team
+      .map((slot, idx) => ({ slot, idx }))
+      .filter(({ slot }) => slot.name.trim() !== "" && slot.types.filter(Boolean).length > 0)
+      .map(({ slot, idx }) => {
+        const uniqueResistTypes: string[] = [];
+        const redundantResistTypes: string[] = [];
+        const dragWeaknessTypes: string[] = [];
+
+        Object.entries(resistMemberIdx).forEach(([atkType, members]) => {
+          if (!members.includes(idx)) return;
+          if (members.length === 1) uniqueResistTypes.push(atkType);
+          else redundantResistTypes.push(atkType);
+        });
+        Object.entries(weakMemberIdx).forEach(([atkType, members]) => {
+          if (!members.includes(idx)) return;
+          if ((teamWeaknesses[atkType] ?? 0) >= 2) dragWeaknessTypes.push(atkType);
+        });
+
+        const bst = slot.stats
+          ? Object.values(slot.stats).reduce((sum: number, v: number) => sum + v, 0)
+          : 0;
+        const bstBonus = Math.max(0, Math.min(80, ((bst - 300) / (720 - 300)) * 80));
+
+        // Ponderación: cubrir algo único vale mucho más que el resto —
+        // preferimos avisar "ojo, es el único que te tapa X" antes que
+        // sugerir sacarlo solo porque tiene stats bajas.
+        const value =
+          uniqueResistTypes.length * 30 -
+          dragWeaknessTypes.length * 15 -
+          redundantResistTypes.length * 5 +
+          bstBonus * 0.5;
+
+        return {
+          idx,
+          slot,
+          bst,
+          uniqueResistTypes,
+          redundantResistTypes,
+          dragWeaknessTypes,
+          value,
+        };
+      })
+      .sort((a, b) => a.value - b.value); // peor aporte primero
+  }, [team, typeRelations, analysis]);
 
   // Attack type suggestions: find which move type covers the most uncovered types
   const attackSuggestions = useMemo(() => {
@@ -3219,7 +3366,7 @@ export default function Home() {
           id: p.id ?? 0,
           dexId: p.dexId ?? p.id ?? 0,
           types: ((p.types as string[]) ?? [])
-            .map((t) => TYPE_ES_TO_API[t] ?? t.toLowerCase())
+            .map((t) => normalizeTypeToApi(t))
             .filter(Boolean)
             .slice(0, 2) as [string] | [string, string],
           stats: p.stats ?? null,
@@ -3311,7 +3458,10 @@ export default function Home() {
         // Excluir descartados manualmente
         if (recDiscarded.has(c.slug)) return false;
         // Filtro de generación por rango de ID
-        if (genRange && (c.id < genRange.min || c.id > genRange.max)) return false;
+        {
+          const genCheckId = c.dexId ?? c.id;
+          if (genRange && (genCheckId < genRange.min || genCheckId > genRange.max)) return false;
+        }
         // Filtro de tipos: soporte para tipo único o combinación de dos tipos
         // Si hay segundo tipo seleccionado, el candidato debe tener AMBOS tipos (en cualquier orden)
         if (recFilterType2 && recFilterTypes.length > 0) {
@@ -3349,6 +3499,8 @@ export default function Home() {
         //   exact   → rol #1 del Pokémon coincide con el buscado  → bonus máximo
         //   margin  → rol muy cercano al top (≤15 pts)            → bonus alto
         //   minimum → supera el mínimo absoluto (≥28 pts)         → bonus moderado
+        //   partial → cumple mínimos absolutos pero alguna stat núcleo
+        //             queda fuera de su propio top-3 (ej. Xerneas)  → bonus mínimo
         //   sin stats → proxy por tipo (igual que antes)          → bonus bajo
         const roleEnLabel = neededRole
           ? ROLES.find((r) => r.es === neededRole!.label || r.en === neededRole!.label)?.en ?? neededRole!.label
@@ -3360,22 +3512,45 @@ export default function Home() {
             if      (matchForBonus.reason === "exact"  ) roleBonus = 80;
             else if (matchForBonus.reason === "margin" ) roleBonus = 55;
             else if (matchForBonus.reason === "minimum") roleBonus = 30;
+            else if (matchForBonus.reason === "partial") roleBonus = 5;
           } else if (!candidate.stats && roleEnLabel && typeMatchesRole(candidate.types as string[], roleEnLabel)) {
             roleBonus = 20;
           }
         }
-        // Antes: roleBonus (máx. 80) se sumaba directo a result.score, que
-        // fácilmente anda en miles/decenas de miles — en la práctica el rol
-        // necesitado casi nunca influía en el orden real. Ahora roleBonus
-        // tiene su propio escalón en la cascada, entre priority2 y priority3:
+
+        // Bonus por stats totales (BST): un Pokémon con stats brutas muy altas
+        // (típicamente legendarios) puede "no encajar perfecto" en un rol
+        // específico (ver matchesRole/"partial" más arriba, ej. Xerneas) pero
+        // sigue siendo objetivamente más poderoso. Antes esto no se consideraba
+        // en absoluto — solo importaba qué tan "puro" era el encaje de rol, no
+        // cuán altas eran las stats en sí. Escala 0–80 sobre un rango de BST
+        // típico (300 débil, 720 legendario tope) para que sea comparable en
+        // magnitud al roleBonus, pero con más peso en la cascada final.
+        const bst = candidate.stats
+          ? Object.values(candidate.stats).reduce((sum: number, v: number) => sum + v, 0)
+          : 0;
+        const bstBonus = Math.max(0, Math.min(80, ((bst - 300) / (720 - 300)) * 80));
+
+        // Antes: bstBonus*1000 + roleBonus*100 hacía que las stats totales
+        // dominaran CASI SIEMPRE (una diferencia de 1 punto de bstBonus vale
+        // lo mismo que 10 puntos de roleBonus), dejando al rol casi sin
+        // influencia real — los legendarios (BST alto) terminaban saliendo
+        // sí o sí, sin importar qué tan bien encajaran en el rol que el
+        // equipo necesita. Ahora se combinan en un solo término ponderado
+        // (70% stats / 30% rol, mismo rango 0–80 cada uno) para que ambos
+        // factores realmente compitan entre sí, en vez de que uno aplaste
+        // al otro por diferencia de escala. Ajustado tras feedback a 70% rol
+        // / 30% stats: el encaje de rol pesa más, pero el poder bruto
+        // sigue teniendo influencia real (antes tenía cero peso).
         //   priority1 (arreglar debilidades graves)      > todo lo demás
         //   priority2 (no crear debilidades críticas)    > todo lo siguiente
-        //   roleBonus (rol que el equipo necesita)        > resto
+        //   powerRoleBonus (30% stats totales + 70% rol)  > resto
         //   priority3 (resistencias nuevas)               > priority4
         //   priority4 (equilibrio general)
+        const powerRoleBonus = bstBonus * 0.3 + roleBonus * 0.7;
         const finalScore = recFilterPrioritizeCoverage
-          ? result.priority1 * 100000 + result.priority2 * 10000 + roleBonus * 100 + result.priority3 * 10 + result.priority4
-          : roleBonus * 100 + result.priority3 * 10 + result.priority4; // sin sesgo: ordena por rol + resistencias + equilibrio
+          ? result.priority1 * 100000 + result.priority2 * 10000 + powerRoleBonus * 100 + result.priority3 * 10 + result.priority4
+          : powerRoleBonus * 100 + result.priority3 * 10 + result.priority4; // sin sesgo: ordena por poder bruto + rol + resistencias + equilibrio
         return { candidate, ...result, score: finalScore, realRole };
       })
       .sort((a, b) => b.score - a.score);
@@ -3383,6 +3558,15 @@ export default function Home() {
     // Filtro de duplicados de tipo: si está activado, no permitir dos Pokémon
     // con exactamente la misma combinación de tipos (ordenada)
     const seenTypeCombos = new Map<string, number>();
+    // NOTA: antes, con el switch apagado, igual se aplicaba un tope oculto de
+    // "máximo 2 por combo" como red de seguridad. Eso bloqueaba candidatos
+    // (ej. Xerneas, Hada puro) que compartían combo con 4+ Pokémon mejor
+    // puntuados (Florges, Aromatisse, Slurpuff, Sylveon) — nunca aparecían
+    // ni descartando todo, porque el tope los cortaba en este paso, antes
+    // de llegar al recorte final. Ahora, sin el switch, no hay tope alguno:
+    // el único filtro es el que el usuario pide explícitamente activando
+    // "Evitar tipos repetidos", y el mecanismo de "ir descartando para que
+    // aparezca el siguiente mejor" queda como el único control del usuario.
     const deduplicated = recFilterNoDupTypes
       ? scored.filter(({ candidate }) => {
           const key = [...candidate.types].sort().join("/");
@@ -3391,20 +3575,15 @@ export default function Home() {
           seenTypeCombos.set(key, count + 1);
           return true;
         })
-      : scored.filter(({ candidate }) => {
-          // Sin filtro de duplicados, sí limitamos a 2 por combo para no saturar
-          const key = [...candidate.types].sort().join("/");
-          const count = seenTypeCombos.get(key) ?? 0;
-          if (count >= 2) return false;
-          seenTypeCombos.set(key, count + 1);
-          return true;
-        });
+      : scored;
 
-    // Máximo 6 recomendaciones visibles
+    // Máximo 6 recomendaciones visibles — descartando las mostradas, el
+    // siguiente mejor de la lista completa (ya sin tope oculto por combo)
+    // ocupa el lugar automáticamente.
     const top = deduplicated.slice(0, 6);
 
     // Construye las explicaciones de cada recomendación
-    return top.map(({ candidate, score, reduces, immunities, newResistances, criticalAdds, addsWeakness, realRole }) => {
+    const result = top.map(({ candidate, score, reduces, immunities, newResistances, criticalAdds, addsWeakness, realRole }) => {
       // En modo Z el slug ya viene del nombre en español; formatForDisplay lo capitaliza bien.
       // En modo estándar es el slug de PokéAPI (guiones → espacios con mayúsculas).
       const name = formatForDisplay(candidate.slug);
@@ -3458,6 +3637,7 @@ export default function Home() {
         candidateFitsRole, // true/false/null: si el rol real coincide con el necesitado
       };
     });
+    return result;
   }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual]);
 
   // Priorizar la carga de sprites de los candidatos visibles actualmente
@@ -3517,9 +3697,18 @@ export default function Home() {
     });
 
     // Build role suggestions: score each ROLE against team average stats
-    // Prefer roles the team lacks most
+    // Prefer roles the team lacks most.
+    // Se excluye BALANCED_ROLE ("Todoterreno Puro") de esta sugerencia: su
+    // score depende de qué tan PAREJO está el promedio de stats del equipo
+    // (ver getBalanceScore), y cualquier equipo real con Pokémon especializados
+    // va a tener un promedio con bastante dispersión — por eso este rol casi
+    // siempre queda con el score más bajo y "gana" como sugerencia, aunque en
+    // la práctica solo un puñado de legendarios (Mew, Arceus) lo cumplen. No
+    // tiene sentido recomendarle al usuario que consiga uno de esos como
+    // "el rol que le falta al equipo". Sigue detectándose normalmente para
+    // Pokémon individuales vía getRole (ej. si ya tienes un Mew en el equipo).
     const avgStats: BaseStats = averages;
-    const allRoleScores = scoreAllRoles(avgStats);
+    const allRoleScores = scoreAllRoles(avgStats).filter((r) => r.role.es !== BALANCED_ROLE.es);
 
     // Sort by score ascending (weakest roles in the team avg = most needed)
     // But penalize roles already heavily covered
@@ -3693,7 +3882,14 @@ export default function Home() {
       const superEffTo = new Set(rel.double_damage_to?.map((x: any) => x.name) ?? []);
       const offensiveCovers = offensiveGaps.filter((t) => superEffTo.has(t));
 
-      const score = defensiveCovers.length * 2 + offensiveCovers.length;
+      // Severidad: pesa cada debilidad resuelta según CUÁNTOS miembros del
+      // equipo son débiles a ese tipo (analysis.weaknesses[t]), en vez de un
+      // punto fijo por tipo. Así, resolver una debilidad que afecta a 4
+      // miembros vale mucho más que una que solo afecta a 2 — mismo criterio
+      // de severidad (before.weak) que usa scorePokemonCandidate en priority1,
+      // para que este resumen y el ranking de candidatos no se contradigan.
+      const defensiveWeight = defensiveCovers.reduce((sum, t) => sum + (analysis.weaknesses[t] ?? 0), 0);
+      const score = defensiveWeight * 2 + offensiveCovers.length;
       if (score > 0) {
         candidateScores[candidateType] = { score, defensiveCovers, offensiveCovers };
       }
@@ -3718,7 +3914,8 @@ export default function Home() {
         const d1 = candidateScores[t1], d2 = candidateScores[t2];
         const combinedDef = [...new Set([...d1.defensiveCovers, ...d2.defensiveCovers])];
         const combinedOff = [...new Set([...d1.offensiveCovers, ...d2.offensiveCovers])];
-        const score = combinedDef.length * 2 + combinedOff.length;
+        const combinedDefWeight = combinedDef.reduce((sum, t) => sum + (analysis.weaknesses[t] ?? 0), 0);
+        const score = combinedDefWeight * 2 + combinedOff.length;
         if (!bestDual || score > bestDual.score) {
           bestDual = { types: [t1, t2], score, defensiveCovers: combinedDef, offensiveCovers: combinedOff };
         }
@@ -3938,7 +4135,25 @@ export default function Home() {
 
   return (
     <div ref={rootRef} className="min-h-screen px-3 py-4 sm:p-6 bg-linear-to-b from-slate-900 via-[#041229] to-[#031022] text-slate-100">
+      {/* Notificación flotante estilo la página (reemplaza los alert() del navegador) */}
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-[9999] max-w-xs rounded-lg border border-amber-500/40 bg-slate-900/95 backdrop-blur px-4 py-3 shadow-xl shadow-black/40 animate-[fadeInUp_0.2s_ease-out]">
+          <div className="flex items-start gap-2.5">
+            <span className="text-base leading-none">⚠️</span>
+            <span className="text-sm text-slate-200 leading-snug">{toast}</span>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              className="ml-auto shrink-0 text-slate-500 hover:text-slate-300 text-xs leading-none"
+            >✕</button>
+          </div>
+        </div>
+      )}
       <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         /* ── PokeRun custom scrollbars ── */
         :root {
           --sb-track: #0a1628;
@@ -5647,6 +5862,129 @@ const enSlug =
       )}
       </div>
       )}
+      {/* ── ¿QUIÉN CONVIENE REEMPLAZAR? ─────────────────────────────── */}
+      {teamSummary && teamContribution.length > 0 && (
+      <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">🔁</span>
+            <h2 className="text-base font-semibold tracking-tight text-slate-100">
+              {lang === "es" ? "¿Quién conviene reemplazar?" : "Who should you replace?"}
+            </h2>
+          </div>
+          <p className="text-xs text-slate-400 -mt-1">
+            {lang === "es"
+              ? "Ordenado de menor a mayor aporte real al equipo (cobertura única, redundancia, debilidades compartidas y stats totales)."
+              : "Sorted from least to most real contribution to the team (unique coverage, redundancy, shared weaknesses, and total stats)."}
+          </p>
+          {(() => {
+            const ContributionCard = ({
+              entry,
+              rank,
+              highlight,
+            }: {
+              entry: (typeof teamContribution)[number];
+              rank: number;
+              highlight: boolean;
+            }) => {
+              const { idx, slot, uniqueResistTypes, redundantResistTypes, dragWeaknessTypes, bst } = entry;
+              return (
+                <div
+                  className={`rounded-lg border p-3 flex flex-col gap-2 ${
+                    highlight ? "border-red-500/40 bg-red-950/20" : "border-slate-700/60 bg-slate-900/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-mono text-slate-500">#{rank + 1}</span>
+                      <span className="text-base font-semibold text-slate-100">{slot.name}</span>
+                      {slot.types.filter(Boolean).map((ty) => (
+                        <span key={ty} className={`${badgeClass(ty)} text-xs`}>{tn(ty)}</span>
+                      ))}
+                      {highlight && (
+                        <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">
+                          {lang === "es" ? "Menos aporta" : "Least valuable"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-sm font-bold text-slate-100 ring-1 ring-slate-600">
+                        {lang === "es" ? "Stats totales" : "Total stats"}: <span className="text-amber-300">{bst || "—"}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateSlot(idx, { name: "" })}
+                        className="text-xs font-medium text-sky-400 hover:text-sky-300 underline underline-offset-2 whitespace-nowrap"
+                      >
+                        {lang === "es" ? "Quitar y buscar reemplazo" : "Remove and find replacement"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-300 leading-relaxed space-y-1">
+                    {uniqueResistTypes.length > 0 && (
+                      <div>
+                        {lang === "es" ? "✅ Único que resiste: " : "✅ Only one resisting: "}
+                        {uniqueResistTypes.map((ty) => (
+                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+                        ))}
+                      </div>
+                    )}
+                    {dragWeaknessTypes.length > 0 && (
+                      <div>
+                        {lang === "es" ? "⚠️ Comparte debilidad de equipo a: " : "⚠️ Shares team weakness to: "}
+                        {dragWeaknessTypes.map((ty) => (
+                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+                        ))}
+                      </div>
+                    )}
+                    {redundantResistTypes.length > 0 && (
+                      <div>
+                        {lang === "es" ? "♻️ Resistencias ya cubiertas por otro miembro: " : "♻️ Resistances already covered by another member: "}
+                        {redundantResistTypes.map((ty) => (
+                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+                        ))}
+                      </div>
+                    )}
+                    {uniqueResistTypes.length === 0 && dragWeaknessTypes.length === 0 && redundantResistTypes.length === 0 && (
+                      <div>{lang === "es" ? "Sin resistencias/debilidades relevantes detectadas." : "No relevant resistances/weaknesses detected."}</div>
+                    )}
+                  </div>
+                </div>
+              );
+            };
+
+            const [worst, ...rest] = teamContribution;
+            const isActuallyWeakest = rest.length > 0 ? worst.value < rest[0].value : true;
+
+            return (
+              <div className="space-y-2">
+                <ContributionCard entry={worst} rank={0} highlight={isActuallyWeakest} />
+                {rest.length > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowRestContribution((v) => !v)}
+                      className="w-full text-center text-xs font-medium text-sky-400 hover:text-sky-300 underline underline-offset-2 py-1"
+                    >
+                      {showRestContribution
+                        ? (lang === "es" ? "▲ Ocultar el resto del equipo" : "▲ Hide the rest of the team")
+                        : (lang === "es" ? `▼ Ver el resto del equipo (${rest.length})` : `▼ Show the rest of the team (${rest.length})`)}
+                    </button>
+                    {showRestContribution && (
+                      <div className="space-y-2">
+                        {rest.map((entry, i) => (
+                          <ContributionCard key={entry.idx} entry={entry} rank={i + 1} highlight={false} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+      )}
       {/* ── POKÉMON RECOMENDADOS (fila 2 — ancho completo) ───────────── */}
       {teamSummary && (
       <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
@@ -5686,9 +6024,9 @@ const enSlug =
 
               {/* Panel de filtros desplegable */}
               {recShowFilters && (
-                <div className="rounded-xl border border-slate-700/60 bg-slate-900/80 p-4 space-y-4">
-                  {/* Switches rápidos — grilla 2×2 */}
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-700/60 bg-slate-900/80 p-3 space-y-2.5 divide-y divide-slate-800">
+                  {/* Switches rápidos — grilla 2×2, compacta */}
+                  <div className="flex flex-wrap gap-x-5 gap-y-2 pb-2.5">
                     {[
                       { key: "finalEvo", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
                       { key: "legendary", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
@@ -5696,23 +6034,27 @@ const enSlug =
                       { key: "noDup", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
                       { key: "prioritizeCoverage", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
                     ].map(({ key, label, value, setter }) => (
-                      <label key={key} className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <label key={key} className="flex items-center gap-1.5 cursor-pointer select-none">
                         <button
                           type="button"
+                          role="switch"
+                          aria-checked={value}
                           onClick={() => setter(!value)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 transition-colors ${value ? "bg-sky-500 border-sky-500" : "bg-slate-700 border-slate-700"}`}
+                          className={`relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full transition-colors duration-200 ${value ? "bg-gradient-to-r from-sky-500 to-sky-400" : "bg-slate-700"}`}
                         >
-                          <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${value ? "translate-x-5" : "translate-x-0"}`} />
+                          <span
+                            className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${value ? "translate-x-[15px]" : "translate-x-0.5"}`}
+                          />
                         </button>
-                        <span className="text-xs text-slate-300 leading-tight">{label}</span>
+                        <span className="text-xs text-slate-300 leading-tight whitespace-nowrap">{label}</span>
                       </label>
                     ))}
                   </div>
                   {/* Filtro por tipo — doble tipo */}
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-2">{t.recFilterType}</div>
+                  <div className="pt-2.5 pb-2.5">
+                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterType}</div>
                     {/* Selector de tipo 1 */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
+                    <div className="flex flex-wrap gap-1">
                       {allTypes.map((type) => {
                         const active = recFilterTypes.includes(type);
                         return (
@@ -5725,7 +6067,7 @@ const enSlug =
                               );
                               if (active) setRecFilterType2("");
                             }}
-                            className={`${badgeClass(type)} text-xs px-2 py-1 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-50 hover:opacity-80"}`}
+                            className={`${badgeClass(type)} text-xs px-2 py-0.5 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-50 hover:opacity-80"}`}
                           >
                             {tn(type)}
                           </button>
@@ -5734,11 +6076,11 @@ const enSlug =
                     </div>
                     {/* Selector de tipo 2 (solo aparece si hay tipo 1 seleccionado) */}
                     {recFilterTypes.length > 0 && (
-                      <div>
-                        <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400 mb-1.5">
+                      <div className="mt-2">
+                        <div className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mb-1">
                           {lang === "es" ? "Segundo tipo (opcional)" : "Second type (optional)"}
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {allTypes
                             .filter((type) => type !== recFilterTypes[0])
                             .map((type) => {
@@ -5748,7 +6090,7 @@ const enSlug =
                                   key={type}
                                   type="button"
                                   onClick={() => setRecFilterType2(active ? "" : type)}
-                                  className={`${badgeClass(type)} text-xs px-2 py-1 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-40 hover:opacity-70"}`}
+                                  className={`${badgeClass(type)} text-xs px-2 py-0.5 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-40 hover:opacity-70"}`}
                                 >
                                   {tn(type)}
                                 </button>
@@ -5756,24 +6098,24 @@ const enSlug =
                             })}
                         </div>
                         {recFilterType2 && (
-                          <div className="mt-2 flex items-center gap-2 text-[12px] text-slate-400">
+                          <div className="mt-1.5 flex items-center gap-2 text-[11px] text-slate-400">
                             <span>{lang === "es" ? "Mostrando:" : "Showing:"}</span>
-                            <span className={`${badgeClass(recFilterTypes[0])} text-[12px] px-1.5 py-0.5`}>{tn(recFilterTypes[0])}</span>
+                            <span className={`${badgeClass(recFilterTypes[0])} text-[11px] px-1.5 py-0.5`}>{tn(recFilterTypes[0])}</span>
                             <span className="text-slate-500">/</span>
-                            <span className={`${badgeClass(recFilterType2)} text-[12px] px-1.5 py-0.5`}>{tn(recFilterType2)}</span>
+                            <span className={`${badgeClass(recFilterType2)} text-[11px] px-1.5 py-0.5`}>{tn(recFilterType2)}</span>
                           </div>
                         )}
                       </div>
                     )}
                   </div>
                   {/* Filtro por generación */}
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-2">{t.recFilterGen}</div>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="pt-2.5 pb-2.5">
+                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
+                    <div className="flex flex-wrap gap-1">
                       <button
                         type="button"
                         onClick={() => setRecFilterGen(null)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition ${recFilterGen === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                        className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterGen === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                       >
                         {t.recFilterGenAll}
                       </button>
@@ -5782,7 +6124,7 @@ const enSlug =
                           key={gen}
                           type="button"
                           onClick={() => setRecFilterGen(recFilterGen === gen ? null : gen)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition ${recFilterGen === gen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                          className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterGen === gen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                         >
                           {label}
                         </button>
@@ -5791,15 +6133,15 @@ const enSlug =
                   </div>
                   {/* Filtro por rol */}
                   {isAdvanced && (
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-2">
+                  <div className="pt-2.5">
+                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
                       {lang === "es" ? "Filtrar por rol" : "Filter by role"}
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                       <button
                         type="button"
                         onClick={() => setRecFilterRoleManual(null)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition ${recFilterRoleManual === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                        className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterRoleManual === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                       >
                         {lang === "es" ? "Cualquier rol" : "Any role"}
                       </button>
@@ -5811,7 +6153,7 @@ const enSlug =
                             key={role.en}
                             type="button"
                             onClick={() => setRecFilterRoleManual(active ? null : label)}
-                            className={`rounded-full border px-3 py-1 text-xs font-medium transition ${active ? "" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                            className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${active ? "" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                             style={active ? { borderColor: role.color, backgroundColor: `${role.color}22`, color: role.color } : {}}
                           >
                             {label}
@@ -6035,12 +6377,20 @@ const enSlug =
                                   </FloatingTooltip>
                                 )}
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => setRecDiscarded((prev) => new Set([...prev, candidate.slug]))}
-                                title={t.recFilterDiscard}
-                                className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-600 hover:text-red-400 hover:bg-red-900/30 transition text-[11px] mt-0.5"
-                              >✕</button>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => addCandidateToTeam(candidate)}
+                                  title={lang === "es" ? "Agregar al equipo" : "Add to team"}
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600/20 text-emerald-400 ring-1 ring-emerald-500/40 hover:bg-emerald-500 hover:text-white hover:ring-emerald-400 transition text-[14px] leading-none font-semibold"
+                                >+</button>
+                                <button
+                                  type="button"
+                                  onClick={() => setRecDiscarded((prev) => new Set([...prev, candidate.slug]))}
+                                  title={t.recFilterDiscard}
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-600 hover:text-red-400 hover:bg-red-900/30 transition text-[11px]"
+                                >✕</button>
+                              </div>
                             </div>
 
                             {/* Fila 2: Tipos del Pokémon */}
