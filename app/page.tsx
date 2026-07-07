@@ -2230,9 +2230,170 @@ export default function Home() {
   const [configDraftTransform, setConfigDraftTransform] = useState<SpriteTransform>(DEFAULT_TRANSFORM);
   const [dragFromIdx, setDragFromIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
-  // Touch-based drag-and-drop for mobile
-  const touchDragFrom = useRef<number | null>(null);
-  const touchDragEl = useRef<HTMLElement | null>(null);
+  // Tarjetas compactas: por defecto colapsadas (solo sprite + nombre) para
+  // aligerar el render; se expanden individualmente al hacer click.
+  const [slotCollapsed, setSlotCollapsed] = useState<boolean[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("pokerun-slot-collapsed-v2");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === 6) return parsed;
+        } catch {}
+      }
+    }
+    return Array.from({ length: 6 }, () => false);
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("pokerun-slot-collapsed-v2", JSON.stringify(slotCollapsed));
+    }
+  }, [slotCollapsed]);
+  const toggleSlotCollapsed = (idx: number) => {
+    captureSlotRects();
+    setSlotCollapsed((prev) => prev.map((v, i) => (i === idx ? !v : v)));
+  };
+  // Drag & drop unificado (mouse + touch) via Pointer Events, con tarjeta
+  // fantasma flotante siguiendo el cursor/dedo y animación FLIP al reordenar.
+  const [dragPointerPos, setDragPointerPos] = useState<{ x: number; y: number } | null>(null);
+  const dragGhostSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const dragGrabOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const teamCardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const prevSlotRects = useRef<Map<number, DOMRect>>(new Map());
+
+  // Captura la posición actual de cada tarjeta antes de reordenar el array,
+  // para poder animar (FLIP) desde la posición vieja a la nueva después del
+  // re-render.
+  const captureSlotRects = () => {
+    const map = new Map<number, DOMRect>();
+    teamCardRefs.current.forEach((el, idx) => {
+      if (el) map.set(idx, el.getBoundingClientRect());
+    });
+    prevSlotRects.current = map;
+  };
+
+  // Nodo del fantasma de drag, movido directamente por DOM (sin pasar por
+  // React state) para que seguir al cursor/dedo no dispare re-renders del
+  // árbol completo en cada pixel — eso era la causa del lag.
+  const dragGhostEl = useRef<HTMLDivElement | null>(null);
+  const dragRafId = useRef<number | null>(null);
+  const dragOverIdxRef = useRef<number | null>(null);
+
+  const startSlotDrag = (idx: number, clientX: number, clientY: number, target: HTMLElement) => {
+    setDragFromIdx(idx);
+    setDragPointerPos({ x: clientX, y: clientY });
+    const card = target.closest("[data-slot-idx]") as HTMLElement | null;
+    const rect = card?.getBoundingClientRect();
+    if (rect) {
+      dragGhostSize.current = { w: rect.width, h: rect.height };
+      dragGrabOffset.current = { x: clientX - rect.left, y: clientY - rect.top };
+    }
+  };
+
+  // Encuentra la tarjeta cuyo centro está más cerca del cursor/dedo. Esto
+  // hace que soltar sea mucho más tolerante: ya no hace falta acertar en un
+  // punto exacto, con estar "cerca" de una tarjeta alcanza.
+  const findNearestSlot = (clientX: number, clientY: number): number | null => {
+    let bestIdx: number | null = null;
+    let bestDist = Infinity;
+    teamCardRefs.current.forEach((el, idx) => {
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = clientX - cx;
+      const dy = clientY - cy;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = idx;
+      }
+    });
+    return bestIdx;
+  };
+
+  useEffect(() => {
+    if (dragFromIdx === null) return;
+
+    let pendingX = 0;
+    let pendingY = 0;
+
+    const applyFrame = () => {
+      dragRafId.current = null;
+      // Mueve el fantasma directo por DOM: nada de setState aquí.
+      if (dragGhostEl.current) {
+        dragGhostEl.current.style.transform = `translate(${pendingX - dragGrabOffset.current.x}px, ${pendingY - dragGrabOffset.current.y}px) rotate(-2deg) scale(1.03)`;
+      }
+      const overIdx = findNearestSlot(pendingX, pendingY);
+      if (overIdx !== null && overIdx !== dragOverIdxRef.current) {
+        dragOverIdxRef.current = overIdx;
+        setDragOverIdx(overIdx);
+      }
+    };
+
+    const handleMove = (e: PointerEvent) => {
+      pendingX = e.clientX;
+      pendingY = e.clientY;
+      if (dragRafId.current === null) {
+        dragRafId.current = requestAnimationFrame(applyFrame);
+      }
+    };
+    const finishDrag = () => {
+      if (dragRafId.current !== null) {
+        cancelAnimationFrame(dragRafId.current);
+        dragRafId.current = null;
+      }
+      setDragFromIdx((fromIdx) => {
+        const overIdx = dragOverIdxRef.current;
+        if (fromIdx !== null && overIdx !== null && fromIdx !== overIdx) {
+          captureSlotRects();
+          swapSlots(fromIdx, overIdx);
+        }
+        return null;
+      });
+      dragOverIdxRef.current = null;
+      setDragOverIdx(null);
+      setDragPointerPos(null);
+    };
+
+    document.body.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", finishDrag);
+    return () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", finishDrag);
+      if (dragRafId.current !== null) cancelAnimationFrame(dragRafId.current);
+    };
+  }, [dragFromIdx]);
+
+  // Animación FLIP: cuando `team` cambia por un swap, cada tarjeta "salta"
+  // desde su posición anterior hasta la nueva con una transición suave.
+  useLayoutEffect(() => {
+    const prevRects = prevSlotRects.current;
+    if (prevRects.size === 0) return;
+    teamCardRefs.current.forEach((el, idx) => {
+      if (!el) return;
+      const prev = prevRects.get(idx);
+      if (!prev) return;
+      const next = el.getBoundingClientRect();
+      const dx = prev.left - next.left;
+      const dy = prev.top - next.top;
+      if (dx || dy) {
+        el.style.transition = "none";
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(() => {
+          el.style.transition = "transform 0.28s cubic-bezier(0.22,0.9,0.3,1)";
+          el.style.transform = "";
+        });
+      }
+    });
+    prevSlotRects.current = new Map();
+  }, [team]);
   // Stat tooltip open state per slot (tap on mobile, hover on desktop)
   const [statsTooltipOpen, setStatsTooltipOpen] = useState<boolean[]>(() => Array(6).fill(false));
   // Timeouts para cerrar el tooltip de stats con un pequeño margen de gracia:
@@ -4790,45 +4951,48 @@ export default function Home() {
               <div
                 key={idx}
                 data-slot-idx={idx}
-                className={`pokedex-card relative hover:z-20 p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30" : ""} ${dragFromIdx === idx ? "opacity-50" : ""}`}
-                onDragOver={(e) => { e.preventDefault(); setDragOverIdx(idx); }}
-                onDragLeave={() => setDragOverIdx(null)}
-                onDrop={(e) => { e.preventDefault(); if (dragFromIdx !== null) swapSlots(dragFromIdx, idx); setDragFromIdx(null); setDragOverIdx(null); }}
+                ref={(el) => { teamCardRefs.current[idx] = el; }}
+                className={`pokedex-card relative hover:z-20 p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30 scale-[1.02]" : ""} ${dragFromIdx === idx ? "opacity-30" : ""}`}
               >
                 {/* Drag handle */}
                 <div
-                  draggable
-                  onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; setDragFromIdx(idx); }}
-                  onDragEnd={() => { setDragFromIdx(null); setDragOverIdx(null); }}
-                  onTouchStart={(e) => {
-                    touchDragFrom.current = idx;
-                    touchDragEl.current = e.currentTarget as HTMLElement;
-                    setDragFromIdx(idx);
-                  }}
-                  onTouchMove={(e) => {
-                    if (touchDragFrom.current === null) return;
-                    const touch = e.touches[0];
-                    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-                    const card = el?.closest("[data-slot-idx]") as HTMLElement | null;
-                    if (card) {
-                      const overIdx = Number(card.dataset.slotIdx);
-                      if (!isNaN(overIdx)) setDragOverIdx(overIdx);
-                    }
-                  }}
-                  onTouchEnd={() => {
-                    if (touchDragFrom.current !== null && dragOverIdx !== null && touchDragFrom.current !== dragOverIdx) {
-                      swapSlots(touchDragFrom.current, dragOverIdx);
-                    }
-                    touchDragFrom.current = null;
-                    setDragFromIdx(null);
-                    setDragOverIdx(null);
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    startSlotDrag(idx, e.clientX, e.clientY, e.currentTarget);
                   }}
                   className="touch-drag-handle flex items-center justify-between text-slate-600 hover:text-slate-400 cursor-grab active:cursor-grabbing select-none py-0.5"
                   title="Arrastra para reordenar"
+                  style={{ touchAction: "none" }}
                 >
                   <span className="text-lg tracking-widest">⠿</span>
                   <span className="text-[11px] sm:text-[13px] uppercase tracking-widest opacity-50">{t.dragHandle}</span>
                 </div>
+                {/* Fila compacta: siempre visible, sprite chico + nombre. Click para expandir/colapsar. */}
+                <button
+                  type="button"
+                  onClick={() => toggleSlotCollapsed(idx)}
+                  className="flex items-center gap-2 w-full text-left rounded-md px-1 py-1 -mx-1 transition hover:bg-slate-800/40"
+                >
+                  <div className="w-9 h-9 bg-[#031421] rounded-md overflow-hidden flex items-center justify-center shrink-0">
+                    {slot.sprite ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={slot.sprite}
+                        alt={slot.name}
+                        className="w-8 h-8 object-contain"
+                        style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
+                      />
+                    ) : (
+                      <PokeballIcon className="h-5 w-5 opacity-40" />
+                    )}
+                  </div>
+                  <span className="flex-1 min-w-0 text-sm font-semibold text-slate-100 capitalize truncate">
+                    {slot.name || "Pokémon"}
+                  </span>
+                  <span className={`shrink-0 text-slate-500 text-xs transition-transform ${slotCollapsed[idx] ? "" : "rotate-180"}`}>▾</span>
+                </button>
+                {!slotCollapsed[idx] && (
+                <>
                 <div className="flex gap-2 items-start">
                   <div className="w-16 h-16 sm:w-32 sm:h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
                     {slot.sprite ? (
@@ -5357,6 +5521,8 @@ const enSlug =
                     );
                   })}
                 </div>
+                </>
+                )}
               </div>
             ))}
           </div>
@@ -7057,6 +7223,45 @@ const enSlug =
           </div>
         </div>
       ) : null}
+      {/* ── Tarjeta fantasma de drag & drop (sigue al cursor/dedo) ── */}
+      {dragFromIdx !== null && dragPointerPos && typeof document !== "undefined" && createPortal(
+        <div
+          ref={dragGhostEl}
+          style={{
+            position: "fixed",
+            left: 0,
+            top: 0,
+            width: dragGhostSize.current.w || undefined,
+            height: dragGhostSize.current.h || undefined,
+            pointerEvents: "none",
+            zIndex: 9999,
+            transform: `translate(${dragPointerPos.x - dragGrabOffset.current.x}px, ${dragPointerPos.y - dragGrabOffset.current.y}px) rotate(-2deg) scale(1.03)`,
+            willChange: "transform",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
+          }}
+          className="rounded-lg border-2 border-blue-400/80 bg-slate-900/95 p-1.5 flex flex-col gap-1.5"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-12 bg-[#031421] rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+              {team[dragFromIdx]?.sprite ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={team[dragFromIdx].sprite as string}
+                  alt={team[dragFromIdx].name}
+                  className="w-10 h-10 object-contain"
+                  style={buildSpriteStyle(team[dragFromIdx].spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[team[dragFromIdx].name])}
+                />
+              ) : (
+                <PokeballIcon className="h-6 w-6 opacity-40" />
+              )}
+            </div>
+            <span className="text-sm font-semibold text-slate-100 truncate">
+              {team[dragFromIdx]?.name || "—"}
+            </span>
+          </div>
+        </div>,
+        document.body
+      )}
       {/* ── Sprite Editor Modal ── */}
       {spriteEditorOpen && spriteEditorSrc && (
         <SpriteEditorModal
