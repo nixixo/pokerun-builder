@@ -726,6 +726,13 @@ type AvailablePokemon = {
   isFinalEvo: boolean;      // true si es última evolución (o no evoluciona). Calculado
                              // dinámicamente desde la API — nunca desde lista manual.
   sprite?: string | null;   // URL o dataURL de sprite (usado en modo Pokémon Z)
+  formLabel?: string | null; // SOLO Pokémon Z: campo crudo del JSON ("Mega", "Gmax",
+                              // "Regional", "Battle", "Cosmética", "Z", o ausente).
+                              // Es el campo más confiable para clasificar Megas/Gigamax
+                              // en Pokémon Z — mucho más preciso que adivinar por rango
+                              // de ID o por substring del nombre (ver auditoría del
+                              // JSON completo: "Meganium"/"Yanmega" contienen "mega"
+                              // en el nombre sin ser Megaevoluciones, por ejemplo).
 };
 
 // Rangos de ID por generación (Pokedex nacional)
@@ -1166,6 +1173,10 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterNoDupTypes: "Evitar tipos repetidos",
     recFilterMatchRole: "Mostrar solo Pokémon del rol recomendado",
     recFilterPrioritizeCoverage: "Priorizar cobertura de tipos",
+    recFilterSortStatTitle: "Ordenar por stat más alta",
+    recFilterSortStatNone: "Sin ordenar",
+    recFilterMinStatsTitle: "Mínimos por stat",
+    recFilterMinStatsNote: "Deja vacío lo que no quieras filtrar",
     recRealRole: "Rol",
     recRole: "Rol recomendado",
     recWhyTitle: "Por qué se recomienda",
@@ -1283,6 +1294,10 @@ const UI: Record<Lang, Record<string, string>> = {
     recFilterNoDupTypes: "Avoid type duplicates",
     recFilterMatchRole: "Show only Pokémon with the recommended role",
     recFilterPrioritizeCoverage: "Prioritize type coverage",
+    recFilterSortStatTitle: "Sort by highest stat",
+    recFilterSortStatNone: "No sorting",
+    recFilterMinStatsTitle: "Minimums per stat",
+    recFilterMinStatsNote: "Leave empty what you don't want to filter",
     recRealRole: "Role",
     recRole: "Recommended role",
     recWhyTitle: "Why recommended",
@@ -1933,6 +1948,102 @@ const POKEMON_Z_PRE_EVOS = new Set<number>([
 ]); // 402 pre-evoluciones
 
 
+// ─── Card de "¿Quién conviene reemplazar?" ───────────────────────────────
+// Definida FUERA del componente principal (a diferencia de antes, que se
+// declaraba dentro de una IIFE en cada render) para que React la trate como
+// el mismo tipo de componente entre renders. Antes, al recrearse en cada
+// render, React remontaba todo el árbol de tarjetas ocultas y el botón
+// "quitar" de los Pokémon dentro del desplegable "ver resto del equipo"
+// podía perder su handler / quedar apuntando a un nodo ya desmontado.
+function ContributionCard({
+  entry,
+  rank,
+  highlight,
+  lang,
+  tn,
+  badgeClass,
+  onRemove,
+}: {
+  entry: {
+    idx: number;
+    slot: Slot;
+    bst: number;
+    uniqueResistTypes: string[];
+    redundantResistTypes: string[];
+    dragWeaknessTypes: string[];
+  };
+  rank: number;
+  highlight: boolean;
+  lang: "es" | "en";
+  tn: (apiKey: string) => string;
+  badgeClass: (t: string) => string;
+  onRemove: (idx: number) => void;
+}) {
+  const { idx, slot, uniqueResistTypes, redundantResistTypes, dragWeaknessTypes, bst } = entry;
+  return (
+    <div
+      className={`rounded-lg border p-3 flex flex-col gap-2 h-full ${
+        highlight ? "border-red-500/40 bg-red-950/20" : "border-slate-700/60 bg-slate-900/30"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-mono text-slate-500">#{rank + 1}</span>
+          <span className="text-base font-semibold text-slate-100">{slot.name}</span>
+          {slot.types.filter(Boolean).map((ty) => (
+            <span key={ty} className={`${badgeClass(ty)} text-xs`}>{tn(ty)}</span>
+          ))}
+          {highlight && (
+            <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">
+              {lang === "es" ? "Menos aporta" : "Least valuable"}
+            </span>
+          )}
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-sm font-bold text-slate-100 ring-1 ring-slate-600">
+          {lang === "es" ? "Stats totales" : "Total stats"}: <span className="text-amber-300">{bst || "—"}</span>
+        </span>
+      </div>
+      <div className="text-xs text-slate-300 leading-relaxed space-y-1 flex-1">
+        {uniqueResistTypes.length > 0 && (
+          <div>
+            {lang === "es" ? "✅ Único que resiste: " : "✅ Only one resisting: "}
+            {uniqueResistTypes.map((ty) => (
+              <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+            ))}
+          </div>
+        )}
+        {dragWeaknessTypes.length > 0 && (
+          <div>
+            {lang === "es" ? "⚠️ Comparte debilidad de equipo a: " : "⚠️ Shares team weakness to: "}
+            {dragWeaknessTypes.map((ty) => (
+              <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+            ))}
+          </div>
+        )}
+        {redundantResistTypes.length > 0 && (
+          <div>
+            {lang === "es" ? "♻️ Resistencias ya cubiertas por otro miembro: " : "♻️ Resistances already covered by another member: "}
+            {redundantResistTypes.map((ty) => (
+              <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
+            ))}
+          </div>
+        )}
+        {uniqueResistTypes.length === 0 && dragWeaknessTypes.length === 0 && redundantResistTypes.length === 0 && (
+          <div>{lang === "es" ? "Sin resistencias/debilidades relevantes detectadas." : "No relevant resistances/weaknesses detected."}</div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => onRemove(idx)}
+        className="self-start inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-950/30 px-3 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-900/50 hover:border-red-400/60 hover:text-red-200 transition-colors"
+      >
+        <span aria-hidden="true">🗑️</span>
+        {lang === "es" ? "Quitar" : "Remove"}
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lang, setLang] = useState<Lang>("es");
@@ -2047,6 +2158,31 @@ export default function Home() {
   const [recFilterMatchRole, setRecFilterMatchRole] = useState(false); // solo Pokémon cuyo rol REAL coincida con el recomendado
   const [recFilterPrioritizeCoverage, setRecFilterPrioritizeCoverage] = useState(true); // priorizar cobertura de debilidades en el scoring
   const [recFilterRoleManual, setRecFilterRoleManual] = useState<string | null>(null); // filtro manual de rol (null = cualquier rol)
+  // Filtro: ordenar por la stat más alta (excluyente entre sí, solo 1 activa).
+  // Cuando está activa, esa misma stat se deshabilita en recFilterMinStats.
+  const [recFilterSortStat, setRecFilterSortStat] = useState<keyof BaseStats | null>(null);
+  // Filtro: mínimos por stat (varios a la vez, AND entre los que tengan valor).
+  // Vacío ("") = esa stat no se filtra.
+  const [recFilterMinStats, setRecFilterMinStats] = useState<BaseStatsInput>(EMPTY_STAT_INPUT);
+  // Selecciona/deselecciona la stat de ordenamiento. Al activar una, se limpia
+  // su valor en el filtro de mínimos (quedan mutuamente excluyentes).
+  const toggleRecFilterSortStat = (key: keyof BaseStats) => {
+    setRecFilterSortStat((prev) => {
+      const next = prev === key ? null : key;
+      if (next) {
+        setRecFilterMinStats((prevMin) => ({ ...prevMin, [key]: "" }));
+      }
+      return next;
+    });
+  };
+  // Dex normal: las Megas están excluidas por defecto (comportamiento previo);
+  // este switch permite incluirlas explícitamente.
+  const [recFilterShowMega, setRecFilterShowMega] = useState(false);
+  // Dex Pokémon Z: Megas y Gigamax SÍ se mostraban antes sin control alguno;
+  // estos switches arrancan en `true` para no cambiar el comportamiento
+  // existente, pero permiten excluirlas si se desea.
+  const [recFilterZShowMega, setRecFilterZShowMega] = useState(true);
+  const [recFilterZShowGmax, setRecFilterZShowGmax] = useState(true);
   const [showRestContribution, setShowRestContribution] = useState(false); // expandir el resto del ranking de "quién conviene reemplazar"
   const [toast, setToast] = useState<string | null>(null); // notificación flotante estilo la página (reemplaza los alert() feos del navegador)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -2425,11 +2561,16 @@ export default function Home() {
       ];
 
       // Formas que no son elegibles en un equipo "normal" y distorsionarían
-      // el análisis si se incluyeran como candidatos (megaevoluciones, gigamax,
-      // primigenias, totem, formas de evento/cap...). Se excluyen por nombre;
-      // formas regionales y alternativas con uso competitivo real (rotom-wash,
+      // el análisis si se incluyeran como candidatos (gigamax, primigenias,
+      // totem, formas de evento/cap...). Se excluyen por nombre; formas
+      // regionales y alternativas con uso competitivo real (rotom-wash,
       // landorus-therian, etc.) SÍ se conservan.
-      const EXCLUDED_FORM_PATTERN = /-(mega|gmax|gigantamax|primal|totem|cap|starter|eternamax)\b/i;
+      // NOTA: "mega" se sacó de este patrón — antes se excluía siempre acá
+      // mismo (a nivel de fetch, sin forma de revertirlo); ahora se sigue
+      // trayendo del fetch pero se filtra reactivamente más abajo según el
+      // switch "Mostrar Megas" (recFilterShowMega), para que el usuario
+      // pueda decidir si aparecen o no sin necesitar un nuevo fetch.
+      const EXCLUDED_FORM_PATTERN = /-(gmax|gigantamax|primal|totem|cap|starter|eternamax)\b/i;
 
       for (const { url, query, rowsKey, typesKey, typeNameKey, statsKey, statNameKey } of gqlVariants) {
         try {
@@ -3382,6 +3523,7 @@ export default function Home() {
           isFinalEvo:
             p.id >= 899 ||
             !(speciesWithEvolution.has(p.id) || POKEMON_Z_PRE_EVOS.has(p.id)),
+          formLabel: p.formLabel ?? null,
         };
       });
     }
@@ -3481,6 +3623,30 @@ export default function Home() {
         if (!recFilterLegendary && isLegendary(c)) return false;
         // Filtro: solo originales de Pokémon Z
         if (recFilterOnlyOriginals && !POKEMON_Z_ORIGINALS.has(stripZSuffix(normalizeApostrophe(c.name)))) return false;
+        // Filtro: Megas (dex normal, PokéAPI). Se detecta por el slug oficial
+        // (ej. "venusaur-mega", "charizard-mega-x") — EXCLUDED_FORM_PATTERN ya
+        // no las saca del fetch, así que sin este filtro seguirían apareciendo
+        // siempre; acá se controla con el switch.
+        if (activePokedex !== "pokemon-z" && !recFilterShowMega && /-mega(-[xy])?\b/i.test(c.slug)) return false;
+        // Filtro: Megas y Gigamax (dex Pokémon Z). Se usa el campo formLabel
+        // del JSON, que es el más confiable para esto — no se puede usar el
+        // ID (megas oficiales conviven en rangos 90001-90008 Y 90059-90078,
+        // Zygarde Mega está suelta en 90093) ni un substring del nombre
+        // (ej. "Meganium"/"Yanmega" contienen "mega" sin ser Megaevoluciones).
+        if (activePokedex === "pokemon-z") {
+          // OJO: el JSON usa formLabel "Mega" tanto para las Megas reales
+          // como (por error/diseño) para la entrada BASE de 26 especies que
+          // tienen mega en el juego (ej. Gyarados id 130, Charizard id 6,
+          // Lucario id 448...). Por eso NO alcanza con formLabel === "Mega":
+          // hay que exigir también que sea una entrada de la zona fakedex
+          // (id >= 90000), o species base como Gyarados quedan atrapadas
+          // por el switch igual que las Megas de verdad.
+          const isZMega = c.id >= 90059 && c.id <= 90078
+            ? true
+            : (c.formLabel === "Mega" && c.id >= 90000);
+          if (!recFilterZShowMega && isZMega) return false;
+          if (!recFilterZShowGmax && c.formLabel === "Gmax") return false;
+        }
         // Filtro de rol suavizado (Opción D):
         // manual tiene prioridad sobre el toggle automático.
         // Se usa matchesRole en vez de comparación exacta → pasan también Pokémon
@@ -3489,6 +3655,21 @@ export default function Home() {
           if (!c.stats) return false;          // sin stats no podemos evaluar
           if (!roleMatch) return false;         // no se pudo calcular (neededRole null)
           if (!roleMatch.passes) return false;
+        }
+        // Filtro: mínimos por stat. Solo se evalúan las stats con valor
+        // (vacío = no se filtra). Es un AND entre todas las que tengan valor.
+        // La stat activa en "ordenar por stat más alta" queda deshabilitada
+        // en la UI, así que en la práctica nunca coincide con recFilterSortStat.
+        {
+          const minEntries = (Object.keys(recFilterMinStats) as (keyof BaseStats)[])
+            .filter((k) => recFilterMinStats[k].trim() !== "");
+          if (minEntries.length > 0) {
+            if (!c.stats) return false;
+            for (const k of minEntries) {
+              const min = parseInt(recFilterMinStats[k], 10);
+              if (!Number.isNaN(min) && c.stats[k] < min) return false;
+            }
+          }
         }
         return true;
       })
@@ -3553,7 +3734,18 @@ export default function Home() {
           : powerRoleBonus * 100 + result.priority3 * 10 + result.priority4; // sin sesgo: ordena por poder bruto + rol + resistencias + equilibrio
         return { candidate, ...result, score: finalScore, realRole };
       })
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => {
+        // Filtro "ordenar por stat más alta": si está activo, el orden se
+        // basa directamente en esa stat (mayor a menor) en vez del score de
+        // recomendación normal. Los candidatos sin stats (no debería pasar
+        // en la práctica) quedan al final.
+        if (recFilterSortStat) {
+          const av = a.candidate.stats ? a.candidate.stats[recFilterSortStat] : -1;
+          const bv = b.candidate.stats ? b.candidate.stats[recFilterSortStat] : -1;
+          if (av !== bv) return bv - av;
+        }
+        return b.score - a.score;
+      });
 
     // Filtro de duplicados de tipo: si está activado, no permitir dos Pokémon
     // con exactamente la misma combinación de tipos (ordenada)
@@ -3638,7 +3830,7 @@ export default function Home() {
       };
     });
     return result;
-  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual]);
+  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual, activePokedex, recFilterShowMega, recFilterZShowMega, recFilterZShowGmax, recFilterSortStat, recFilterMinStats]);
 
   // Priorizar la carga de sprites de los candidatos visibles actualmente
   useEffect(() => {
@@ -5878,102 +6070,48 @@ const enSlug =
               : "Sorted from least to most real contribution to the team (unique coverage, redundancy, shared weaknesses, and total stats)."}
           </p>
           {(() => {
-            const ContributionCard = ({
-              entry,
-              rank,
-              highlight,
-            }: {
-              entry: (typeof teamContribution)[number];
-              rank: number;
-              highlight: boolean;
-            }) => {
-              const { idx, slot, uniqueResistTypes, redundantResistTypes, dragWeaknessTypes, bst } = entry;
-              return (
-                <div
-                  className={`rounded-lg border p-3 flex flex-col gap-2 ${
-                    highlight ? "border-red-500/40 bg-red-950/20" : "border-slate-700/60 bg-slate-900/30"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-mono text-slate-500">#{rank + 1}</span>
-                      <span className="text-base font-semibold text-slate-100">{slot.name}</span>
-                      {slot.types.filter(Boolean).map((ty) => (
-                        <span key={ty} className={`${badgeClass(ty)} text-xs`}>{tn(ty)}</span>
-                      ))}
-                      {highlight && (
-                        <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">
-                          {lang === "es" ? "Menos aporta" : "Least valuable"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-sm font-bold text-slate-100 ring-1 ring-slate-600">
-                        {lang === "es" ? "Stats totales" : "Total stats"}: <span className="text-amber-300">{bst || "—"}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateSlot(idx, { name: "" })}
-                        className="text-xs font-medium text-sky-400 hover:text-sky-300 underline underline-offset-2 whitespace-nowrap"
-                      >
-                        {lang === "es" ? "Quitar y buscar reemplazo" : "Remove and find replacement"}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-xs text-slate-300 leading-relaxed space-y-1">
-                    {uniqueResistTypes.length > 0 && (
-                      <div>
-                        {lang === "es" ? "✅ Único que resiste: " : "✅ Only one resisting: "}
-                        {uniqueResistTypes.map((ty) => (
-                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
-                        ))}
-                      </div>
-                    )}
-                    {dragWeaknessTypes.length > 0 && (
-                      <div>
-                        {lang === "es" ? "⚠️ Comparte debilidad de equipo a: " : "⚠️ Shares team weakness to: "}
-                        {dragWeaknessTypes.map((ty) => (
-                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
-                        ))}
-                      </div>
-                    )}
-                    {redundantResistTypes.length > 0 && (
-                      <div>
-                        {lang === "es" ? "♻️ Resistencias ya cubiertas por otro miembro: " : "♻️ Resistances already covered by another member: "}
-                        {redundantResistTypes.map((ty) => (
-                          <span key={ty} className={`${badgeClass(ty)} text-xs mx-0.5`}>{tn(ty)}</span>
-                        ))}
-                      </div>
-                    )}
-                    {uniqueResistTypes.length === 0 && dragWeaknessTypes.length === 0 && redundantResistTypes.length === 0 && (
-                      <div>{lang === "es" ? "Sin resistencias/debilidades relevantes detectadas." : "No relevant resistances/weaknesses detected."}</div>
-                    )}
-                  </div>
-                </div>
-              );
-            };
-
             const [worst, ...rest] = teamContribution;
             const isActuallyWeakest = rest.length > 0 ? worst.value < rest[0].value : true;
+            const handleRemove = (idx: number) => updateSlot(idx, { name: "" });
 
             return (
-              <div className="space-y-2">
-                <ContributionCard entry={worst} rank={0} highlight={isActuallyWeakest} />
+              <div className="space-y-3">
+                <ContributionCard
+                  entry={worst}
+                  rank={0}
+                  highlight={isActuallyWeakest}
+                  lang={lang}
+                  tn={tn}
+                  badgeClass={badgeClass}
+                  onRemove={handleRemove}
+                />
                 {rest.length > 0 && (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => setShowRestContribution((v) => !v)}
-                      className="w-full text-center text-xs font-medium text-sky-400 hover:text-sky-300 underline underline-offset-2 py-1"
-                    >
-                      {showRestContribution
-                        ? (lang === "es" ? "▲ Ocultar el resto del equipo" : "▲ Hide the rest of the team")
-                        : (lang === "es" ? `▼ Ver el resto del equipo (${rest.length})` : `▼ Show the rest of the team (${rest.length})`)}
-                    </button>
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowRestContribution((v) => !v)}
+                        className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/60 px-4 py-1.5 text-xs font-medium text-slate-300 hover:text-slate-100 hover:border-slate-500 hover:bg-slate-800/60 transition-colors"
+                      >
+                        <span className={`inline-block transition-transform ${showRestContribution ? "rotate-180" : ""}`}>▾</span>
+                        {showRestContribution
+                          ? (lang === "es" ? "Ocultar el resto del equipo" : "Hide the rest of the team")
+                          : (lang === "es" ? "Ver el resto del equipo" : "Show the rest of the team")}
+                      </button>
+                    </div>
                     {showRestContribution && (
-                      <div className="space-y-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {rest.map((entry, i) => (
-                          <ContributionCard key={entry.idx} entry={entry} rank={i + 1} highlight={false} />
+                          <ContributionCard
+                            key={entry.idx}
+                            entry={entry}
+                            rank={i + 1}
+                            highlight={false}
+                            lang={lang}
+                            tn={tn}
+                            badgeClass={badgeClass}
+                            onRemove={handleRemove}
+                          />
                         ))}
                       </div>
                     )}
@@ -5997,10 +6135,10 @@ const enSlug =
                   <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null)) && (
+                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
                     <button
                       type="button"
-                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterGen(null); setRecFilterRoleManual(null); }}
+                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterGen(null); setRecFilterRoleManual(null); setRecFilterSortStat(null); setRecFilterMinStats(EMPTY_STAT_INPUT); }}
                       className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition"
                     >
                       {t.recFilterReset}
@@ -6010,12 +6148,12 @@ const enSlug =
                   <button
                     type="button"
                     onClick={() => setRecShowFilters((v) => !v)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                   >
                     🔍 {t.recFilterTitle}
-                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null) && (
+                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
                       <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-500 text-[9px] text-white font-bold">
-                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterGen !== null ? 1 : 0)}
+                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterGen !== null ? 1 : 0) + (recFilterSortStat !== null ? 1 : 0) + Object.values(recFilterMinStats).filter((v) => v.trim() !== "").length}
                       </span>
                     )}
                   </button>
@@ -6024,145 +6162,219 @@ const enSlug =
 
               {/* Panel de filtros desplegable */}
               {recShowFilters && (
-                <div className="rounded-xl border border-slate-700/60 bg-slate-900/80 p-3 space-y-2.5 divide-y divide-slate-800">
-                  {/* Switches rápidos — grilla 2×2, compacta */}
-                  <div className="flex flex-wrap gap-x-5 gap-y-2 pb-2.5">
-                    {[
-                      { key: "finalEvo", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
-                      { key: "legendary", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
-                      ...(activePokedex === "pokemon-z" ? [{ key: "onlyOriginals", label: lang === "es" ? `${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex} ${t.recFilterOnlyOriginals}` : `Original ${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
-                      { key: "noDup", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
-                      { key: "prioritizeCoverage", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
-                    ].map(({ key, label, value, setter }) => (
-                      <label key={key} className="flex items-center gap-1.5 cursor-pointer select-none">
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={value}
-                          onClick={() => setter(!value)}
-                          className={`relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full transition-colors duration-200 ${value ? "bg-gradient-to-r from-sky-500 to-sky-400" : "bg-slate-700"}`}
-                        >
-                          <span
-                            className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${value ? "translate-x-[15px]" : "translate-x-0.5"}`}
-                          />
-                        </button>
-                        <span className="text-xs text-slate-300 leading-tight whitespace-nowrap">{label}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {/* Filtro por tipo — doble tipo */}
-                  <div className="pt-2.5 pb-2.5">
-                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterType}</div>
-                    {/* Selector de tipo 1 */}
-                    <div className="flex flex-wrap gap-1">
-                      {allTypes.map((type) => {
-                        const active = recFilterTypes.includes(type);
-                        return (
-                          <button
-                            key={type}
-                            type="button"
-                            onClick={() => {
-                              setRecFilterTypes((prev) =>
-                                active ? prev.filter((t) => t !== type) : [type]
-                              );
-                              if (active) setRecFilterType2("");
-                            }}
-                            className={`${badgeClass(type)} text-xs px-2 py-0.5 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-50 hover:opacity-80"}`}
-                          >
-                            {tn(type)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {/* Selector de tipo 2 (solo aparece si hay tipo 1 seleccionado) */}
-                    {recFilterTypes.length > 0 && (
-                      <div className="mt-2">
-                        <div className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mb-1">
-                          {lang === "es" ? "Segundo tipo (opcional)" : "Second type (optional)"}
+                <div className="rounded-xl border border-slate-700/60 bg-slate-900/80 p-2.5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                    {/* ══════════ COLUMNA IZQUIERDA ══════════ */}
+                    <div className="space-y-2 md:pr-2 md:border-r md:border-slate-800">
+                      {/* Switches rápidos */}
+                      <div className="flex flex-wrap gap-x-3 gap-y-1.5 pb-2 border-b border-slate-800/80">
+                        {[
+                          { key: "finalEvo", emoji: "🌟", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
+                          { key: "legendary", emoji: "👑", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
+                          ...(activePokedex === "pokemon-z" ? [{ key: "onlyOriginals", emoji: "📘", label: lang === "es" ? `${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex} ${t.recFilterOnlyOriginals}` : `Original ${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
+                          ...(activePokedex === "pokemon-z"
+                            ? [
+                                { key: "zMega", emoji: "💠", label: lang === "es" ? "Mostrar Megas" : "Show Megas", value: recFilterZShowMega, setter: setRecFilterZShowMega },
+                                { key: "zGmax", emoji: "🌀", label: lang === "es" ? "Mostrar Gigamax" : "Show Gigantamax", value: recFilterZShowGmax, setter: setRecFilterZShowGmax },
+                              ]
+                            : [
+                                { key: "stdMega", emoji: "💠", label: lang === "es" ? "Mostrar Megas" : "Show Megas", value: recFilterShowMega, setter: setRecFilterShowMega },
+                              ]),
+                          { key: "noDup", emoji: "🚫", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
+                          { key: "prioritizeCoverage", emoji: "🛡️", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
+                        ].map(({ key, emoji, label, value, setter }) => (
+                          <label key={key} className="flex items-center gap-1.5 cursor-pointer select-none">
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={value}
+                              onClick={() => setter(!value)}
+                              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ${value ? "bg-gradient-to-r from-sky-500 to-sky-400" : "bg-slate-700"}`}
+                            >
+                              <span
+                                className={`inline-block h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ${value ? "translate-x-[22px]" : "translate-x-1"}`}
+                              />
+                            </button>
+                            <span className="text-[15px] text-slate-300 leading-none whitespace-nowrap">
+                              <span className="mr-1">{emoji}</span>{label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Filtro por tipo — doble tipo */}
+                      <div>
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterType}</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {allTypes.map((type) => {
+                            const active = recFilterTypes.includes(type);
+                            return (
+                              <button
+                                key={type}
+                                type="button"
+                                onClick={() => {
+                                  setRecFilterTypes((prev) =>
+                                    active ? prev.filter((t) => t !== type) : [type]
+                                  );
+                                  if (active) setRecFilterType2("");
+                                }}
+                                className={`${badgeClass(type)} text-[14px] leading-none px-2.5 py-2 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-50 hover:opacity-80"}`}
+                              >
+                                {tn(type)}
+                              </button>
+                            );
+                          })}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {allTypes
-                            .filter((type) => type !== recFilterTypes[0])
-                            .map((type) => {
-                              const active = recFilterType2 === type;
-                              return (
-                                <button
-                                  key={type}
-                                  type="button"
-                                  onClick={() => setRecFilterType2(active ? "" : type)}
-                                  className={`${badgeClass(type)} text-xs px-2 py-0.5 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-40 hover:opacity-70"}`}
-                                >
-                                  {tn(type)}
-                                </button>
-                              );
-                            })}
-                        </div>
-                        {recFilterType2 && (
-                          <div className="mt-1.5 flex items-center gap-2 text-[11px] text-slate-400">
-                            <span>{lang === "es" ? "Mostrando:" : "Showing:"}</span>
-                            <span className={`${badgeClass(recFilterTypes[0])} text-[11px] px-1.5 py-0.5`}>{tn(recFilterTypes[0])}</span>
-                            <span className="text-slate-500">/</span>
-                            <span className={`${badgeClass(recFilterType2)} text-[11px] px-1.5 py-0.5`}>{tn(recFilterType2)}</span>
+                        {recFilterTypes.length > 0 && (
+                          <div className="mt-1.5">
+                            <div className="text-[13px] uppercase tracking-[0.15em] text-slate-400 mb-1.5">
+                              {lang === "es" ? "Segundo tipo (opcional)" : "Second type (optional)"}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {allTypes
+                                .filter((type) => type !== recFilterTypes[0])
+                                .map((type) => {
+                                  const active = recFilterType2 === type;
+                                  return (
+                                    <button
+                                      key={type}
+                                      type="button"
+                                      onClick={() => setRecFilterType2(active ? "" : type)}
+                                      className={`${badgeClass(type)} text-[14px] leading-none px-2.5 py-2 transition ${active ? "ring-2 ring-white/40 scale-105" : "opacity-40 hover:opacity-70"}`}
+                                    >
+                                      {tn(type)}
+                                    </button>
+                                  );
+                                })}
+                            </div>
+                            {recFilterType2 && (
+                              <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-slate-400">
+                                <span>{lang === "es" ? "Mostrando:" : "Showing:"}</span>
+                                <span className={`${badgeClass(recFilterTypes[0])} text-[12px] leading-none px-1.5 py-1`}>{tn(recFilterTypes[0])}</span>
+                                <span className="text-slate-500">/</span>
+                                <span className={`${badgeClass(recFilterType2)} text-[12px] leading-none px-1.5 py-1`}>{tn(recFilterType2)}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                  {/* Filtro por generación */}
-                  <div className="pt-2.5 pb-2.5">
-                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
-                    <div className="flex flex-wrap gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setRecFilterGen(null)}
-                        className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterGen === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
-                      >
-                        {t.recFilterGenAll}
-                      </button>
-                      {GEN_RANGES.map(({ gen, label }) => (
-                        <button
-                          key={gen}
-                          type="button"
-                          onClick={() => setRecFilterGen(recFilterGen === gen ? null : gen)}
-                          className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterGen === gen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Filtro por rol */}
-                  {isAdvanced && (
-                  <div className="pt-2.5">
-                    <div className="text-[10px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
-                      {lang === "es" ? "Filtrar por rol" : "Filter by role"}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setRecFilterRoleManual(null)}
-                        className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${recFilterRoleManual === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
-                      >
-                        {lang === "es" ? "Cualquier rol" : "Any role"}
-                      </button>
-                      {[...ROLES, BALANCED_ROLE].map((role) => {
-                        const label = role[lang as "es" | "en"];
-                        const active = recFilterRoleManual === label;
-                        return (
+
+                      {/* Filtro por generación */}
+                      <div>
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
+                        <div className="flex flex-wrap gap-1.5">
                           <button
-                            key={role.en}
                             type="button"
-                            onClick={() => setRecFilterRoleManual(active ? null : label)}
-                            className={`rounded-full border px-2 py-0.5 text-xs font-medium transition ${active ? "" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
-                            style={active ? { borderColor: role.color, backgroundColor: `${role.color}22`, color: role.color } : {}}
+                            onClick={() => setRecFilterGen(null)}
+                            className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterGen === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                           >
-                            {label}
+                            {t.recFilterGenAll}
                           </button>
-                        );
-                      })}
+                          {GEN_RANGES.map(({ gen, label }) => (
+                            <button
+                              key={gen}
+                              type="button"
+                              onClick={() => setRecFilterGen(recFilterGen === gen ? null : gen)}
+                              className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterGen === gen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ══════════ COLUMNA DERECHA ══════════ */}
+                    <div className="space-y-2">
+                      {/* Filtro por rol */}
+                      {isAdvanced && (
+                      <div>
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                          {lang === "es" ? "Filtrar por rol" : "Filter by role"}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setRecFilterRoleManual(null)}
+                            className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterRoleManual === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                          >
+                            {lang === "es" ? "Cualquier rol" : "Any role"}
+                          </button>
+                          {[...ROLES, BALANCED_ROLE].map((role) => {
+                            const label = role[lang as "es" | "en"];
+                            const active = recFilterRoleManual === label;
+                            return (
+                              <button
+                                key={role.en}
+                                type="button"
+                                onClick={() => setRecFilterRoleManual(active ? null : label)}
+                                className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${active ? "" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                                style={active ? { borderColor: role.color, backgroundColor: `${role.color}22`, color: role.color } : {}}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      )}
+
+                      {/* Ordenar por stat más alta */}
+                      <div>
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterSortStatTitle}</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setRecFilterSortStat(null)}
+                            className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterSortStat === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                          >
+                            {t.recFilterSortStatNone}
+                          </button>
+                          {statLabels.map(([key, label]) => {
+                            const active = recFilterSortStat === key;
+                            return (
+                              <button
+                                key={key}
+                                type="button"
+                                onClick={() => toggleRecFilterSortStat(key)}
+                                className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${active ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Mínimos por stat — 2 filas de 3, compacto */}
+                      <div className="pt-2 border-t border-slate-800/80">
+                        <div className="flex items-baseline justify-between">
+                          <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1">{t.recFilterMinStatsTitle}</div>
+                          <div className="text-[12px] text-slate-500 mb-1">{t.recFilterMinStatsNote}</div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {statLabels.map(([key, label]) => {
+                            const disabled = recFilterSortStat === key;
+                            return (
+                              <label key={key} className={`text-[13px] ${disabled ? "opacity-40" : ""}`}>
+                                <span className="text-slate-400 block leading-none mb-1">{label}</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={255}
+                                  disabled={disabled}
+                                  value={recFilterMinStats[key]}
+                                  onChange={(e) => setRecFilterMinStats((prev) => ({ ...prev, [key]: e.target.value }))}
+                                  placeholder="-"
+                                  className="w-full rounded-md border border-slate-700 bg-slate-950/90 px-2.5 py-1.5 text-[14px] text-slate-100 outline-none transition focus:border-sky-500 disabled:cursor-not-allowed"
+                                />
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  )}
                 </div>
               )}
 
