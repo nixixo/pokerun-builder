@@ -1868,6 +1868,15 @@ const normalizeApostrophe = (s: string): string => s.replace(/[\u2018\u2019\u02B
 // aunque estuvieran bien escritos en la lista.
 const stripZSuffix = (s: string): string => s.replace(/\s+Z$/, "");
 
+// Igual que stripZSuffix, pero además saca el prefijo "Mega "/"Gigamax " para
+// poder comparar Megas/Gigamax de Pokémon Z (ej. "Mega Delphox Z",
+// "Gigamax Raichu") contra POKEMON_Z_ORIGINALS, que solo guarda el nombre de
+// la especie base. Sin esto, el filtro "solo originales" excluía SIEMPRE las
+// Megas/Gigamax (incluso las de especies originales), pisando por completo
+// al switch "Mostrar Megas"/"Mostrar Gigamax" cuando ambos estaban activos.
+const stripZFormPrefixSuffix = (s: string): string =>
+  stripZSuffix(s).replace(/^(Mega|Gigamax)\s+/i, "");
+
 // ─── Fakemon / formas originales de Pokémon Z ────────────────────────────────
 const POKEMON_Z_ORIGINALS = new Set<string>([
   // Pokémon reales con formas Z (nombre exacto del JSON, sin sufijo).
@@ -3782,8 +3791,20 @@ export default function Home() {
         if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
-        // Filtro: solo originales de Pokémon Z
-        if (recFilterOnlyOriginals && !POKEMON_Z_ORIGINALS.has(stripZSuffix(normalizeApostrophe(c.name)))) return false;
+        // Filtro: solo originales de Pokémon Z. Los rangos curados de
+        // Megas/Gigamax (90001-90025 y 90059-90078) ya se controlan aparte
+        // con los switches "Mostrar Megas"/"Mostrar Gigamax" (ver más abajo),
+        // así que se los exime de este chequeo por nombre. Si no, nunca
+        // podían pasar: sus nombres llevan prefijo "Mega "/"Gigamax " y hay
+        // casos (Mega Entei Z, todos los Gigamax curados) cuya especie base
+        // ni siquiera está en la lista de originales, aunque el Mega/Gigamax
+        // en sí sea contenido exclusivo de Pokémon Z.
+        if (recFilterOnlyOriginals) {
+          const isCuratedMegaOrGmax =
+            activePokedex === "pokemon-z" &&
+            ((c.id >= 90001 && c.id <= 90025) || (c.id >= 90059 && c.id <= 90078));
+          if (!isCuratedMegaOrGmax && !POKEMON_Z_ORIGINALS.has(stripZFormPrefixSuffix(normalizeApostrophe(c.name)))) return false;
+        }
         // Filtro: Megas (dex normal, PokéAPI). Se detecta por el slug oficial
         // (ej. "venusaur-mega", "charizard-mega-x") — EXCLUDED_FORM_PATTERN ya
         // no las saca del fetch, así que sin este filtro seguirían apareciendo
