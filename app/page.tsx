@@ -3597,82 +3597,102 @@ export default function Home() {
       .slice(0, 3);
   }, [coverage, typeRelations]);
 
-  // Balance suggestions
-  const suggestions = useMemo(() => {
-    // Only show suggestions if team has at least one Pokémon with types
-    const hasTeamWithTypes = team.some((slot) => slot.types.filter(Boolean).length > 0);
-    if (!hasTeamWithTypes) return [];
+  // Tipos con MENOR cobertura (distinto de "sin cobertura", que ya son 0×):
+  // toma el conteo mínimo mayor a 0 entre los tipos que sí golpeamos, junta
+  // todos los tipos empatados en ese mínimo, y calcula qué 1 o 2 tipos de
+  // ataque cubrirían la mayor cantidad posible de esos tipos débiles.
+  const weakCoverageSuggestion = useMemo(() => {
+    if (!Object.keys(typeRelations).length) return null;
+    const nonZeroEntries = Object.entries(coverage.canHitSupereffective).filter(([, v]) => v > 0);
+    if (nonZeroEntries.length === 0) return null;
+    const minCount = Math.min(...nonZeroEntries.map(([, v]) => v));
+    const weakTypes = nonZeroEntries.filter(([, v]) => v === minCount).map(([ty]) => ty);
 
-    // Nota: ya no se genera ningún string de "recommendation" con el nombre
-    // del tipo incrustado como texto plano. En su lugar se devuelven datos
-    // estructurados (kind + type + count) y el componente de render construye
-    // el mensaje intercalando las mismas etiquetas (badges) de tipo que se
-    // usan en el resto de la aplicación.
-    const all: Array<{
-      category: "defensive" | "offensive";
-      priority: number;
-      type: string;
-      kind: "weakness" | "uncovered";
-      count?: number;
-      resistantTypes?: string[];
-      coverageTypes?: string[];
-    }> = [];
-
-    // Defensive suggestions: shared weaknesses (2+ Pokémon)
-    Object.entries(analysis.weaknesses)
-      .filter(([_, count]) => count >= 2)
-      .sort(([, a], [, b]) => b - a)
-      .forEach(([weakType, count]) => {
-        const resistantTypes = allTypes.filter((t) => {
-          const rel = typeRelations[weakType];
-          if (!rel) return false;
-          const halfTo = new Set(rel.half_damage_to.map((x: any) => x.name));
-          const noTo = new Set(rel.no_damage_to.map((x: any) => x.name));
-          return halfTo.has(t) || noTo.has(t);
-        });
-        if (resistantTypes.length > 0) {
-          all.push({
-            category: "defensive",
-            priority: count,
-            type: weakType,
-            kind: "weakness",
-            count,
-            resistantTypes: resistantTypes.slice(0, 3),
-          });
-        }
-      });
-
-    // Offensive suggestions: uncovered types (0 moves)
-    const uncoveredTypes = Object.entries(coverage.canHitSupereffective)
-      .filter(([_, count]) => count === 0)
-      .map(([t]) => t)
-      .sort();
-    uncoveredTypes.slice(0, 4).forEach((uncoveredType) => {
-      const coverageTypes = allTypes.filter((t) => {
-        const rel = typeRelations[t];
-        if (!rel) return false;
-        const doubleTo = new Set(rel.double_damage_to.map((x: any) => x.name));
-        return doubleTo.has(uncoveredType);
-      });
-      if (coverageTypes.length > 0) {
-        all.push({
-          category: "offensive",
-          priority: 1,
-          type: uncoveredType,
-          kind: "uncovered",
-          coverageTypes: coverageTypes.slice(0, 3),
-        });
-      }
+    // Para cada tipo de ataque candidato, qué tipos débiles cubriría si lo agregamos
+    const atkCoverage: Record<string, string[]> = {};
+    Object.keys(typeRelations).forEach((atkType) => {
+      const rel = typeRelations[atkType];
+      if (!rel) return;
+      const covers = rel.double_damage_to.map((d: any) => d.name).filter((ty: string) => weakTypes.includes(ty));
+      if (covers.length > 0) atkCoverage[atkType] = covers;
     });
+    const candidates = Object.keys(atkCoverage);
+    if (candidates.length === 0) return { minCount, weakTypes, bestTypes: [] as { atkType: string; covered: string[] }[] };
 
-    // Sort by priority and return top 3-4
-    return all
-      .sort((a, b) => {
-        if (a.category === b.category) return b.priority - a.priority;
-        return a.category === "defensive" ? -1 : 1;
-      })
-      .slice(0, 4);
-  }, [team, analysis, coverage, typeRelations, allTypes, lang]);
+    if (weakTypes.length === 1) {
+      // Con un solo tipo débil, cualquier tipo de ataque que lo cubra sirve;
+      // mostramos todos los candidatos (empatados, todos cubren ese único tipo).
+      const sorted = candidates.slice().sort();
+      return {
+        minCount,
+        weakTypes,
+        bestTypes: sorted.map((ty) => ({ atkType: ty, covered: atkCoverage[ty] })),
+      };
+    }
+
+    // Con 2+ tipos débiles: NO buscamos la mejor combinación conjunta, sino
+    // el/los tipo(s) de ataque que, CADA UNO POR SU CUENTA, cubran la mayor
+    // cantidad de tipos débiles. Si hay un empate (ej. 2 tipos que cubren 2
+    // cada uno), se recomiendan ambos por separado.
+    const maxSingle = Math.max(...candidates.map((ty) => atkCoverage[ty].length));
+    const bestTypes = candidates
+      .filter((ty) => atkCoverage[ty].length === maxSingle)
+      .sort()
+      .map((ty) => ({ atkType: ty, covered: atkCoverage[ty] }));
+    return { minCount, weakTypes, bestTypes };
+  }, [coverage, typeRelations]);
+
+  // Feature 1: movimientos ofensivos repetidos por tipo. A partir de 3
+  // movimientos del mismo tipo de ataque en el equipo, el/los adicionales ya
+  // no suman cobertura nueva (pegan a los mismos tipos que el primero), así
+  // que vale la pena marcarlo como posible desperdicio de un moveslot.
+  const moveTypeRedundancy = useMemo(() => {
+    const byType: Record<string, string[]> = {};
+    const countByType: Record<string, number> = {};
+    team.forEach((slot) => {
+      slot.moves.forEach((m) => {
+        if (!m.name || m.category === "Status") return;
+        const isHP = /hidden.?power|poder.?oculto/i.test(m.name);
+        const effectiveType = isHP ? (m.hiddenPowerType ?? null) : m.type;
+        if (!effectiveType) return;
+        countByType[effectiveType] = (countByType[effectiveType] ?? 0) + 1;
+        const names = (byType[effectiveType] ??= []);
+        const pokemonName = slot.name || "?";
+        if (!names.includes(pokemonName)) names.push(pokemonName);
+      });
+    });
+    return Object.entries(countByType)
+      .filter(([, count]) => count >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .map(([atkType, count]) => ({ atkType, count, pokemonNames: byType[atkType] }));
+  }, [team]);
+
+  // Debilidades compartidas del equipo (fusiona lo que antes estaban eran dos
+  // cosas separadas: el resumen "debilidad más compartida" acá en Tipos, y la
+  // mitad defensiva de "Sugerencias de balance" en otra tarjeta aparte).
+  // Para cada tipo al que 2+ Pokémon del equipo son débiles: cuántos son,
+  // quiénes, y qué tipo(s) lo resisten como sugerencia de arreglo — todo en
+  // un solo lugar en vez de repetido con distinto estilo en dos tarjetas.
+  const sharedWeaknesses = useMemo(() => {
+    const entries = Object.entries(analysis.weaknesses).filter(([, c]) => c >= 3);
+    if (entries.length === 0) return [];
+    return entries
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([weakType, count]) => {
+        const names = (analysis.weakMemberIdx[weakType] || []).map((idx) => team[idx]?.name).filter(Boolean);
+        const rel = typeRelations[weakType];
+        const resistantTypes = rel
+          ? allTypes.filter((ty) => {
+              const halfTo = new Set(rel.half_damage_to.map((x: any) => x.name));
+              const noTo = new Set(rel.no_damage_to.map((x: any) => x.name));
+              return halfTo.has(ty) || noTo.has(ty);
+            }).slice(0, 3)
+          : [];
+        return { weakType, count, names, resistantTypes };
+      });
+  }, [analysis, team, typeRelations, allTypes]);
+
 
   // Pokémon recommendados: análisis 100% dinámico sobre TODOS los Pokémon
   // disponibles en el Builder (allPokemonData), sin ninguna lista fija.
@@ -5606,6 +5626,34 @@ const enSlug =
                 <div className="text-slate-300">{lang === "es" ? "Cargando relaciones de tipos..." : "Loading type chart..."}</div>
               ) : (
                 <div className="grid grid-cols-1 gap-2">
+                  {sharedWeaknesses.length > 0 && (
+                    <div className="rounded-lg border border-red-800/40 bg-red-950/20 px-3 py-2.5">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-red-400 mb-1.5 font-medium">
+                        {lang === "es" ? "Debilidades compartidas del equipo" : "Team's shared weaknesses"}
+                      </div>
+                      <div className="space-y-2.5">
+                        {sharedWeaknesses.map(({ weakType, count, names, resistantTypes }) => (
+                          <div key={weakType}>
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                              <span className={`${badgeClass(weakType)} text-[13px] px-2 py-0.5`}>{tn(weakType)}</span>
+                              <span className="text-red-300 font-semibold">
+                                {count}× {lang === "es" ? "en el equipo" : "on the team"}
+                              </span>
+                              {names.length > 0 && <span className="text-slate-500">({names.join(", ")})</span>}
+                            </div>
+                            {resistantTypes.length > 0 && (
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                                <span className="text-slate-600">{lang === "es" ? "resistido por:" : "resisted by:"}</span>
+                                {resistantTypes.map((ty) => (
+                                  <span key={ty} className={`${badgeClass(ty)} text-[12px] px-1.5 py-0.5 opacity-80`}>{tn(ty)}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20">
                       <div className="flex items-center gap-2 mb-2">
@@ -5782,7 +5830,9 @@ const enSlug =
                     <span className="text-3xl font-semibold">{coverage.supCount}</span>
                     <span className="text-slate-500 text-sm">/ {Object.keys(typeRelations).length} {t.coverageOf}</span>
                   </div>
-                  {/* Tipos NO cubiertos — protagonismo principal */}
+                  {/* Tipos NO cubiertos — protagonismo principal, con su sugerencia
+                      de ataque justo al lado (antes estaban separados por toda
+                      la grilla completa en el medio). */}
                   {Object.keys(typeRelations).length > 0 && (() => {
                     const uncovered = Object.keys(typeRelations).filter(
                       (ty) => !coverage.canHitSupereffective[ty] || coverage.canHitSupereffective[ty] === 0
@@ -5797,6 +5847,33 @@ const enSlug =
                             <span key={ty} className={`${badgeClass(ty)} text-[13px] px-2 py-0.5 ring-1 ring-red-500/30`}>{tn(ty)}</span>
                           ))}
                         </div>
+                        {attackSuggestions.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-red-900/30 space-y-1.5">
+                            {attackSuggestions.map(({ atkType, covers }) => {
+                              const allSuperEffective = typeRelations[atkType]?.double_damage_to?.map((d: any) => d.name) ?? [];
+                              const secondaryCoverage = allSuperEffective.filter((ty: string) => !covers.includes(ty));
+                              return (
+                                <div key={atkType} className="text-xs">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className={`${badgeClass(atkType)} text-[13px] shrink-0`}>{tn(atkType)}</span>
+                                    <span className="text-slate-400">{t.atkSuggCovers} {covers.length} {t.atkSuggUncovered}</span>
+                                    {covers.map((ty: string) => (
+                                      <span key={ty} className={`${badgeClass(ty)} text-[13px]`}>{tn(ty)}</span>
+                                    ))}
+                                  </div>
+                                  {secondaryCoverage.length > 0 && (
+                                    <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-slate-600">{t.atkSuggAlso}</span>
+                                      {secondaryCoverage.map((ty: string) => (
+                                        <span key={ty} className={`${badgeClass(ty)} text-[12px] px-1.5 py-0.5 opacity-50`}>{tn(ty)}</span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="mt-1 rounded-lg border border-emerald-800/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-400">
@@ -5805,6 +5882,43 @@ const enSlug =
                     );
                   })()}
                 </div>
+                {weakCoverageSuggestion && weakCoverageSuggestion.weakTypes.length > 0 && (
+                  <div className="rounded-lg border border-amber-800/40 bg-amber-950/10 px-3 py-2.5">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-amber-400 mb-1.5 font-medium">
+                      {lang === "es" ? "Tipos con menor cobertura" : "Types with least coverage"}
+                      <span className="text-amber-500/70 normal-case tracking-normal font-normal">
+                        {" "}({weakCoverageSuggestion.minCount}× {lang === "es" ? "cada uno" : "each"})
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {weakCoverageSuggestion.weakTypes.map((ty) => (
+                        <span key={ty} className={`${badgeClass(ty)} text-[13px] px-2 py-0.5`}>{tn(ty)}</span>
+                      ))}
+                    </div>
+                    {weakCoverageSuggestion.bestTypes.length > 0 ? (
+                      <div className="space-y-1 pt-1.5 border-t border-amber-900/30">
+                        <div className="text-xs text-slate-400 mb-0.5">
+                          {lang === "es" ? "Tipo(s) de ataque recomendados:" : "Recommended attack type(s):"}
+                        </div>
+                        {weakCoverageSuggestion.bestTypes.map(({ atkType, covered }) => (
+                          <div key={atkType} className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
+                            <span className={`${badgeClass(atkType)} text-[13px]`}>{tn(atkType)}</span>
+                            <span className="text-slate-600">
+                              {lang === "es" ? "cubre" : "covers"} {covered.length}/{weakCoverageSuggestion.weakTypes.length}
+                            </span>
+                            {covered.map((ty) => (
+                              <span key={ty} className={`${badgeClass(ty)} text-[12px] px-1.5 py-0.5 opacity-70`}>{tn(ty)}</span>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-500 pt-1.5 border-t border-amber-900/30">
+                        {lang === "es" ? "No hay ningún tipo de ataque que refuerce esto." : "No attack type would help here."}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div>
                   <div className="font-semibold text-slate-100 mb-2 text-sm">{t.superEffective}</div>
                   <div className="flex flex-wrap gap-2">
@@ -5821,102 +5935,34 @@ const enSlug =
                     )}
                   </div>
                 </div>
-                {attackSuggestions.length > 0 && (
-                  <div>
-                    <div className="font-semibold text-slate-100 mb-2 text-sm">{t.atkSuggTitle}</div>
+                {moveTypeRedundancy.length > 0 && (
+                  <div className="rounded-lg border border-slate-700/40 bg-slate-900/60 px-3 py-2.5">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-1.5 font-medium">
+                      {lang === "es" ? "Movimientos ofensivos repetidos" : "Repeated offensive moves"}
+                    </div>
                     <div className="space-y-2">
-                      {attackSuggestions.map(({ atkType, covers }) => {
-                        const allSuperEffective = typeRelations[atkType]?.double_damage_to?.map((d: any) => d.name) ?? [];
-                        const secondaryCoverage = allSuperEffective.filter((ty: string) => !covers.includes(ty));
-                        return (
-                          <div key={atkType} className="rounded-xl border border-slate-700/40 bg-slate-900/60 px-3 py-2">
-                            <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                              <span className={`${badgeClass(atkType)} text-[14px] shrink-0`}>{tn(atkType)}</span>
-                              <span className="text-xs text-slate-400">{t.atkSuggCovers} {covers.length} {t.atkSuggUncovered}</span>
-                              {covers.map((ty: string) => (
-                                <span key={ty} className={`${badgeClass(ty)} text-[14px]`}>{tn(ty)}</span>
-                              ))}
-                            </div>
-                            {secondaryCoverage.length > 0 && (
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-[13px] text-slate-600">{t.atkSuggAlso}</span>
-                                {secondaryCoverage.map((ty: string) => (
-                                  <span key={ty} className={`${badgeClass(ty)} text-[12px] px-1.5 py-0.5 opacity-50`}>{tn(ty)}</span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                      {moveTypeRedundancy.map(({ atkType, count, pokemonNames }) => (
+                        <div key={atkType} className="flex flex-wrap items-center gap-1.5">
+                          <span className={`${badgeClass(atkType)} text-[13px] px-2 py-0.5`}>{tn(atkType)}</span>
+                          <span className="text-sm font-semibold text-slate-300">×{count}</span>
+                          {pokemonNames.map((name) => (
+                            <span key={name} className="rounded-full border border-slate-600 bg-slate-800 px-2 py-0.5 text-[12px] font-medium text-slate-200 capitalize">
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      {lang === "es"
+                        ? "Del segundo movimiento del mismo tipo en adelante no suman cobertura nueva: pegan a los mismos tipos que el primero."
+                        : "From the second move of the same type onward, they don't add new coverage: they hit the same types as the first."}
                     </div>
                   </div>
                 )}
             </CollapsibleSection>
 
             {isAdvanced && (<>
-            <CollapsibleSection
-              as="div"
-              className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 h-full min-h-0 flex flex-col overflow-hidden"
-              headerClassName="mb-2 sm:mb-3"
-              icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">💡</span>}
-              title={t.balanceSugg}
-              storageKey="balance-suggestions"
-              bodyClassName="flex-1 min-h-0 overflow-y-auto space-y-2"
-            >
-                {suggestions.length > 0 ? (
-                  <>
-                    {suggestions.map((sug, idx) => (
-                      <div key={idx} className="rounded-lg bg-slate-900/50 p-2.5 border border-slate-700/40 space-y-1.5">
-                        <div className="flex items-center gap-1.5 flex-wrap text-xs font-semibold text-slate-200">
-                          {sug.kind === "weakness" ? (
-                            <>
-                              <span>{t.suggWeaknessPrefix}</span>
-                              <span className="text-amber-300">{sug.count}×</span>
-                              <span>{t.suggWeaknessSuffix}</span>
-                              <span className={`${badgeClass(sug.type)} text-[13px] px-1.5 py-0.5`}>{tn(sug.type)}</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>{t.suggUncoveredPrefix}</span>
-                              <span className={`${badgeClass(sug.type)} text-[13px] px-1.5 py-0.5`}>{tn(sug.type)}</span>
-                            </>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {(sug.resistantTypes || []).map((ty) => (
-                            <span key={ty} className={`${badgeClass(ty)} text-[13px] px-2 py-0.5`}>{tn(ty)}</span>
-                          ))}
-                          {(sug.coverageTypes || []).map((ty) => (
-                            <span key={ty} className={`${badgeClass(ty)} text-[13px] px-2 py-0.5`}>{tn(ty)}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Pokémon recommendations block */}
-                    {pokemonRecommendations.length > 0 || recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null ? (
-                      <div className="mt-3 space-y-2">
-                        {/* Bloque movido a la sección "Pokémon ideal para completar el equipo" */}
-                      </div>
-                    ) : loadingAllPokemonData && team.some((slot) => slot.types.filter(Boolean).length > 0) ? (
-                      <div className="mt-3 flex items-center gap-2 text-[12px] text-slate-500 pt-1">
-                        <span className="inline-block h-3 w-3 rounded-full border-2 border-slate-600 border-t-slate-300 animate-spin" />
-                        <span>{t.loadingRecommendations}</span>
-                      </div>
-                    ) : null}
-                  </>
-                ) : team.some((slot) => slot.types.filter(Boolean).length > 0) ? (
-                  <div className="flex flex-col items-center justify-center py-4 text-slate-500 text-sm">
-                    <span className="text-lg mb-1">✓</span>
-                    <span>{t.balancedTeam}</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-4 text-slate-500 text-sm">
-                    <span className="text-lg mb-1">-</span>
-                    <span>{t.loadPokemon}</span>
-                  </div>
-                )}
-            </CollapsibleSection>
             <CollapsibleSection
               as="div"
               className="p-3 sm:p-4 pokedex-card rounded-lg border-blue-800/30 min-h-0 flex flex-col"
