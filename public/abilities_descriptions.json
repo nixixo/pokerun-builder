@@ -1,0 +1,1335 @@
+{
+  "Absorbe Agua": {
+    "description": "Restaura PS cuando recibe ataques agua.",
+    "descriptionEn": "Restores HP if hit by a Water-type move.",
+    "nameEn": "WATERABSORB"
+  },
+  "Absorbe Elec.": {
+    "description": "Restaura PS cuando recibe ataques electricos",
+    "descriptionEn": "Restores HP if hit by an Electric-type move.",
+    "nameEn": "VOLTABSORB"
+  },
+  "Absorbe Fuego": {
+    "description": "Inmune al daño de fuego y aumenta el ataque especial al recibir un ataque de fuego.",
+    "descriptionEn": "It powers up Fire-type moves if it's hit by one.",
+    "nameEn": "FLASHFIRE"
+  },
+  "Acero Templado": {
+    "description": "Potencia un 50% los ataques de tipo Acero.",
+    "descriptionEn": "Powers up Steel-type moves.",
+    "nameEn": "STEELWORKER"
+  },
+  "Aclimatación": {
+    "description": "Anula los efectos del clima, mientras esté en combate.",
+    "descriptionEn": "Eliminates the effects of weather.",
+    "nameEn": "CLOUDNINE"
+  },
+  "Acometida": {
+    "customAbility": true,
+    "description": "En el 1ºturno que salga a combatir, tendrá un 50% extra de Velocidad y un 20% extra de Ataque.",
+    "descriptionEn": "On the turn it enters battle, gets a 50% boost to Speed and a 20% boost to Attack.",
+    "nameEn": "ACOMETIDA"
+  },
+  "Adaptable": {
+    "description": "Recibe un bonus de daño cuando ataca con movimientos de su mismo tipo.",
+    "descriptionEn": "Powers up moves of the same type.",
+    "nameEn": "ADAPTABILITY"
+  },
+  "Afortunado": {
+    "description": "Sube la posibilidad de producir un golpe crítico.",
+    "descriptionEn": "Heightens the critical-hit ratios of moves.",
+    "nameEn": "SUPERLUCK"
+  },
+  "Agallas": {
+    "description": "Sube el ataque un 50% si sufre de cambio de estado.",
+    "descriptionEn": "Boosts Attack if there is a status problem.",
+    "nameEn": "GUTS"
+  },
+  "Alas Vendaval": {
+    "description": "Prioridad a los movimientos de tipo Volador si los PS están al máximo.",
+    "descriptionEn": "Gives priority to Flying-type moves.",
+    "nameEn": "GALEWINGS"
+  },
+  "Albino": {
+    "customAbility": true,
+    "description": "Aumenta el daño de los ataques de tipo Hielo un 50%.",
+    "descriptionEn": "Boosts the power of Ice-type moves by 50%.",
+    "nameEn": "ALBINISMO"
+  },
+  "Alerta": {
+    "description": "Permite conocer el ataque más potente del rival.",
+    "descriptionEn": "Determines what moves a foe has.",
+    "nameEn": "FOREWARN"
+  },
+  "Allanamiento": {
+    "description": "No sirven las defensas como protección.",
+    "descriptionEn": "Passes through the foe's barrier and strikes.",
+    "nameEn": "INFILTRATOR"
+  },
+  "Alma Cura": {
+    "description": "Permite eliminar todos los problemas de estado.",
+    "descriptionEn": "May heal an ally's status conditions.",
+    "nameEn": "HEALER"
+  },
+  "Alquimia Vil": {
+    "customAbility": true,
+    "description": "El envenenamiento daña el doble al final de cada turno.",
+    "descriptionEn": "Poison damage is doubled at the end of each turn.",
+    "nameEn": "ALQUIMIAVIL"
+  },
+  "Amor Filial": {
+    "description": "Ataca dos veces, siendo el segundo ataque un poco más débil.",
+    "descriptionEn": "Allows the Pokémon to attack twice.",
+    "nameEn": "PARENTALBOND"
+  },
+  "Antibalas": {
+    "description": "No le afectan las bombas ni algunos proyectiles.",
+    "descriptionEn": "Protects the Pokémon from ball and bomb moves.",
+    "nameEn": "BULLETPROOF"
+  },
+  "Anticipación": {
+    "description": "Si el enemigo tiene ataques supereficaces, tu Pokémon se estremecerá.",
+    "descriptionEn": "Senses a foe's dangerous moves.",
+    "nameEn": "ANTICIPATION"
+  },
+  "Antídoto": {
+    "description": "Restaura PS al final de cada turno si esta envenenado, en lugar de perder salud.",
+    "descriptionEn": "Restores HP if the Pokémon is poisoned.",
+    "nameEn": "POISONHEAL"
+  },
+  "Armadura Batalla": {
+    "description": "Evita que le hagan golpes críticos.",
+    "descriptionEn": "The Pokémon is protected against critical hits.",
+    "nameEn": "BATTLEARMOR"
+  },
+  "Armadura Frágil": {
+    "description": "Baja la defensa y aumenta la velocidad al recibir un golpe.",
+    "descriptionEn": "Physical attacks lower Defense and raise Speed.",
+    "nameEn": "WEAKARMOR"
+  },
+  "Audaz": {
+    "description": "Sube el poder de los atq. que también dañan al propio usuario.",
+    "descriptionEn": "Powers up moves that have recoil damage.",
+    "nameEn": "RECKLESS"
+  },
+  "Aura Dorada": {
+    "customAbility": true,
+    "description": "Aumenta el daño de tipo Eléctrico un 30%.",
+    "descriptionEn": "Boosts the power of Electric-type moves by 30%.",
+    "nameEn": "AURADORADA"
+  },
+  "Aura Feérica": {
+    "description": "Aumenta el daño de tipo Hada un 30%.",
+    "descriptionEn": "Raises power of Fairy type moves for all Pokémon in battle.",
+    "nameEn": "FAIRYAURA"
+  },
+  "Aura Oscura": {
+    "description": "Aumenta el daño de tipo Siniestro un 30%.",
+    "descriptionEn": "Raises power of Dark type moves for all Pokémon in battle.",
+    "nameEn": "DARKAURA"
+  },
+  "Autoestima": {
+    "description": "Sube el ataque cuando debilitas al rival.",
+    "descriptionEn": "Boosts Attack after knocking out any Pokémon.",
+    "nameEn": "MOXIE"
+  },
+  "Baba": {
+    "description": "Baja la Velocidad del rival cuando recibe un golpe.",
+    "descriptionEn": "Contact with the Pokémon lowers the attacker's Speed stat.",
+    "nameEn": "GOOEY"
+  },
+  "Baba Mágica": {
+    "customAbility": true,
+    "description": "Cuando le golpean por contacto, reduce 1 nivel la Defensa Especial del enemigo.",
+    "descriptionEn": "When hit by a contact move, lowers the attacker's Special Defense by one stage.",
+    "nameEn": "BABAMAGICA"
+  },
+  "Bromista": {
+    "description": "Hace que los ataques de efectos tengan prioridad.",
+    "descriptionEn": "Gives priority to a status move.",
+    "nameEn": "PRANKSTER"
+  },
+  "Brutalidad": {
+    "customAbility": true,
+    "description": "Los ataques de contacto pueden aplicar Hemorragia (el objetivo tendrá el doble de prob. de recibir golpes críticos).",
+    "descriptionEn": "Contact moves may inflict Bleed (the target becomes twice as likely to take critical hits).",
+    "nameEn": "BRUTALIDAD"
+  },
+  "Bucle Aire": {
+    "description": "Anula los efectos del clima.",
+    "descriptionEn": "Eliminates the effects of weather.",
+    "nameEn": "AIRLOCK"
+  },
+  "Cabeza Roca": {
+    "description": "Evita el daño al atacar con movimientos que dañan al usuario.",
+    "descriptionEn": "Protects the Pokémon from recoil damage.",
+    "nameEn": "ROCKHEAD"
+  },
+  "Cacheo": {
+    "description": "Ve el objeto del oponente y aumenta probabilidad de encontrar objetos.",
+    "descriptionEn": "The Pokémon can check a foe's held item.",
+    "nameEn": "FRISK"
+  },
+  "Cambio Color": {
+    "description": "Cambia su tipo por el del último ataque recibido.",
+    "descriptionEn": "Changes the Pokémon's type to the foe's move.",
+    "nameEn": "COLORCHANGE"
+  },
+  "Cambio Táctico": {
+    "description": "Alterna entre forma ofensiva y forma defensiva.",
+    "descriptionEn": "Changes form depending on moves used.",
+    "nameEn": "STANCECHANGE"
+  },
+  "Camorrista": {
+    "customAbility": true,
+    "description": "Sube el poder de las patadas un 20%.",
+    "descriptionEn": "Boosts the power of kicking moves by 20%.",
+    "nameEn": "CAMORRISTA"
+  },
+  "Canasto": {
+    "customAbility": true,
+    "description": "Reduce el daño recibido de Volador y Roca un 2/3.",
+    "descriptionEn": "Reduces damage taken from Flying- and Rock-type moves by 2/3.",
+    "nameEn": "CANASTO"
+  },
+  "Capa Tóxica": {
+    "customAbility": true,
+    "description": "Suelta púas tóxicas al ser golpeado.",
+    "descriptionEn": "Scatters Toxic Spikes when hit.",
+    "nameEn": "CAPATOXICA"
+  },
+  "Caparazón": {
+    "description": "Evita que le hagan golpes críticos.",
+    "descriptionEn": "The Pokémon is protected against critical hits.",
+    "nameEn": "SHELLARMOR"
+  },
+  "Carrillo": {
+    "description": "Recupera un tercio de PS al comer cualquier baya.",
+    "descriptionEn": "Restores additional HP when a Berry is consumed.",
+    "nameEn": "CHEEKPOUCH"
+  },
+  "Chorro Arena": {
+    "description": "Convoca una tormenta de arena.",
+    "descriptionEn": "The Pokémon summons a sandstorm in battle.",
+    "nameEn": "SANDSTREAM"
+  },
+  "Clorofila": {
+    "description": "Duplica la velocidad mientras haya sol.",
+    "descriptionEn": "Boosts the Pokémon's Speed in sunshine.",
+    "nameEn": "CHLOROPHYLL"
+  },
+  "Cobardía": {
+    "description": "Incrementa la Velocidad al recibir ataques de Bicho, Fantasma o Siniestro.",
+    "descriptionEn": "Bug, Ghost or Dark type moves scare it and boost its Speed.",
+    "nameEn": "RATTLED"
+  },
+  "Cola Surf": {
+    "description": "Duplica la Velocidad en terreno eléctrico.",
+    "descriptionEn": "Doubles Speed during Electric Terrain.",
+    "nameEn": "SURGESURFER"
+  },
+  "Colector": {
+    "description": "El PKMN atrae los ataques de tipo Agua y aumentan su Ataque Especial.",
+    "descriptionEn": "Draws in all Water-type moves to up Sp. Attack.",
+    "nameEn": "STORMDRAIN"
+  },
+  "Coleóptero": {
+    "customAbility": true,
+    "description": "Convierte los movimientos de tipo Normal en Bicho y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Bug-type moves and boosts their power by 20%.",
+    "nameEn": "COLEOPTERO"
+  },
+  "Combustible": {
+    "description": "Si recibe daño de Fuego o Agua, sube muchísimo la Velodidad.",
+    "descriptionEn": "Drastically raises Speed when hit by a Fire- or Water-type move.",
+    "nameEn": "STEAMENGINE"
+  },
+  "Compensación": {
+    "description": "Reduce el daño cuando el PS está lleno.",
+    "descriptionEn": "Reduces damage when HP is full.",
+    "nameEn": "MULTISCALE"
+  },
+  "Competitivo": {
+    "description": "Si le reducen una característica, sube el ataque.",
+    "descriptionEn": "Sharply raises Attack when the Pokémon's stats are lowered.",
+    "nameEn": "DEFIANT"
+  },
+  "Compiescolta": {
+    "description": "Reduce el daño que reciben los PKMN aliados en combates dobles.",
+    "descriptionEn": "Reduces damage done to allies.",
+    "nameEn": "FRIENDGUARD"
+  },
+  "Contraguardia": {
+    "customAbility": true,
+    "description": "Contrarresta ataques voladores devolviendo el golpe al agresor.",
+    "descriptionEn": "Counters Flying-type attacks by striking back at the attacker.",
+    "nameEn": "CONTRAGUARDIA"
+  },
+  "Coraza Ira": {
+    "customAbility": true,
+    "description": "Cuando pierde la mitad de salud, reduce sus defensas a cambio de aumentar su ataque y velocidad.",
+    "descriptionEn": "When it drops below half HP, lowers its Defense and Sp. Def in exchange for raising its Attack and Speed.",
+    "nameEn": "CORAZAIRA"
+  },
+  "Coraza Reflejo": {
+    "description": "Rebota los cambios de estadísticas al oponente.",
+    "descriptionEn": "Reflects any stat-lowering effects.",
+    "nameEn": "MIRRORARMOR"
+  },
+  "Corrosión": {
+    "description": "Permite envenenar incluso a Pokémon de tipo Acero y Veneno.",
+    "descriptionEn": "The Pokémon can poison Steel and Poison types.",
+    "nameEn": "CORROSION"
+  },
+  "Cortante": {
+    "customAbility": true,
+    "description": "Potencia los ataques de corte un 50%.",
+    "descriptionEn": "Boosts the power of slicing moves by 50%.",
+    "nameEn": "CORTANTE"
+  },
+  "Corte Fuerte": {
+    "description": "Impide que le bajen en el ataque.",
+    "descriptionEn": "Prevents other Pokémon from lowering Attack stat.",
+    "nameEn": "HYPERCUTTER"
+  },
+  "Cosecha": {
+    "description": "Puede usar nuevamente las bayas.",
+    "descriptionEn": "May create another Berry after one is used.",
+    "nameEn": "HARVEST"
+  },
+  "Cromolente": {
+    "description": "Potencia los movimientos poco eficaces un 50%.",
+    "descriptionEn": "Powers up \"not very effective\" moves.",
+    "nameEn": "TINTEDLENS"
+  },
+  "Cuerpo Horneado": {
+    "customAbility": true,
+    "description": "El fuego le sube mucho la Defensa en lugar de hacerle daño.",
+    "descriptionEn": "Fire moves sharply raise its Defense instead of damaging it.",
+    "nameEn": "CUERPOHORNEADO"
+  },
+  "Cuerpo Llama": {
+    "description": "Tiene un 30% de quemar al enemigo al contacto.",
+    "descriptionEn": "Contact with the Pokémon may burn the attacker.",
+    "nameEn": "FLAMEBODY"
+  },
+  "Cuerpo Maldito": {
+    "description": "Cuando recibe un ataque del enemigo, tiene un 30% de anulárselo durante 2-3 turnos.",
+    "descriptionEn": "May disable a move used on the Pokémon.",
+    "nameEn": "CURSEDBODY"
+  },
+  "Cuerpo Puro": {
+    "description": "Evita reducción de estadísticas.",
+    "descriptionEn": "Prevents other Pokémon from lowering its stats.",
+    "nameEn": "CLEARBODY"
+  },
+  "Cuerpo Áureo": {
+    "description": "No es afectado por ataques de estado.",
+    "descriptionEn": "Gives immunity to status moves.",
+    "nameEn": "GOODASGOLD"
+  },
+  "Cura Lluvia": {
+    "description": "Recupera PS en cada turno mientras haya lluvia.",
+    "descriptionEn": "The Pokémon gradually regains HP in rain.",
+    "nameEn": "RAINDISH"
+  },
+  "Cura Natural": {
+    "description": "Al salir del combate, cura los problemas de estado.",
+    "descriptionEn": "All status problems heal when it switches out.",
+    "nameEn": "NATURALCURE"
+  },
+  "Cálculo Final": {
+    "description": "Si el enemigo se mueve primero, sube el ataque especial.",
+    "descriptionEn": "Boosts move power when the Pokémon moves last.",
+    "nameEn": "ANALYTIC"
+  },
+  "Cólera": {
+    "description": "Al perder la mitad de los PS, aumenta el Ataque Especial.",
+    "descriptionEn": "Raises Special Attack when HP drops below half.",
+    "nameEn": "BERSERK"
+  },
+  "Defensa Hoja": {
+    "description": "Previene problemas de estado.",
+    "descriptionEn": "Prevents problems with status in sunny weather.",
+    "nameEn": "LEAFGUARD"
+  },
+  "Descarga": {
+    "description": "Sube el Ataque o Ataque Especial dependiendo de qué defensa sea la menor en el enemigo.",
+    "descriptionEn": "Adjusts power according to a foe's defenses.",
+    "nameEn": "DOWNLOAD"
+  },
+  "Despiertallama": {
+    "customAbility": true,
+    "description": "Se potencia el Ataque Especial si recibe ataques de Fuego, y es inmune a ellos.",
+    "descriptionEn": "Boosts Special Attack when hit by a Fire-type move, and is immune to Fire-type damage.",
+    "nameEn": "DESPIERTALLAMA"
+  },
+  "Despiste": {
+    "description": "Evita el enamoramiento.",
+    "descriptionEn": "Prevents it from becoming infatuated.",
+    "nameEn": "OBLIVIOUS"
+  },
+  "Dicha": {
+    "description": "Duplica la probabilidad de efectos secundarios de los movimientos.",
+    "descriptionEn": "Boosts the likelihood of added effects appearing.",
+    "nameEn": "SERENEGRACE"
+  },
+  "Dinamo": {
+    "customAbility": true,
+    "description": "Se carga de energía eléctrica al ser golpeado.",
+    "descriptionEn": "Charges up with electric energy when hit.",
+    "nameEn": "DINAMO"
+  },
+  "Disfraz": {
+    "description": "Evita el primer ataque recibido usando su disfraz.",
+    "descriptionEn": "Avoids damage for one turn.",
+    "nameEn": "DISGUISE"
+  },
+  "Don Floral": {
+    "description": "Sube el atq. y def. esp. durante clima soleado",
+    "descriptionEn": "Powers up party Pokémon when it is sunny.",
+    "nameEn": "FLOWERGIFT"
+  },
+  "Efecto Espora": {
+    "description": "Tiene un 30% de dejar esporas al recibir daño de contacto.",
+    "descriptionEn": "Contact may poison or cause paralysis or sleep.",
+    "nameEn": "EFFECTSPORE"
+  },
+  "Elec. Estática": {
+    "description": "Tiene un 30% de paralizar con el daño de contacto recibido.",
+    "descriptionEn": "Contact with the Pokémon may cause paralysis.",
+    "nameEn": "STATIC"
+  },
+  "Electrogénesis": {
+    "description": "Crea un campo eléctrico al entrar en combate durante 5 turnos.",
+    "descriptionEn": "The Pokémon creates an Electric Terrain when it enters a battle.",
+    "nameEn": "ELECTRICSURGE"
+  },
+  "Electromotor": {
+    "description": "Sube la velocidad si recibe un ataque eléctrico y es inmune contra este tipo.",
+    "descriptionEn": "Raises Speed if hit by an Electric-type move.",
+    "nameEn": "MOTORDRIVE"
+  },
+  "Encadenado": {
+    "description": "Los ataques de multi-golpeo siempren golpeen 5 veces.",
+    "descriptionEn": "Increases the frequency of multi-strike moves.",
+    "nameEn": "SKILLLINK"
+  },
+  "Energía Eólica": {
+    "description": "Si recibe un ataque de viento/tormenta se carga con energía eléctrica.",
+    "descriptionEn": "Doubles power of the next Electric-type move used, when hit by a wind move.",
+    "nameEn": "WINDPOWER"
+  },
+  "Energía Pura": {
+    "description": "Duplica el ataque físico, durante el combate.",
+    "descriptionEn": "Raises the Pokémon's Attack stat.",
+    "nameEn": "PUREPOWER"
+  },
+  "Enjambre": {
+    "description": "Sube los ataques tipo Bicho un 50% si tiene pocos PS.",
+    "descriptionEn": "Powers up Bug-type moves in a pinch.",
+    "nameEn": "SWARM"
+  },
+  "Ensañamiento": {
+    "description": "Golpes críticos garantizados contra rivales envenenados.",
+    "descriptionEn": "The Pokémon's attacks become critical hits if the target is poisoned.",
+    "nameEn": "MERCILESS"
+  },
+  "Entusiasmo": {
+    "description": "Sube el ataque un 50% a cambio de bajar la precisión un 20%.",
+    "descriptionEn": "Boosts the Attack stat, but lowers accuracy.",
+    "nameEn": "HUSTLE"
+  },
+  "Escama Especial": {
+    "description": "Sube la def. si sufre de cambio de estado.",
+    "descriptionEn": "Ups Defense if there is a status problem.",
+    "nameEn": "MARVELSCALE"
+  },
+  "Escama de Hielo": {
+    "description": "Las gélidas escamas que protegen su cuerpo reducen a la mitad el daño que le infligen los ataques especiales.",
+    "descriptionEn": "Halves damage from Special moves.",
+    "nameEn": "ICESCALES"
+  },
+  "Escudo Magma": {
+    "description": "Evita ser congelado.",
+    "descriptionEn": "Prevents the Pokémon from becoming frozen.",
+    "nameEn": "MAGMAARMOR"
+  },
+  "Espanto": {
+    "customAbility": true,
+    "description": "Espanta al rival y reduce su Atq.Especial.",
+    "descriptionEn": "Frightens the foe and lowers its Special Attack.",
+    "nameEn": "ESPANTO"
+  },
+  "Espejomágico": {
+    "description": "Refleja el efecto de los movimientos modificadores.",
+    "descriptionEn": "Reflects status-changing moves.",
+    "nameEn": "MAGICBOUNCE"
+  },
+  "Espesura": {
+    "description": "Sube los ataques tipo Planta un 50% si tiene pocos PS.",
+    "descriptionEn": "Powers up Grass-type moves in a pinch.",
+    "nameEn": "OVERGROW"
+  },
+  "Espíritu Vital": {
+    "description": "Evita quedarse dormido.",
+    "descriptionEn": "Prevents the Pokémon from falling asleep.",
+    "nameEn": "VITALSPIRIT"
+  },
+  "Experto": {
+    "description": "Aumenta un 50% el poder de ataques con 60 de potencia o menos.",
+    "descriptionEn": "Powers up the Pokémon's weaker moves.",
+    "nameEn": "TECHNICIAN"
+  },
+  "Fauce Dragón": {
+    "description": "Aumenta el daño del tipo Dragón un 50%.",
+    "descriptionEn": "Powers up Dragon-type moves.",
+    "nameEn": "DRAGONSMAW"
+  },
+  "Filtro": {
+    "description": "Reduce el daño recibido de los ataques súper efectivos.",
+    "descriptionEn": "Reduces damage from super-effective attacks.",
+    "nameEn": "FILTER"
+  },
+  "Firmeza": {
+    "description": "Aumenta la Defensa al recibir daño.",
+    "descriptionEn": "Raises Defense when attacked.",
+    "nameEn": "STAMINA"
+  },
+  "Flaqueza": {
+    "description": "Reduce el Atq. y Atq. Esp. cuando le queda pocos PS.",
+    "descriptionEn": "Lowers stats when HP drops below half.",
+    "nameEn": "DEFEATIST"
+  },
+  "Flexibilidad": {
+    "description": "Evita quedar paralizado.",
+    "descriptionEn": "The Pokémon is protected from paralysis.",
+    "nameEn": "LIMBER"
+  },
+  "Floración": {
+    "customAbility": true,
+    "description": "Aumenta un 50% el daño de los ataques de tipo Planta.",
+    "descriptionEn": "Boosts the power of Grass-type moves by 50%.",
+    "nameEn": "FLORACION"
+  },
+  "Foco Interno": {
+    "description": "Inmune al retroceso.",
+    "descriptionEn": "The Pokémon is protected from flinching.",
+    "nameEn": "INNERFOCUS"
+  },
+  "Forma Ilusoria": {
+    "customAbility": true,
+    "description": "Cuando su salud está por encima del 2/3 adquiere una forma que aumenta su Evasión.",
+    "descriptionEn": "While its HP is above 2/3, takes on a form that raises its Evasion.",
+    "nameEn": "FORMAILUSORIA"
+  },
+  "Francotirador": {
+    "description": "Aumenta el daño de los golpes críticos.",
+    "descriptionEn": "Powers up moves if they become critical hits.",
+    "nameEn": "SNIPER"
+  },
+  "Fuerza Cerebral": {
+    "description": "Potencia los ataques supereficaces un 25%.",
+    "descriptionEn": "Powers up moves that are super effective.",
+    "nameEn": "NEUROFORCE"
+  },
+  "Fuga": {
+    "description": "Permite escapar en un combate contra un PKMN salvaje.",
+    "descriptionEn": "Enables a sure getaway from wild Pokémon.",
+    "nameEn": "RUNAWAY"
+  },
+  "Funda": {
+    "description": "Protege del daño de la Tormenta Arena, y de polvos y esporas.",
+    "descriptionEn": "Protects the Pokémon from weather damage.",
+    "nameEn": "OVERCOAT"
+  },
+  "Garra Dura": {
+    "description": "Aumenta la potencia de los mov. de contacto.",
+    "descriptionEn": "Boosts the power of contact moves.",
+    "nameEn": "TOUGHCLAWS"
+  },
+  "Gas Reactivo": {
+    "description": "Anula las habilidades de todos los Pokémon.",
+    "descriptionEn": "Neutralizes abilities of all Pokémon in battle.",
+    "nameEn": "NEUTRALIZINGGAS"
+  },
+  "Geofagia": {
+    "description": "Se cura si recibe ataques de Tierra, y es inmune a ellos.",
+    "descriptionEn": "Restores HP when hit by a Ground-type move.",
+    "nameEn": "EARTHEATER"
+  },
+  "Gran Encanto": {
+    "description": "Puede enamorar al rival cuando este le golpea.",
+    "descriptionEn": "Contact with the Pokémon may cause infatuation.",
+    "nameEn": "CUTECHARM"
+  },
+  "Gran Pesadilla": {
+    "customAbility": true,
+    "description": "Reduce 1/4 los PS del rival que esté dormido al final de cada turno.",
+    "descriptionEn": "Cuts a sleeping foe's HP by 1/4 at the end of each turn.",
+    "nameEn": "GRANPESADILLA"
+  },
+  "Gula": {
+    "description": "El PKMN poseedor utiliza la baya equipada antes de lo normal.",
+    "descriptionEn": "Encourages the early use of a held Berry.",
+    "nameEn": "GLUTTONY"
+  },
+  "Gélido": {
+    "description": "Restaura PS al final de cada turno si hay nieve.",
+    "descriptionEn": "The Pokémon gradually regains HP in a hailstorm.",
+    "nameEn": "ICEBODY"
+  },
+  "Hedor": {
+    "description": "Puede hacer retroceder al enemigo al atacarle. Repele PKMN salvajes, si es el primero del equipo.",
+    "descriptionEn": "The stench may cause the target to flinch.",
+    "nameEn": "STENCH"
+  },
+  "Herbogénesis": {
+    "description": "Crea un campo de hierba al entrar en combate durante 5 turnos.",
+    "descriptionEn": "The Pokémon creates a Grassy Terrain when it enters a battle.",
+    "nameEn": "GRASSYSURGE"
+  },
+  "Herbívoro": {
+    "description": "Inmune a ataques tipo planta y aumenta el ataque al recibir uno.",
+    "descriptionEn": "Boosts Attack when hit by a Grass-type move.",
+    "nameEn": "SAPSIPPER"
+  },
+  "Hidratación": {
+    "description": "Cura problemas de estado cuando llueve.",
+    "descriptionEn": "Heals status problems if it is raining.",
+    "nameEn": "HYDRATION"
+  },
+  "Hidrorrefuerzo": {
+    "description": "Aumenta mucho la Defensa si le alcanza un movimiento de tipo Agua.",
+    "descriptionEn": "Sharply raises Defense when hit by a Water-type move.",
+    "nameEn": "WATERCOMPACTION"
+  },
+  "Humedad": {
+    "description": "Evita ataques autodestructivos.",
+    "descriptionEn": "Prevents the use of self-destructing moves.",
+    "nameEn": "DAMP"
+  },
+  "Humo Blanco": {
+    "description": "Evita que le bajen las estadísticas.",
+    "descriptionEn": "Prevents other Pokémon from lowering its stats.",
+    "nameEn": "WHITESMOKE"
+  },
+  "Hurto": {
+    "description": "Al minimo contacto con el rival, le quita el objeto.",
+    "descriptionEn": "Steals an item when hit by another Pokémon.",
+    "nameEn": "PICKPOCKET"
+  },
+  "Iceberg": {
+    "customAbility": true,
+    "description": "No recibe daño de retroceso.",
+    "descriptionEn": "Takes no recoil damage.",
+    "nameEn": "CABEZAHIELO"
+  },
+  "Ignorante": {
+    "description": "Ignora los cambios de estadísticas.",
+    "descriptionEn": "Ignores any stat changes in the Pokémon.",
+    "nameEn": "UNAWARE"
+  },
+  "Ignífugo": {
+    "description": "Reduce a la mitad el daño de los ataques de tipo fuego.",
+    "descriptionEn": "Weakens the power of Fire-type moves.",
+    "nameEn": "HEATPROOF"
+  },
+  "Iluminación": {
+    "description": "Reduce la precisión del adversario.",
+    "descriptionEn": "Raises the likelihood of meeting wild Pokémon.",
+    "nameEn": "ILLUMINATE"
+  },
+  "Ilusión": {
+    "description": "Permite transformarse en otros PKMN.",
+    "descriptionEn": "Enters battle disguised as the last Pokémon in the party.",
+    "nameEn": "ILLUSION"
+  },
+  "Impasible": {
+    "description": "Sube la velocidad cuando el PKMN poseedor retrocede.",
+    "descriptionEn": "Raises Speed each time the Pokémon flinches.",
+    "nameEn": "STEADFAST"
+  },
+  "Impostor": {
+    "description": "Se transforma automáticamente en el PKMN rival.",
+    "descriptionEn": "It transforms itself into the Pokémon it is facing.",
+    "nameEn": "IMPOSTER"
+  },
+  "Impulso": {
+    "description": "Sube la velocidad al final de cada turno.",
+    "descriptionEn": "Its Speed stat is gradually boosted.",
+    "nameEn": "SPEEDBOOST"
+  },
+  "Imán": {
+    "description": "Evita la huida de PKMN tipo Acero.",
+    "descriptionEn": "Prevents Steel-type Pokémon from escaping.",
+    "nameEn": "MAGNETPULL"
+  },
+  "Indefenso": {
+    "description": "Aumenta la precisión al 100%.",
+    "descriptionEn": "Ensures attacks by or against the Pokémon land.",
+    "nameEn": "NOGUARD"
+  },
+  "Inflamable": {
+    "customAbility": true,
+    "description": "Aumenta el daño de los ataques de tipo Fuego un 50%.",
+    "descriptionEn": "Boosts the power of Fire-type moves by 50%.",
+    "nameEn": "INFLAMABLE"
+  },
+  "Inicio Lento": {
+    "description": "Reduce el atq. y veloc. durante los primeros 5 turnos.",
+    "descriptionEn": "Temporarily halves Attack and Speed.",
+    "nameEn": "SLOWSTART"
+  },
+  "Inmunidad": {
+    "description": "Evita ser envenenado.",
+    "descriptionEn": "Prevents the Pokémon from getting poisoned.",
+    "nameEn": "IMMUNITY"
+  },
+  "Insomnio": {
+    "description": "Evita quedarse dormido.",
+    "descriptionEn": "Prevents the Pokémon from falling asleep.",
+    "nameEn": "INSOMNIA"
+  },
+  "Insonorizar": {
+    "description": "Inmune a los ataques de sonido.",
+    "descriptionEn": "Gives immunity to sound-based moves.",
+    "nameEn": "SOUNDPROOF"
+  },
+  "Intimidación": {
+    "description": "Baja el ataque al rival.",
+    "descriptionEn": "Lowers the foe's Attack stat.",
+    "nameEn": "INTIMIDATE"
+  },
+  "Intrépido": {
+    "description": "Permite atacar PKMN fantasma con ataques normales y de lucha.",
+    "descriptionEn": "Enables moves to hit Ghost-type Pokémon.",
+    "nameEn": "SCRAPPY"
+  },
+  "Irascible": {
+    "description": "Sube el ataque un 300% cuando recibe un golpe crítico.",
+    "descriptionEn": "Maxes Attack after taking a critical hit.",
+    "nameEn": "ANGERPOINT"
+  },
+  "Justiciero": {
+    "description": "Aumenta el ataque al recibir un ataque de tipo Siniestro.",
+    "descriptionEn": "Raises Attack when hit by a Dark-type move.",
+    "nameEn": "JUSTIFIED"
+  },
+  "Levitación": {
+    "description": "Inmunidad a los ataques de tipo tierra.",
+    "descriptionEn": "Gives immunity to Ground type moves.",
+    "nameEn": "LEVITATE"
+  },
+  "Liviano": {
+    "description": "Sube la velocidad cuando pierde un objeto equipado.",
+    "descriptionEn": "Raises Speed if a held item is used.",
+    "nameEn": "UNBURDEN"
+  },
+  "Llovizna": {
+    "description": "Invoca una fuerte lluvia.",
+    "descriptionEn": "The Pokémon makes it rain when it enters a battle.",
+    "nameEn": "DRIZZLE"
+  },
+  "Lodo Líquido": {
+    "description": "Si le intentan drenar vida, causará daño en su lugar.",
+    "descriptionEn": "Damages attackers using any draining move.",
+    "nameEn": "LIQUIDOOZE"
+  },
+  "Madrugar": {
+    "description": "Duerme la mitad de turnos.",
+    "descriptionEn": "The Pokémon awakens quickly from sleep.",
+    "nameEn": "EARLYBIRD"
+  },
+  "Mal Sueño": {
+    "description": "Reduce 1/6 los PS del rival que esté dormido al final de cada turno.",
+    "descriptionEn": "Reduces a sleeping foe's HP.",
+    "nameEn": "BADDREAMS"
+  },
+  "Mandíbula Fuerte": {
+    "description": "Potencia los ataques de mordedura un 50%.",
+    "descriptionEn": "Boosts the power of biting moves.",
+    "nameEn": "STRONGJAW"
+  },
+  "Manto Níveo": {
+    "description": "Aumenta la evasión si está nevando.",
+    "descriptionEn": "Raises evasion in a hailstorm.",
+    "nameEn": "SNOWCLOAK"
+  },
+  "Mar Llamas": {
+    "description": "Sube los ataques tipo Fuego un 50% si tiene pocos PS.",
+    "descriptionEn": "Powers up Fire-type moves in a pinch.",
+    "nameEn": "BLAZE"
+  },
+  "Megadisparador": {
+    "description": "Aumenta el daño de los ataques de pulso un 50%.",
+    "descriptionEn": "Boosts the power of aura and pulse moves.",
+    "nameEn": "MEGALAUNCHER"
+  },
+  "Menos": {
+    "description": "Sube el ataque especial en conjunción con mas",
+    "descriptionEn": "Ups Sp. Atk if another Pokémon has Plus or Minus.",
+    "nameEn": "MINUS"
+  },
+  "Metal Liviano": {
+    "description": "Disminuye el peso.",
+    "descriptionEn": "Halves the Pokémon's weight.",
+    "nameEn": "LIGHTMETAL"
+  },
+  "Metal Pesado": {
+    "description": "Duplica el peso.",
+    "descriptionEn": "Doubles the Pokémon's weight.",
+    "nameEn": "HEAVYMETAL"
+  },
+  "Modo Daruma": {
+    "description": "Cambia la forma del Pokémon cuando quedan pocos HP.",
+    "descriptionEn": "Changes form when HP drops below half.",
+    "nameEn": "ZENMODE"
+  },
+  "Momia": {
+    "description": "Elimina la habilidad del enemigo al recibir un golpe.",
+    "descriptionEn": "Contact with this Pokémon spreads this Ability.",
+    "nameEn": "MUMMY"
+  },
+  "Mudar": {
+    "description": "Tiene un 30% de curarse un estado alterado al final de cada turno.",
+    "descriptionEn": "The Pokémon may heal its own status problems.",
+    "nameEn": "SHEDSKIN"
+  },
+  "Multitipo": {
+    "description": "Cambia el tipo según la tabla.",
+    "descriptionEn": "Changes type to match the held Plate.",
+    "nameEn": "MULTITYPE"
+  },
+  "Muro Mágico": {
+    "description": "Solo recibe daño de ataques directos.",
+    "descriptionEn": "Protects the Pokémon from indirect damage.",
+    "nameEn": "MAGICGUARD"
+  },
+  "Mutatipo": {
+    "description": "Se convierte en el tipo del movimiento que utiliza.",
+    "descriptionEn": "Changes the Pokémon's type to its last used move.",
+    "nameEn": "PROTEAN"
+  },
+  "Más": {
+    "description": "Sube el ataque especial en conjunción con menos.",
+    "descriptionEn": "Ups Sp. Atk if another Pokémon has Plus or Minus.",
+    "nameEn": "PLUS"
+  },
+  "Nado Rápido": {
+    "description": "Si hay lluvia, duplicará la velocidad.",
+    "descriptionEn": "Boosts the Pokémon's Speed in rain.",
+    "nameEn": "SWIFTSWIM"
+  },
+  "Nebulogénesis": {
+    "description": "Crea un campo de niebla al entrar en combate durante 5 turnos.",
+    "descriptionEn": "The Pokémon creates a Misty Terrain when it enters a battle.",
+    "nameEn": "MISTYSURGE"
+  },
+  "Nerviosismo": {
+    "description": "Evita al enemigo comer bayas.",
+    "descriptionEn": "Makes the foe nervous and unable to eat Berries.",
+    "nameEn": "UNNERVE"
+  },
+  "Nevada": {
+    "description": "Convoca la nieve.",
+    "descriptionEn": "The Pokémon summons a hailstorm in battle.",
+    "nameEn": "SNOWWARNING"
+  },
+  "Normalidad": {
+    "description": "Convierte los ataques en tipo Normal y los potencia un 50%.",
+    "descriptionEn": "All the Pokémon's moves become the Normal type.",
+    "nameEn": "NORMALIZE"
+  },
+  "Ojocompuesto": {
+    "description": "Sube la precisión un 30%. También aumenta la probabilidad de encontrar objetos en los Pokémon.",
+    "descriptionEn": "The Pokémon's accuracy is boosted.",
+    "nameEn": "COMPOUNDEYES"
+  },
+  "Olor Porcino": {
+    "customAbility": true,
+    "description": "Reduce mucho la Evasión del enemigo si te ataca con movimientos de contacto.",
+    "descriptionEn": "Sharply lowers the foe's Evasion if it hits with a contact move.",
+    "nameEn": "OLORPORCINO"
+  },
+  "Pararrayos": {
+    "description": "Es inmune a los ataques eléctricos y aumenta su Ataque Especial al recibir uno.",
+    "descriptionEn": "Draws in all Electric-type moves to up Sp. Attack.",
+    "nameEn": "LIGHTNINGROD"
+  },
+  "Pedante": {
+    "customAbility": true,
+    "description": "Aumenta un 50% el daño de los ataques de tipo Psíquico.",
+    "descriptionEn": "Boosts the power of Psychic-type moves by 50%.",
+    "nameEn": "PEDANTE"
+  },
+  "Pelaje Recio": {
+    "description": "Aumenta la defensa ante ataques físicos.",
+    "descriptionEn": "Reduces damage from physical moves.",
+    "nameEn": "FURCOAT"
+  },
+  "Peluche": {
+    "description": "Reduce el daño recibido de contacto pero aumenta el daño recibido de Fuego.",
+    "descriptionEn": "Halves damage from contact moves, but doubles damage from Fire-type moves.",
+    "nameEn": "FLUFFY"
+  },
+  "Penetrante": {
+    "customAbility": true,
+    "description": "Los movs. punzantes de alta probabilidad de crítico tienen un 30% de hacer retroceder.",
+    "descriptionEn": "High-critical-hit-ratio piercing moves have a 30% chance to make the target flinch.",
+    "nameEn": "PENETRANTE"
+  },
+  "Pereza": {
+    "description": "No puede atacar un turno seguido del otro.",
+    "descriptionEn": "Pokémon can't attack on consecutive turns.",
+    "nameEn": "TRUANT"
+  },
+  "Piel Celeste": {
+    "description": "Cambia y potencia movs de tipo Normal en Volador.",
+    "descriptionEn": "Turns Normal-type moves into Flying-type moves.",
+    "nameEn": "AERILATE"
+  },
+  "Piel Dragontina": {
+    "customAbility": true,
+    "description": "Cambia y potencia movs de tipo Normal en Dragón.",
+    "descriptionEn": "Turns Normal-type moves into Dragon-type moves and boosts their power.",
+    "nameEn": "PIELDRAGONTINA"
+  },
+  "Piel Eléctrica": {
+    "customAbility": true,
+    "description": "Convierte los movimientos de tipo Normal en Eléctrico y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Electric-type moves and boosts their power by 20%.",
+    "nameEn": "PIELELECTRICA"
+  },
+  "Piel Feérica": {
+    "description": "Convierte los movimientos de tipo Normal en Hada y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Fairy-type moves.",
+    "nameEn": "PIXILATE"
+  },
+  "Piel Helada": {
+    "customAbility": true,
+    "description": "Convierte los movimientos de tipo Normal en Hielo y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Ice-type moves and boosts their power by 20%.",
+    "nameEn": "PIELHELADA"
+  },
+  "Piel Herbácea": {
+    "customAbility": true,
+    "description": "Convierte movs. Normal en Planta y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Grass-type moves and boosts their power by 20%.",
+    "nameEn": "PIELHERBACEA"
+  },
+  "Piel Milagro": {
+    "description": "Reduce la probabilidad de cambio de estado.",
+    "descriptionEn": "Makes status-changing moves more likely to miss.",
+    "nameEn": "WONDERSKIN"
+  },
+  "Piel Seca": {
+    "description": "Los ataques de Agua le curan, pero recibe más daño de Fuego.",
+    "descriptionEn": "Reduces HP if it is hot. Water restores HP.",
+    "nameEn": "DRYSKIN"
+  },
+  "Piel Tosca": {
+    "description": "Inflige daño al enemigo en el contacto.",
+    "descriptionEn": "Inflicts damage to the attacker on contact.",
+    "nameEn": "ROUGHSKIN"
+  },
+  "Piel Tétrica": {
+    "customAbility": true,
+    "description": "Convierte los movimientos de tipo Normal en Fantasma y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Ghost-type moves and boosts their power by 20%.",
+    "nameEn": "PIELMALDITA"
+  },
+  "Pies Rápidos": {
+    "description": "Sube la velocidad un 50% durante un cambio de estado.",
+    "descriptionEn": "Boosts Speed if there is a status problem.",
+    "nameEn": "QUICKFEET"
+  },
+  "Poder Arena": {
+    "description": "Sube el poder de ciertos movimientos en una tormenta de arena.",
+    "descriptionEn": "Boosts certain moves' power in a sandstorm.",
+    "nameEn": "SANDFORCE"
+  },
+  "Poder Gélido": {
+    "customAbility": true,
+    "description": "Aumenta el poder de hielo y la velocidad un 50% en clima nevado.",
+    "descriptionEn": "Boosts Ice-type move power and Speed by 50% in snowy weather.",
+    "nameEn": "PODERGELIDO"
+  },
+  "Poder Sabio": {
+    "customAbility": true,
+    "description": "Aumenta el Atq. Esp. pero solo permite usar un movimiento.",
+    "descriptionEn": "Boosts Special Attack, but only allows the use of one move.",
+    "nameEn": "PODERSABIO"
+  },
+  "Poder Solar": {
+    "description": "Durante el clima soleado, sube el atq. esp. del PKMN.",
+    "descriptionEn": "In sunshine, Sp. Atk is boosted but HP decreases.",
+    "nameEn": "SOLARPOWER"
+  },
+  "Polvo Escudo": {
+    "description": "Inmune a efectos secundarios de movimiento.",
+    "descriptionEn": "Blocks the added effects of attacks taken.",
+    "nameEn": "SHIELDDUST"
+  },
+  "Pompa": {
+    "description": "Hace unas cuantas cosas.",
+    "descriptionEn": "Halves damage from Fire-type moves, doubles power of Water-type moves used, and prevents burns.",
+    "nameEn": "WATERBUBBLE"
+  },
+  "Potencia": {
+    "description": "Sube el ataque un 200% mientras está en combate.",
+    "descriptionEn": "Raises the Pokémon's Attack stat.",
+    "nameEn": "HUGEPOWER"
+  },
+  "Potencia Bruta": {
+    "description": "Los ataques con efecto secundario hacen un 30% más de daño, pero pierden el efecto.",
+    "descriptionEn": "Removes added effects to increase move damage.",
+    "nameEn": "SHEERFORCE"
+  },
+  "Predicción": {
+    "description": "Cambia su tipo según el clima.",
+    "descriptionEn": "Castform transforms with the weather.",
+    "nameEn": "FORECAST"
+  },
+  "Presencia Rara": {
+    "customAbility": true,
+    "description": "Aplica Espacio Raro cuando sale a combatir.",
+    "descriptionEn": "Triggers a Rare Space effect upon entering battle.",
+    "nameEn": "PRESENCIARARA"
+  },
+  "Presión": {
+    "description": "Se dobla el uso de PP en el enemigo.",
+    "descriptionEn": "The Pokémon raises the foe's PP usage.",
+    "nameEn": "PRESSURE"
+  },
+  "Primer Auxilio": {
+    "description": "Los movimientos curativos tiene prioridad.",
+    "descriptionEn": "Gives priority to restorative moves.",
+    "nameEn": "TRIAGE"
+  },
+  "Psicogénesis": {
+    "description": "Crea un campo psíquico al entrar en combate durante 5 turnos.",
+    "descriptionEn": "The Pokémon creates a Psychic Terrain when it enters a battle.",
+    "nameEn": "PSYCHICSURGE"
+  },
+  "Punk Rock": {
+    "description": "Potencia los ataques de sonido y, si el poseedor es atacado por uno, el daño recibido será la mitad.",
+    "descriptionEn": "Boosts sound-based moves and halves damage from the same moves.",
+    "nameEn": "PUNKROCK"
+  },
+  "Punta Acero": {
+    "description": "Provoca daño al rival que haga contacto con este PKMN.",
+    "descriptionEn": "Inflicts damage to the Pokémon on contact.",
+    "nameEn": "IRONBARBS"
+  },
+  "Punto Tóxico": {
+    "description": "Tiene un 30% de envenenar cuando recibe daño de contacto.",
+    "descriptionEn": "Contact with the Pokémon may poison the attacker.",
+    "nameEn": "POISONPOINT"
+  },
+  "Puño Férreo": {
+    "description": "Sube el poder de los ataques con puño un 20%.",
+    "descriptionEn": "Boosts the power of punching moves.",
+    "nameEn": "IRONFIST"
+  },
+  "Quitanieves": {
+    "description": "Sube la velocidad mientras haya granizo.",
+    "descriptionEn": "Boosts the Pokémon's Speed stat in a hailstorm.",
+    "nameEn": "SLUSHRUSH"
+  },
+  "Rastro": {
+    "description": "Copia la habilidad del rival.",
+    "descriptionEn": "The Pokémon copies a foe's Ability.",
+    "nameEn": "TRACE"
+  },
+  "Realeza": {
+    "customAbility": true,
+    "description": "Recibe bonus de daño del 50% atacando con todos los tipos y no solo con su tipo original.",
+    "descriptionEn": "Gets a 50% damage bonus attacking with any type, not just its own.",
+    "nameEn": "REALEZA"
+  },
+  "Recogemiel": {
+    "description": "Recoge miel después del combate.",
+    "descriptionEn": "The Pokémon may gather Honey from somewhere.",
+    "nameEn": "HONEYGATHER"
+  },
+  "Recogida": {
+    "description": "Puede que recoja objetos.",
+    "descriptionEn": "The Pokémon may pick up items.",
+    "nameEn": "PICKUP"
+  },
+  "Regeneración": {
+    "description": "Recupera un PS cuando lo regresa a su PokéBall.",
+    "descriptionEn": "Restores a little HP when withdrawn from battle.",
+    "nameEn": "REGENERATOR"
+  },
+  "Regia Presencia": {
+    "description": "Inmune a los movimientos de prioridad.",
+    "descriptionEn": "Prevents use of priority moves.",
+    "nameEn": "QUEENLYMAJESTY"
+  },
+  "Relampagueo": {
+    "customAbility": true,
+    "description": "Tiene un 30% de paralizar al enemigo con ataques de contacto.",
+    "descriptionEn": "Has a 30% chance to paralyze the foe with contact moves.",
+    "nameEn": "RELAMPAGUEO"
+  },
+  "Relincho Negro": {
+    "description": "Aumenta el Ataque Especial al debilitar a un enemigo.",
+    "descriptionEn": "Boosts Special Attack after knocking out a Pokémon.",
+    "nameEn": "GRIMNEIGH"
+  },
+  "Respondón": {
+    "description": "Invierte los cambios en las características.",
+    "descriptionEn": "Makes stat changes have an opposite effect.",
+    "nameEn": "CONTRARY"
+  },
+  "Resquicio": {
+    "description": "Daña al rival si se es debilitado con un atq. físico.",
+    "descriptionEn": "Damages the attacker landing the finishing hit.",
+    "nameEn": "AFTERMATH"
+  },
+  "Retirada": {
+    "description": "Cambia a otro Pokémon tras usar un mov. de tipo Bicho.",
+    "descriptionEn": "Switches out when HP falls below 50%.",
+    "nameEn": "EMERGENCYEXIT"
+  },
+  "Revés": {
+    "description": "Al caer debilitado, inflige al rival un daño equivalente a los PS que le quedaran.",
+    "descriptionEn": "Deals damage upon fainting.",
+    "nameEn": "INNARDSOUT"
+  },
+  "Rezagado": {
+    "description": "Baja la velocidad para atacar en segundo lugar.",
+    "descriptionEn": "The Pokémon moves after all other Pokémon do.",
+    "nameEn": "STALL"
+  },
+  "Ritmo Propio": {
+    "description": "Evita la confusión.",
+    "descriptionEn": "Prevents the Pokémon from becoming confused.",
+    "nameEn": "OWNTEMPO"
+  },
+  "Rivalidad": {
+    "description": "Sube el ataque, si el rival es del mismo género.",
+    "descriptionEn": "Deals more damage to a Pokémon of same gender.",
+    "nameEn": "RIVALRY"
+  },
+  "Robustez": {
+    "description": "Este Pokémon no puede ser derrotado de un solo golpe.",
+    "descriptionEn": "It cannot be knocked out with one hit.",
+    "nameEn": "STURDY"
+  },
+  "Roca Solida": {
+    "description": "Disminuye el daño recibido de los ataques super efectivos.",
+    "descriptionEn": "Reduces damage from super-effective attacks.",
+    "nameEn": "SOLIDROCK"
+  },
+  "Rompeaura": {
+    "description": "Invierte los efectos de habilidades de aura.",
+    "descriptionEn": "Reduces power of Dark- and Fairy-type moves.",
+    "nameEn": "AURABREAK"
+  },
+  "Rompemoldes": {
+    "description": "Anula la habilidad del rival si es defensiva.",
+    "descriptionEn": "Moves can be used regardless of Abilities.",
+    "nameEn": "MOLDBREAKER"
+  },
+  "Sacapecho": {
+    "description": "Impide la reducción de defensa.",
+    "descriptionEn": "Protects the Pokémon from Defense-lowering attacks.",
+    "nameEn": "BIGPECKS"
+  },
+  "Sal Purificadora": {
+    "description": "Evita estados alterados y reduce a la mitad el daño del Tipo fantasma.",
+    "descriptionEn": "Protects from status conditions and halves damage from Ghost-type moves.",
+    "nameEn": "PURIFYINGSALT"
+  },
+  "Sebo": {
+    "description": "Reduce el daño recibido de los ataques de tipo fuego y hielo a la mitad.",
+    "descriptionEn": "Ups resistance to Fire- and Ice-type moves.",
+    "nameEn": "THICKFAT"
+  },
+  "Sequía": {
+    "description": "Convoca un día soleado.",
+    "descriptionEn": "Turns the sunlight harsh when the Pokémon enters a battle.",
+    "nameEn": "DROUGHT"
+  },
+  "Silvano": {
+    "customAbility": true,
+    "description": "Aumenta todo daño y la Velocidad un 30% en Campo de Hierba.",
+    "descriptionEn": "Boosts all damage and Speed by 30% in Grassy Terrain.",
+    "nameEn": "SILVANO"
+  },
+  "Simple": {
+    "description": "Duplica los cambios de estadísitcas.",
+    "descriptionEn": "Doubles all stat changes.",
+    "nameEn": "SIMPLE"
+  },
+  "Sincronía": {
+    "description": "Comparte cambios de estado al enemigo.",
+    "descriptionEn": "Passes a burn, poison, or paralysis to the foe.",
+    "nameEn": "SYNCHRONIZE"
+  },
+  "Sobrecarga": {
+    "customAbility": true,
+    "description": "Sube el poder Eléctrico si tiene pocos PS.",
+    "descriptionEn": "Powers up Electric-type moves when HP is low.",
+    "nameEn": "SOBRECARGA"
+  },
+  "Sombratrampa": {
+    "description": "Impide que el rival escape.",
+    "descriptionEn": "Prevents the foe from escaping.",
+    "nameEn": "SHADOWTAG"
+  },
+  "Superguarda": {
+    "description": "Cuesta mucho hacerle daño.",
+    "descriptionEn": "Only supereffective moves will hit.",
+    "nameEn": "WONDERGUARD"
+  },
+  "Surcavientos": {
+    "description": "Si recibe un ataque de viento/tormenta su ataque sube 1 nivel.",
+    "descriptionEn": "Takes no damage from wind moves, and boosts Attack if hit by one.",
+    "nameEn": "WINDRIDER"
+  },
+  "Telepatía": {
+    "description": "No recibe daño por ataques del aliado en combates dobles.",
+    "descriptionEn": "Anticipates an ally's attack and dodges it.",
+    "nameEn": "TELEPATHY"
+  },
+  "Tenacidad": {
+    "description": "Aumenta el Ataque Especial cuando le bajan una característica.",
+    "descriptionEn": "Sharply raises Special Attack when the Pokémon's stats are lowered.",
+    "nameEn": "COMPETITIVE"
+  },
+  "Termoconversión": {
+    "customAbility": true,
+    "description": "No puede ser quemado. Si es alcanzado por fuego, se sube el Ataque.",
+    "descriptionEn": "Cannot be burned. Raises Attack when hit by a Fire-type move.",
+    "nameEn": "TERMOCONVERSION"
+  },
+  "Terravoltaje": {
+    "description": "Anula el efecto de otras habilidades.",
+    "descriptionEn": "Moves can be used regardless of Abilities.",
+    "nameEn": "TERAVOLT"
+  },
+  "Tinovictoria": {
+    "description": "Aumenta la precisión del PKMN.",
+    "descriptionEn": "Boosts the accuracy of its allies and itself.",
+    "nameEn": "VICTORYSTAR"
+  },
+  "Tintineo": {
+    "customAbility": true,
+    "description": "Repica una campana para curar los estados del equipo cuando sale a combatir. Además, los movs. de sonido pasan a ser psíquicos y aumentan un 20% su potencia.",
+    "descriptionEn": "Rings a bell to cure the team's status conditions upon entering battle. Also turns sound-based moves into Psychic-type moves and boosts their power by 20%.",
+    "nameEn": "TINTINEO"
+  },
+  "Toque Mágico": {
+    "customAbility": true,
+    "description": "Los ataques del usuario tienen un 20% de confundir al enemigo.",
+    "descriptionEn": "The user's attacks have a 20% chance to confuse the target.",
+    "nameEn": null
+  },
+  "Toque Tóxico": {
+    "description": "Puede envenenar al objetivo con solo tocarlo.",
+    "descriptionEn": "May poison targets when a Pokémon makes contact.",
+    "nameEn": "POISONTOUCH"
+  },
+  "Torrente": {
+    "description": "Sube los ataques tipo Agua un 50% si tiene pocos PS.",
+    "descriptionEn": "Powers up Water-type moves in a pinch.",
+    "nameEn": "TORRENT"
+  },
+  "Trampa Arena": {
+    "description": "Evita la huida del enemigo.",
+    "descriptionEn": "Prevents the foe from fleeing.",
+    "nameEn": "ARENATRAP"
+  },
+  "Transportarroca": {
+    "customAbility": true,
+    "description": "Da bonificación de daño a los movimientos de tipo Roca.",
+    "descriptionEn": "Gives a damage bonus to Rock-type moves.",
+    "nameEn": "TRANSPORTARROCA"
+  },
+  "Tumbos": {
+    "description": "Incrementa la evasión cuando el PKMN está confuso.",
+    "descriptionEn": "Raises evasion if the Pokémon is confused.",
+    "nameEn": "TANGLEDFEET"
+  },
+  "Turbollama": {
+    "description": "Anula el efecto de otras habilidades.",
+    "descriptionEn": "Moves can be used regardless of Abilities.",
+    "nameEn": "TURBOBLAZE"
+  },
+  "Títere Tóxico": {
+    "description": "Si envenena al rival también lo confunde.",
+    "descriptionEn": "Poisoned Pokémon also become confused.",
+    "nameEn": "POISONPUPPETEER"
+  },
+  "Veleta": {
+    "description": "Incrementa y reduce una estadistica.",
+    "descriptionEn": "Raises one stat and lowers another.",
+    "nameEn": "MOODY"
+  },
+  "Velo Agua": {
+    "description": "No puede ser quemado.",
+    "descriptionEn": "Prevents the Pokémon from getting a burn.",
+    "nameEn": "WATERVEIL"
+  },
+  "Velo arena": {
+    "description": "Sube la Evasión durante la tormenta arena.",
+    "descriptionEn": "Boosts the Pokémon's evasion in a sandstorm.",
+    "nameEn": "SANDVEIL"
+  },
+  "Ventosas": {
+    "description": "Evita que le obliguen huir.",
+    "descriptionEn": "Negates all moves that force switching out.",
+    "nameEn": "SUCTIONCUPS"
+  },
+  "Viscosidad": {
+    "description": "No le pueden quitar el objeto equipado.",
+    "descriptionEn": "Protects the Pokémon from item theft.",
+    "nameEn": "STICKYHOLD"
+  },
+  "Vista Lince": {
+    "description": "Impide que le bajen la precisión.",
+    "descriptionEn": "Prevents other Pokémon from lowering accuracy.",
+    "nameEn": "KEENEYE"
+  },
+  "Voz Fluida": {
+    "description": "Convierte los movimientos de tipo Normal en Agua y los potencia un 20%.",
+    "descriptionEn": "All sound-based moves become Water-type moves.",
+    "nameEn": "LIQUIDVOICE"
+  },
+  "Voz de Valquiria": {
+    "customAbility": true,
+    "description": "Los movs. de sonido pasan a ser de tipo Hielo y tienen un 30% de hacer retroceder.",
+    "descriptionEn": "Turns sound-based moves into Ice-type moves with a 30% chance to make the target flinch.",
+    "nameEn": "VOZVALQUIRIA"
+  },
+  "Zoquete": {
+    "description": "Impide el uso de objetos equipados.",
+    "descriptionEn": "The Pokémon can't use any held items.",
+    "nameEn": "KLUTZ"
+  },
+  "Ímpetu Ardiente": {
+    "description": "Sube el Ataque Especial un 50% si esta quemado.",
+    "descriptionEn": "Powers up special attacks by 50% when burned.",
+    "nameEn": "FLAREBOOST"
+  },
+  "Ímpetu Arena": {
+    "description": "Aumenta la velocidad durante un tormenta arena.",
+    "descriptionEn": "Boosts the Pokémon's Speed in a sandstorm.",
+    "nameEn": "SANDRUSH"
+  },
+  "Ímpetu Tóxico": {
+    "description": "Sube el Ataque un 50% si esta envenenado.",
+    "descriptionEn": "Powers up physical attacks by 50% when poisoned.",
+    "nameEn": "TOXICBOOST"
+  },
+  "Piel Maldita": {
+    "customAbility": true,
+    "description": "Convierte los movimientos de tipo Normal en Fantasma y los potencia un 20%.",
+    "descriptionEn": "Turns Normal-type moves into Ghost-type moves and boosts their power by 20%.",
+    "nameEn": "PIELMALDITA"
+  }
+}

@@ -41,9 +41,73 @@ type Slot = {
   spriteTransform?: SpriteTransform | null;
   moves: Move[];
   stats?: BaseStats | null;
+  abilities?: string[] | null;
+  hiddenAbility?: string | null;
+  // Movimientos que este Pokémon puede aprender realmente (nivel, tutor o
+  // huevo). En modo Pokémon Z son internalNames (ej. "THUNDERBOLT"); en modo
+  // estándar son slugs de PokéAPI (ej. "thunderbolt"). null/undefined = no
+  // se conoce el learnset (ej. slot vacío), por lo que el filtro no aplica.
+  learnableMoves?: string[] | null;
+  // Método de aprendizaje de cada movimiento aprendible (clave = mismo id
+  // usado en learnableMoves: internalName en modo Z, slug en modo estándar).
+  // Se usa para mostrar a la derecha del movimiento si es por nivel (con el
+  // nivel), por MT o por huevo.
+  learnMethods?: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> | null;
 };
 
 const EMPTY_MOVE = (): Move => ({ name: "", category: "Physical", type: null });
+
+// Nombres en inglés para las habilidades EXCLUSIVAS del fangame Pokémon Z
+// (no existen en los juegos oficiales, por lo que PokéAPI nunca las va a
+// tener). La clave es el nombre en español tal como aparece en
+// abilities_descriptions.json (fuente: abilities.txt). Sin esta tabla,
+// estas ~40 habilidades se quedaban siempre en español al cambiar a inglés,
+// porque el fetch en vivo a PokéAPI no las conoce.
+const CUSTOM_ABILITY_EN_NAMES: Record<string, string> = {
+  "Acometida": "Onslaught",
+  "Albino": "Albinism",
+  "Alquimia Vil": "Vile Alchemy",
+  "Aura Dorada": "Golden Aura",
+  "Baba Mágica": "Magic Slime",
+  "Brutalidad": "Brutality",
+  "Camorrista": "Brawler",
+  "Canasto": "Basket",
+  "Capa Tóxica": "Toxic Layer",
+  "Coleóptero": "Beetle Skin",
+  "Contraguardia": "Counter Guard",
+  "Coraza Ira": "Wrath Shell",
+  "Cortante": "Sharp Edge",
+  "Cuerpo Horneado": "Baked Body",
+  "Despiertallama": "Flame Awakener",
+  "Dinamo": "Dynamo",
+  "Espanto": "Fright",
+  "Floración": "Blooming",
+  "Forma Ilusoria": "Illusory Form",
+  "Gran Pesadilla": "Great Nightmare",
+  "Iceberg": "Iceberg",
+  "Inflamable": "Flammable",
+  "Olor Porcino": "Piggy Odor",
+  "Pedante": "Pedantic",
+  "Penetrante": "Piercing",
+  "Piel Dragontina": "Dragon Skin",
+  "Piel Eléctrica": "Electric Skin",
+  "Piel Helada": "Frost Skin",
+  "Piel Herbácea": "Grass Skin",
+  "Piel Maldita": "Cursed Skin", // alias de "Piel Tétrica": el Umbreon especial (id 92001) usa este nombre en vez del que trae abilities_descriptions.json
+  "Piel Tétrica": "Cursed Skin",
+  "Poder Gélido": "Icy Power",
+  "Poder Sabio": "Wise Power",
+  "Presencia Rara": "Rare Presence",
+  "Realeza": "Royalty",
+  "Relampagueo": "Lightning Flash",
+  "Silvano": "Sylvan",
+  "Sobrecarga": "Overload",
+  "Termoconversión": "Thermal Conversion",
+  "Tintineo": "Jingle",
+  "Toque Mágico": "Magic Touch",
+  "Transportarroca": "Rock Bearer",
+  "Voz de Valquiria": "Valkyrie Voice",
+};
 
 // ─── Icono de Pokéball (SVG inline, sin dependencias externas) ──────────────
 const PokeballIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
@@ -76,6 +140,10 @@ const EMPTY_SLOT = (): Slot => ({
   sprite: null,
   moves: [EMPTY_MOVE(), EMPTY_MOVE(), EMPTY_MOVE(), EMPTY_MOVE()],
   stats: null,
+  abilities: null,
+  hiddenAbility: null,
+  learnableMoves: null,
+  learnMethods: null,
 });
 
 const EMPTY_STAT_INPUT: BaseStatsInput = {
@@ -92,6 +160,7 @@ const SAVED_TEAMS_KEY = "pokerun-builder-saved-teams";
 const VIEW_MODE_KEY = "pokerun-builder-view-mode";
 const POKEDEX_KEY = "pokerun-builder-active-pokedex";
 const FAKEMON_MODE_KEY = "pokerun-builder-fakemon-mode";
+const ONLY_LEARNABLE_MOVES_KEY = "pokerun-builder-only-learnable-moves";
 const MAX_PLANTILLAS = 5;
 
 // ─── Pokedex selector ────────────────────────────────────────────────────────
@@ -158,6 +227,15 @@ const Z_FORM_SPECIES = new Set(
   ].map((n) => n.toLowerCase())
 );
 
+// Subconjunto de Z_FORM_SPECIES cuya forma "estándar" (PokéAPI, sin alterar)
+// NO existe realmente en Pokémon Z (el hackrom reemplaza por completo esa
+// etapa evolutiva), así que no tiene sentido ofrecerla como resultado
+// duplicado en el buscador. Sus entradas del JSON Z siguen mostrando el
+// sufijo " Z" con normalidad (no se tocó Z_FORM_SPECIES ni getZDisplayName).
+const Z_FORM_NO_STANDARD_DUPLICATE = new Set(
+  ["Chesnaught", "Delphox", "Greninja"].map((n) => n.toLowerCase())
+);
+
 // Las 4 especies con mega exclusiva de Z cuya entrada base NO está alterada
 // (es 1:1 igual a los stats oficiales). El JSON les pone `formLabel: "Z"` en
 // la entrada base por error/consistencia interna, pero no debe traducirse en
@@ -187,20 +265,13 @@ const getZDisplayName = (p: any): string => {
   const key = baseName.toLowerCase();
   const id: number = p?.id ?? 0;
 
-  // Megas curadas Z (90001–90008): siempre "Mega <nombre> Z"
-  if (id >= 90001 && id <= 90008) return `Mega ${baseName} Z`;
-  // Mega Lucario Z (90078): Mega exclusiva de Pokémon Z (no reemplaza a la
-  // Mega Lucario oficial, que sigue disponible vía PokéAPI por separado).
-  if (id === 90078) return `Mega ${baseName} Z`;
-
-  // Megas oficiales con stats ajustados por planilla (90059–90077): NO son
-  // exclusivas de Pokémon Z (existen en los juegos originales), solo tienen
-  // el delta de stats aplicado — así que llevan "Mega <nombre>" sin sufijo
-  // " Z" (a diferencia de las 90001-90008, que sí son Megas exclusivas de Z).
-  if (id >= 90059 && id <= 90077) {
-    const clean = baseName.replace(/^Mega-?\s*/i, "");
-    return `Mega ${clean}`;
-  }
+  // NOTA: los rangos viejos de Megas curadas Z (90001-90008), Mega Lucario Z
+  // (90078) y Megas oficiales con delta de stats (90059-90077) fueron
+  // migrados al bloque nuevo 91000+ (fuente única de verdad, ver
+  // Z_MEGA_SPRITE_SUFFIX más abajo) y ya no existen en el JSON — se quitó el
+  // chequeo por esos IDs porque era código muerto. Las entradas 91000+ ya
+  // traen su nombre final armado (ej. "Mega Gengar") en el propio JSON, así
+  // que caen bien en el fallback "Resto de la Pokedex" de más abajo.
 
   // Gigamax curados Z (90009–90025): sin sufijo Z, solo "Gigamax <nombre>"
   if (id >= 90009 && id <= 90025) return `Gigamax ${baseName}`;
@@ -232,17 +303,9 @@ const getZDisplayName = (p: any): string => {
 //   Florges → _1
 //   Grimmsnarl → _1
 const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
-  90001: "_2", // Raichu
-  90002: "_1", // Entei
-  90003: "_3", // Volcarona
-  90004: "_1", // Chesnaught
-  90005: "_1", // Delphox
-  90006: "_2", // Greninja
-  90007: "_1", // Florges
-  90008: "_1", // Grimmsnarl
-  // 90009-90025: Gigamax curados (forma 1 = Gmax en todas las especies de
-  // esta tanda, confirmado en Fakedex; a diferencia de las Megas de arriba
-  // no hay ambigüedad de forma previa que resolver).
+  // ─── Formas no-mega/no-primal: SIN CAMBIOS (sus ids se mantienen igual en
+  // el JSON limpio, no se tocaron en la limpieza de mega/primigenias) ──────
+  // 90009-90025: Gigamax
   90009: "_1", // Butterfree
   90010: "_1", // Machamp
   90011: "_1", // Kingler
@@ -260,10 +323,7 @@ const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
   90023: "_1", // Hatterene
   90024: "_1", // Alcremie
   90025: "_1", // Copperajah
-  // 90026-90058: Formas regionales / renombradas (Alola, Galar, Hisui,
-  // Paldea, y las 7 especies estilo Paradoja). Todas usan "forma 1" del
-  // sprite sheet de su especie base, confirmado para el caso Volcarona
-  // (forma 1 = Reptalada, forma 2 = otra paradoja, forma 3 = Mega).
+  // 90026-90058: Formas regionales / renombradas
   90026: "_1", // Raticate Alola
   90027: "_1", // Raichu Alola
   90028: "_1", // Sandslash Alola
@@ -297,37 +357,10 @@ const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
   90056: "_1", // Reptalada (Volcarona)
   90057: "_1", // Ferrosaco (Delibird)
   90058: "_1", // Ferropalmas (Hariyama)
-  // 90059-90077: Megas curadas Z con stats ajustados por planilla (delta
-  // sobre stats oficiales). Sufijo de sprite puesto en "_1" como placeholder
-  // — falta CONFIRMAR A MANO en Fakedex cuál es la forma real (igual que se
-  // hizo con 90001-90008), ya que puede variar según cuántas formas previas
-  // tenga cada especie en su spritesheet.
-  90059: "_1", // Mega Venusaur
-  90060: "_1", // Mega Charizard X
-  90061: "_1", // Mega Charizard Y
-  90062: "_1", // Mega Blastoise
-  90063: "_1", // Mega Gengar
-  90064: "_1", // Mega Kangaskhan
-  90065: "_1", // Mega Steelix
-  90066: "_1", // Mega Sceptile
-  90067: "_1", // Mega Blaziken
-  90068: "_1", // Mega Swampert
-  90069: "_1", // Mega Gardevoir
-  90070: "_1", // Mega Sableye
-  90071: "_1", // Mega Mawile
-  90072: "_1", // Mega Camerupt
-  90073: "_1", // Mega Altaria
-  90074: "_1", // Mega Banette
-  90075: "_1", // Mega Glalie
-  90076: "_1", // Mega Gallade
-  90077: "_1", // Mega Audino
-  90078: "_2", // Mega Lucario Z (original, exclusiva de Pokémon Z)
-  // 90079-90093: formas agregadas tras el cruce contra Fakedex (Sneasel Hisui,
-  // Rotom apliance, Zygarde, Kyurem B/W, Necrozma, Melmetal Gmax). Usan dexId
-  // + sufijo, igual que el resto — sin esta entrada, getZSpriteUrl caía al
-  // fallback de abajo (usaba el id de la entrada en vez del dexId) y rompía
-  // la URL del sprite (ej. pedía "90086.png" en vez de "718_2.png").
+  // 90079-90107, 90109, 90113-90116, 90120-90124: otras formas alternativas
+  // (no son mega ni primigenia, se conservan igual que antes)
   90079: "_1", // Sneasel Hisui
+  90159: "_1", // Voltorb Hisui
   90080: "_1", // Rotom Heat
   90081: "_2", // Rotom Wash
   90082: "_3", // Rotom Frost
@@ -335,13 +368,12 @@ const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
   90084: "_5", // Rotom Mow
   90085: "_1", // Zygarde 10
   90086: "_2", // Zygarde Complete
-  90087: "_1", // Kyurem Black
-  90088: "_2", // Kyurem White
+  90087: "_2", // Kyurem Black
+  90088: "_1", // Kyurem White
   90089: "_1", // Necrozma Dusk Mane
   90090: "_2", // Necrozma Dawn Wings
   90091: "_3", // Necrozma Ultra
   90092: "_1", // Melmetal Gmax
-  90093: "_3", // Zygarde Mega
   90094: "_1", // Furfrou (Corazón)
   90095: "_2", // Furfrou (Estrella)
   90096: "_3", // Furfrou (Rombo)
@@ -352,6 +384,207 @@ const Z_MEGA_SPRITE_SUFFIX: Record<number, string> = {
   90101: "_8", // Furfrou (Kabuki)
   90102: "_9", // Furfrou (Faraón)
   90103: "_6", // Rotom Guillotina
+  90104: "_1", // Deoxys Ataque
+  90105: "_2", // Deoxys Defensa
+  90106: "_3", // Deoxys Velocidad
+  90107: "_1", // Meloetta Canto
+  90109: "_1", // Hoopa Trastocado
+  90113: "_1", // Articuno Galar
+  90114: "_1", // Zapdos Galar
+  90115: "_1", // Moltres Galar
+  90116: "_1", // Urshifu Fluido (Agua)
+  90120: "_1", // Tornadus Tótem
+  90121: "_1", // Thundurus Tótem
+  90122: "_1", // Calyrex Jinete Glacial (Hielo)
+  90123: "_2", // Calyrex Jinete Espectral (Fantasma)
+  90124: "_1", // Enamorus Tótem
+  // ─── Tanda 2 (nuevas, sufijo = índice de form del .rb) ─────────────────
+  90160: "_1", // Castform Soleado
+  90161: "_2", // Castform Lluvioso
+  90162: "_3", // Castform Nevado
+  90163: "_4", // Castform Rocoso
+  90164: "_1", // Wormadam (Tronco Arena)
+  90165: "_2", // Wormadam (Tronco Basura)
+  90166: "_1", // Lycanroc Nocturno
+  90167: "_2", // Lycanroc Crepuscular
+  90168: "_1", // Pumpkaboo Normal
+  90169: "_1", // Pumpkaboo Grande (sin arte propio en el servidor, reusa el de Normal)
+  90170: "_1", // Pumpkaboo Extragrande (sin arte propio en el servidor, reusa el de Normal)
+  90171: "_1", // Gourgeist Normal
+  90172: "_1", // Gourgeist Grande (sin arte propio en el servidor, reusa el de Normal)
+  90173: "_1", // Gourgeist Extragrande (sin arte propio en el servidor, reusa el de Normal)
+  // ─── Tanda 3 (nuevas, sufijo = índice de form del .rb) ─────────────────
+  90174: "_3", // Gengar (Escarcha)
+  90175: "_5", // Mewtwo (Origen)
+  90176: "_1", // Pikachu Amarillo
+
+  // ─── ELIMINADAS de este mapping (ya no existen en el JSON limpio): ──────
+  // 90001-90008: Megas Z viejas -> ver equivalentes 91000+ abajo
+  // 90059-90078: Megas Gen3-ish viejas -> ver equivalentes 91000+ abajo
+  //   90063 Mega Gengar, 90071 Mega Mawile, 90074 Mega Banette,
+  //   90077 Mega Audino: SIN reemplazo en el bloque nuevo (91000+), el
+  //   parser del .rb no generó mega para estas 4 especies. Quedan fuera
+  //   del JSON y de este mapping hasta que se agreguen (si corresponde).
+  // 90093 Zygarde Mega: SIN reemplazo en el bloque nuevo, fuera del JSON.
+  // 90108,90110-90112,90119: Megas Legends Z-A -> ver 91000+ abajo
+  // 90117 Kyogre Primigenio -> ver 91073 abajo
+  // 90118 Groudon Primigenio: SIN reemplazo con sufijo _PRIMAL; el .rb
+  //   generó GROUDON_MEGA (91062) en su lugar, no GROUDON_PRIMAL. Revisar
+  //   si esto es intencional en el script oficial o un cambio de criterio.
+  // 90125-90158: Megas curadas Z viejas -> ver equivalentes 91000+ abajo
+
+  // ─── Megas/Primigenias NUEVAS (91000+), fuente única de verdad ──────────
+  // Sufijo heredado del mapping viejo cuando la especie tenía un único
+  // valor conocido (o cuando el número de variante _F<N> coincide
+  // exactamente con el sufijo viejo, ej. _2 -> _F2). El resto son
+  // placeholder "_1" SIN CONFIRMAR — falta verificar a mano en Fakedex,
+  // igual que en el mapping original.
+  91000: "_1", // Mega Abomasnow (sin dato previo, no estaba en el mapping viejo)
+  91001: "_1", // Mega Absol F1 (sin confirmar)
+  91002: "_2", // Mega Absol F2 (heredado de 90148, sufijo numérico coincide)
+  91003: "_1", // Mega Aerodactyl (sin dato previo)
+  91004: "_1", // Mega Aggron (sin dato previo)
+  91005: "_1", // Mega Alakazam (sin dato previo)
+  91006: "_1", // Mega Alcremie (sin dato previo)
+  91007: "_1", // Mega Altaria (heredado de 90073)
+  91008: "_1", // Mega Ampharos (sin dato previo)
+  91009: "_1", // Mega Appletun (sin dato previo)
+  91010: "_1", // Mega Barbaracle (heredado de 90142)
+  91011: "_1", // Mega Baxcalibur (heredado de 90157)
+  91012: "_1", // Mega Beedrill (sin dato previo)
+  91013: "_1", // Mega Blastoise (heredado de 90062)
+  91014: "_1", // Mega Blaziken (heredado de 90067)
+  91015: "_1", // Mega Butterfree (sin dato previo)
+  91016: "_1", // Mega Camerupt (heredado de 90072)
+  91017: "_1", // Mega Centiskorch (sin dato previo)
+  91018: "_1", // Mega Chandelure (heredado de 90138)
+  91019: "_1", // Mega Charizard X (heredado de 90060)
+  91020: "_2", // Mega Charizard Y (heredado de 90061)
+  91021: "_1", // Mega Chesnaught F1 (heredado de 90004, variante sin confirmar cuál)
+  91022: "_2", // Mega Chesnaught F2 (sin confirmar)
+  91023: "_1", // Mega Chimecho (heredado de 90147)
+  91024: "_1", // Mega Cinderace (sin dato previo)
+  91025: "_1", // Mega Clefable (heredado de 90125)
+  91026: "_1", // Mega Coalossal (sin dato previo)
+  91027: "_1", // Mega Copperajah (sin dato previo)
+  91028: "_1", // Mega Corviknight (sin dato previo)
+  91029: "_1", // Mega Crabominable (heredado de 90153)
+  91030: "_1", // Mega Darkrai (heredado de 90110)
+  91031: "_1", // Mega Delphox F1 (heredado de 90005, variante sin confirmar cuál)
+  91032: "_2", // Mega Delphox F2 (sin confirmar)
+  91033: "_1", // Mega Diancie (heredado de 90108)
+  91034: "_1", // Mega Dragalge (heredado de 90143)
+  91035: "_1", // Mega Dragonite (heredado de 90128)
+  91036: "_1", // Mega Drampa (heredado de 90145)
+  91037: "_1", // Mega Drednaw (sin dato previo)
+  91038: "_1", // Mega Duraludon (sin dato previo)
+  91039: "_1", // Mega Eelektross (heredado de 90137)
+  91040: "_1", // Mega Emboar (heredado de 90133)
+  91041: "_1", // Mega Entei (heredado de 90002)
+  91042: "_1", // Mega Excadrill (heredado de 90134)
+  91043: "_1", // Mega Falinks (heredado de 90146)
+  91044: "_1", // Mega Feraligatr (heredado de 90130)
+  91045: "_1", // Mega Flapple (sin dato previo)
+  91046: "_1", // Mega Floette (heredado de 90140)
+  91047: "_1", // Mega Florges (heredado de 90007)
+  91048: "_1", // Mega Froslass (heredado de 90132)
+  91049: "_1", // Mega Gallade (heredado de 90076)
+  91050: "_1", // Mega Garbodor (sin dato previo)
+  91051: "_1", // Mega Garchomp F1 (heredado de 90150, variante sin confirmar cuál)
+  91052: "_2", // Mega Garchomp F2 (heredado de 90150, sufijo numérico coincide)
+  91053: "_1", // Mega Gardevoir (heredado de 90069)
+  91054: "_1", // Mega Glalie (heredado de 90075)
+  91055: "_1", // Mega Glimmora (heredado de 90156)
+  91056: "_1", // Mega Golisopod (heredado de 90154)
+  91057: "_1", // Mega Golurk (heredado de 90151)
+  91058: "_2", // Mega Greninja F2 (heredado de 90006, sufijo numérico coincide)
+  91059: "_3", // Mega Greninja F3 (sin confirmar)
+  91060: "_4", // Mega Greninja F4 (sin confirmar)
+  91061: "_1", // Mega Grimmsnarl (heredado de 90008)
+  91062: "_1", // Mega Groudon (heredado de 90118 aunque internalName era PRIMAL, no MEGA; revisar)
+  91063: "_1", // Mega Gyarados (sin dato previo)
+  91064: "_1", // Mega Hatterene (sin dato previo)
+  91065: "_1", // Mega Hawlucha (heredado de 90144)
+  91066: "_1", // Mega Heatran (heredado de 90119)
+  91067: "_1", // Mega Heracross (sin dato previo)
+  91068: "_1", // Mega Houndoom (sin dato previo)
+  91069: "_1", // Mega Hydrapple (sin dato previo)
+  91070: "_1", // Mega Inteleon (sin dato previo)
+  91071: "_1", // Mega Kangaskhan (heredado de 90064)
+  91072: "_1", // Mega Kingler (sin dato previo)
+  91073: "_1", // Reversión Primigenia de Kyogre (heredado de 90117)
+  91074: "_1", // Mega Lapras (sin dato previo)
+  91075: "_1", // Mega Lopunny (sin dato previo)
+  91076: "_1", // Mega Lucario F1 (sin confirmar)
+  91077: "_2", // Mega Lucario F2 (heredado de 90078, sufijo numérico coincide)
+  91078: "_1", // Mega Machamp (sin dato previo)
+  91079: "_1", // Mega Magearna (heredado de 90111)
+  91080: "_1", // Mega Malamar (heredado de 90141)
+  91081: "_1", // Mega Manectric (sin dato previo)
+  91082: "_1", // Mega Medicham (sin dato previo)
+  91083: "_1", // Mega Meganium (heredado de 90129)
+  91084: "_1", // Mega Meowstic (heredado de 90152)
+  91085: "_1", // Mega Metagross (sin dato previo)
+  91086: "_1", // Mega Orbeetle (sin dato previo)
+  91087: "_1", // Mega Pidgeot (sin dato previo)
+  91088: "_1", // Mega Pinsir (sin dato previo)
+  91089: "_1", // Mega Pyroar (heredado de 90139)
+  91090: "_2", // Mega Raichu F2 (heredado de 90001, sufijo numérico coincide)
+  91091: "_1", // Mega Rayquaza (sin dato previo)
+  91092: "_1", // Mega Rillaboom (sin dato previo)
+  91093: "_1", // Mega Sableye (heredado de 90070)
+  91094: "_1", // Mega Salamence (sin dato previo)
+  91095: "_1", // Mega Sandaconda (sin dato previo)
+  91096: "_1", // Mega Sceptile (heredado de 90066)
+  91097: "_1", // Mega Scizor (sin dato previo)
+  91098: "_1", // Mega Scolipede (heredado de 90135)
+  91099: "_1", // Mega Scovillain (heredado de 90155)
+  91100: "_1", // Mega Scrafty (heredado de 90136)
+  91101: "_1", // Mega Sharpedo (sin dato previo)
+  91102: "_1", // Mega Skarmory (heredado de 90131)
+  91103: "_2", // Mega Slowbro F2 (sin confirmar; no había F1 en el bloque nuevo)
+  91104: "_1", // Mega Staraptor (heredado de 90149)
+  91105: "_1", // Mega Starmie (heredado de 90127)
+  91106: "_1", // Mega Steelix (heredado de 90065)
+  91107: "_1", // Mega Swampert (heredado de 90068)
+  91108: "_1", // Mega Tatsugiri (heredado de 90158)
+  91109: "_1", // Mega Toxtricity (sin dato previo)
+  91110: "_1", // Mega Tyranitar F1 (sin confirmar)
+  91111: "_2", // Mega Tyranitar F2 (sin confirmar)
+  91112: "_1", // Mega Venusaur (heredado de 90059)
+  91113: "_1", // Mega Victreebel (heredado de 90126)
+  91114: "_3", // Mega Volcarona (heredado de 90003)
+  91115: "_1", // Mega Zeraora (heredado de 90112)
+  // ─── Megas nuevas de Tanda 2/3 (sin dato previo en Fakedex, placeholder
+  // según orden de form en el .rb — VERIFICAR A MANO) ─────────────────────
+  91116: "_1", // Mega Zygarde (sin dato previo)
+  91117: "_1", // Mega Gengar (sin dato previo)
+  91118: "_2", // Mega Pikachu (sin dato previo; form 2 en el .rb)
+  // ─── Formas sin dexId propio en el JSON (usan Z_MISSING_DEXID de abajo
+  // para saber a qué especie base corresponde su sprite) ──────────────────
+  90177: "_1", // Sawsbuck Primavera
+  90178: "_1", // Sawsbuck Otoño
+  90179: "_1", // Sawsbuck Invierno
+  90180: "_1", // Lugia Oscuro
+  90181: "_1", // Missingno Forma 1
+  90182: "_1", // Missingno Forma 2
+  // 90183 Shaymin Cielo: NO lleva sufijo — no existe sprite propio, usa el
+  // mismo sprite base que Shaymin Normal (ver getZSpriteUrl más abajo).
+  92001: "_1", // Umbreon (Piel Maldita)
+};
+
+// Dex id real de las entradas de arriba que el JSON no trae con `dexId`
+// (ver comentario en Z_MEGA_SPRITE_SUFFIX). Sin esto, getZSpriteUrl caería
+// de vuelta al id fake (90177, 92001, etc.) para armar la URL.
+const Z_MISSING_DEXID: Record<number, number> = {
+  90177: 586, // Sawsbuck
+  90178: 586, // Sawsbuck
+  90179: 586, // Sawsbuck
+  90180: 249, // Lugia
+  90181: 908, // Missingno
+  90182: 908, // Missingno
+  90183: 492, // Shaymin
+  92001: 197, // Umbreon
 };
 
 // Algunos sprites, aun después del auto-recorte por bounding box, quedan con
@@ -372,8 +605,23 @@ const getZSpriteUrl = (p: any): string => {
   const base = "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers";
   const suffix = Z_MEGA_SPRITE_SUFFIX[p?.id];
   if (suffix) {
-    const dexId = p.dexId ?? p.id;
+    // Z_MISSING_DEXID cubre el caso de que sigas usando una versión vieja del
+    // JSON sin `dexId` para estas 8 entradas; si ya actualizaste el JSON
+    // (recomendado), `p.dexId` alcanza y este fallback nunca se usa.
+    const dexId = p.dexId ?? Z_MISSING_DEXID[p?.id] ?? p.id;
     return `${base}/${String(dexId).padStart(3, "0")}${suffix}.png`;
+  }
+  // Formas sin sufijo propio (ej. Shaymin Cielo) que ya traen `dexId` en el
+  // JSON: usan el mismo sprite base que su especie (sin sufijo _N), en vez
+  // de reconstruir la URL con su id fake (90183 → 404).
+  if (p?.dexId !== undefined && p?.dexId !== null) {
+    return `${base}/${String(p.dexId).padStart(3, "0")}.png`;
+  }
+  // Formas sin `dexId` en el JSON (versiones viejas del JSON, antes de
+  // agregarlo): usamos directamente el campo `sprite` que ya viene armado
+  // bien desde el JSON.
+  if (typeof p?.sprite === "string" && p.sprite) {
+    return p.sprite;
   }
   return `${base}/${String(p?.id ?? 0).padStart(3, "0")}.png`;
 };
@@ -400,63 +648,51 @@ type RoleDefinition = {
 };
 
 const ROLES: RoleDefinition[] = [
-  { es: "Atacante Físico Veloz",      en: "Fast Physical Attacker",   color: "#ea580c",
+  { es: "Físico Veloz",      en: "Fast Physical",   color: "#ea580c",
     weights: { ATK: 0.5,  SPE: 0.5 },
     descEs: "Ataque y Velocidad altos: golpea fuerte y antes que el rival.",
     descEn: "High Attack and Speed: hits hard and moves before the opponent." },
-  { es: "Atacante Especial Veloz",    en: "Fast Special Attacker",    color: "#9333ea",
+  { es: "Especial Veloz",    en: "Fast Special",    color: "#9333ea",
     weights: { "SP.ATK": 0.5, SPE: 0.5 },
     descEs: "Ataque Especial y Velocidad altos: arrasa con movimientos especiales antes que el rival actúe.",
     descEn: "High Sp. Atk and Speed: sweeps with special moves before the opponent acts." },
-  { es: "Atacante Versátil",          en: "Versatile Attacker",       color: "#c026d3",
+  { es: "Mixto Veloz",          en: "Fast Mixed",       color: "#c026d3",
     weights: { ATK: 0.3, "SP.ATK": 0.3, SPE: 0.4 },
     descEs: "Ataque y Ataque Especial equilibrados, con buena Velocidad: amenaza por ambos lados ofensivos.",
     descEn: "Balanced Attack and Sp. Atk with good Speed: threatens from both offensive sides." },
-  { es: "Tanque Defensivo",           en: "Defensive Tank",           color: "#0369a1",
+  { es: "Muro Físico",           en: "Physical Wall",           color: "#0369a1",
     weights: { HP: 0.4,  DEF: 0.45, SPE: 0.15 },
     descEs: "HP y Defensa altos: aguanta ataques físicos durante muchos turnos.",
     descEn: "High HP and Defense: tanks physical attacks for many turns." },
-  { es: "Tanque Especial",            en: "Special Tank",             color: "#1d4ed8",
+  { es: "Muro Especial",            en: "Special Wall",             color: "#1d4ed8",
     weights: { HP: 0.4,  "SP.DEF": 0.45, SPE: 0.15 },
     descEs: "HP y Defensa Especial altos: aguanta ataques especiales durante muchos turnos.",
     descEn: "High HP and Sp. Def: tanks special attacks for many turns." },
-  { es: "Muralla Resistente",         en: "Sturdy Wall",              color: "#1e40af",
+  { es: "Muralla Total",         en: "Full Wall",              color: "#1e40af",
     weights: { HP: 0.35, DEF: 0.325, "SP.DEF": 0.325 },
     descEs: "HP, Defensa y Defensa Especial altos por igual: resiste prácticamente cualquier tipo de ataque.",
     descEn: "High HP, Defense, and Sp. Def in equal measure: resists almost any kind of attack." },
-  { es: "Tanque Físico Agresivo",     en: "Aggressive Physical Tank", color: "#b45309",
+  { es: "Tanque Físico",     en: "Physical Tank", color: "#b45309",
     weights: { HP: 0.35, ATK: 0.4,  DEF: 0.25 },
     descEs: "HP y Ataque altos con Defensa de apoyo: aguanta golpes mientras sigue golpeando fuerte.",
     descEn: "High HP and Attack with supporting Defense: tanks hits while still hitting hard." },
-  { es: "Tanque Especial Agresivo",   en: "Aggressive Special Tank",  color: "#7c3aed",
+  { es: "Tanque Especial",   en: "Special Tank",  color: "#7c3aed",
     weights: { HP: 0.35, "SP.ATK": 0.4, "SP.DEF": 0.25 },
     descEs: "HP y Ataque Especial altos con Defensa Especial de apoyo: aguanta golpes especiales mientras ataca.",
     descEn: "High HP and Sp. Atk with supporting Sp. Def: tanks special hits while still attacking." },
-  { es: "Pívot Resistente",           en: "Resilient Pivot",          color: "#0f766e",
-    weights: { HP: 0.4,  SPE: 0.35, DEF: 0.15, "SP.DEF": 0.1 },
-    descEs: "HP y Velocidad altos, con algo de defensa: entra y sale del campo con facilidad sin caer fácilmente.",
-    descEn: "High HP and Speed, with some defense: switches in and out easily without going down fast." },
   { es: "Defensor Veloz",             en: "Fast Defender",            color: "#0e7490",
     weights: { DEF: 0.45, SPE: 0.4, HP: 0.15 },
     descEs: "Defensa y Velocidad altas: bloquea ataques físicos y aún así actúa primero.",
     descEn: "High Defense and Speed: blocks physical attacks and still acts first." },
-  { es: "Defensor Especial Veloz",    en: "Fast Special Defender",    color: "#0891b2",
+  { es: "Defensor Especial",    en: "Special Defender",    color: "#0891b2",
     weights: { "SP.DEF": 0.45, SPE: 0.4, HP: 0.15 },
     descEs: "Defensa Especial y Velocidad altas: bloquea ataques especiales y aún así actúa primero.",
     descEn: "High Sp. Def and Speed: blocks special attacks and still acts first." },
-  { es: "Todoterreno Físico",         en: "All-Around Physical",      color: "#b91c1c",
-    weights: { ATK: 0.35, DEF: 0.35, HP: 0.3 },
-    descEs: "Ataque, Defensa y HP repartidos por igual: combina pegada física con resistencia.",
-    descEn: "Attack, Defense, and HP spread evenly: combines physical power with resilience." },
-  { es: "Todoterreno Especial",       en: "All-Around Special",       color: "#6d28d9",
-    weights: { "SP.ATK": 0.35, "SP.DEF": 0.35, HP: 0.3 },
-    descEs: "Ataque Especial, Defensa Especial y HP repartidos por igual: combina pegada especial con resistencia.",
-    descEn: "Sp. Atk, Sp. Def, and HP spread evenly: combines special power with resilience." },
-  { es: "Atacante Físico Resistente", en: "Tough Physical Attacker",  color: "#dc2626",
+  { es: "Físico Resistente", en: "Tough Physical",  color: "#dc2626",
     weights: { ATK: 0.45, "SP.DEF": 0.3, HP: 0.25 },
     descEs: "Ataque alto con buena Defensa Especial y HP: golpea fuerte sin ser frágil ante ataques especiales.",
     descEn: "High Attack with good Sp. Def and HP: hits hard without being fragile to special attacks." },
-  { es: "Atacante Especial Resistente", en: "Tough Special Attacker", color: "#4338ca",
+  { es: "Especial Resistente", en: "Tough Special", color: "#4338ca",
     weights: { "SP.ATK": 0.35, DEF: 0.35, HP: 0.3 },
     descEs: "Ataque Especial y Defensa repartidos con HP de apoyo: ataca por la vía especial mientras bloquea golpes físicos.",
     descEn: "Sp. Atk and Defense spread with supporting HP: attacks specially while blocking physical hits." },
@@ -555,11 +791,8 @@ const ROLE_CORE_FILTERS: Record<string, RoleCoreFilter> = {
   "Muralla Resistente":           { required: [{ stat: "HP",     min: 80 }, { stat: "DEF",    min: 75 }, { stat: "SP.DEF", min: 75 }] },
   "Tanque Físico Agresivo":       { required: [{ stat: "HP",     min: 75 }, { stat: "ATK",    min: 85 }, { stat: "DEF",    min: 65 }] },
   "Tanque Especial Agresivo":     { required: [{ stat: "HP",     min: 75 }, { stat: "SP.ATK", min: 85 }, { stat: "SP.DEF", min: 65 }] },
-  "Pívot Resistente":             { required: [{ stat: "HP",     min: 80 }, { stat: "SPE",    min: 80 }] },
   "Defensor Veloz":               { required: [{ stat: "DEF",    min: 80 }, { stat: "SPE",    min: 85 }] },
   "Defensor Especial Veloz":      { required: [{ stat: "SP.DEF", min: 80 }, { stat: "SPE",    min: 85 }] },
-  "Todoterreno Físico":           { required: [{ stat: "ATK",    min: 75 }, { stat: "DEF",    min: 75 }, { stat: "HP", min: 70 }] },
-  "Todoterreno Especial":         { required: [{ stat: "SP.ATK", min: 75 }, { stat: "SP.DEF", min: 75 }, { stat: "HP", min: 70 }] },
   "Atacante Físico Resistente":   { required: [{ stat: "ATK",    min: 90 }, { stat: "SP.DEF", min: 70 }, { stat: "HP", min: 65 }] },
   "Atacante Especial Resistente": { required: [{ stat: "SP.ATK", min: 90 }, { stat: "DEF",    min: 70 }, { stat: "HP", min: 65 }] },
 };
@@ -733,6 +966,8 @@ type AvailablePokemon = {
                               // de ID o por substring del nombre (ver auditoría del
                               // JSON completo: "Meganium"/"Yanmega" contienen "mega"
                               // en el nombre sin ser Megaevoluciones, por ejemplo).
+  abilities?: string[] | null;   // habilidades normales (no oculta)
+  hiddenAbility?: string | null; // habilidad oculta, si tiene
 };
 
 // Rangos de ID por generación (Pokedex nacional)
@@ -1114,6 +1349,8 @@ const UI: Record<Lang, Record<string, string>> = {
     labelSlots: "Equipos", labelMoves: "Movimientos", labelAnalysis: "Análisis",
     // Equipo
     myTeam: "Mi Equipo", saveTemplates: "Plantillas", clearTeam: "Limpiar equipo",
+    onlyLearnableMoves: "Solo aprendibles", onlyLearnableMovesTitle: "Si está activo, el buscador de movimientos solo sugiere los que cada Pokémon puede aprender de verdad (nivel, tutor o huevo), en vez de todos los movimientos existentes.",
+    moveBadgeLevelPrefix: "Nv.", moveBadgeMt: "MT", moveBadgeTutor: "Tutor", moveBadgeEgg: "Huevo",
     fakemonModeLabel: "Fakemon",
     dragHandle: "arrastrar", noSprite: "Sin sprite", noTypes: "Sin tipos",
     searchPokemon: "Buscar Pokémon por nombre", searchFakemon: "Nombre de Fakemon",
@@ -1238,6 +1475,8 @@ const UI: Record<Lang, Record<string, string>> = {
     statSlots: "6 slots", statMoves: "4 per slot", statAnalysis: "Real-time",
     labelSlots: "Team slots", labelMoves: "Moves", labelAnalysis: "Analysis",
     myTeam: "My Team", saveTemplates: "Templates", clearTeam: "Clear team",
+    onlyLearnableMoves: "Learnable only", onlyLearnableMovesTitle: "When on, the move search only suggests moves each Pokémon can actually learn (level-up, tutor, or egg), instead of every move that exists.",
+    moveBadgeLevelPrefix: "Lv.", moveBadgeMt: "TM", moveBadgeTutor: "Tutor", moveBadgeEgg: "Egg",
     fakemonModeLabel: "Fakemon mode",
     dragHandle: "drag", noSprite: "No sprite", noTypes: "No types",
     searchPokemon: "Search Pokémon by name", searchFakemon: "Fakemon name",
@@ -1358,6 +1597,36 @@ const UI: Record<Lang, Record<string, string>> = {
 // Convert spaces to hyphens for API queries
 const formatForAPI = (name: string): string => name.toLowerCase().replace(/\s+/g, "-");
 
+// A partir del array `moves` que devuelve PokéAPI, arma un mapa
+// { slugDeMovimiento: { type, level } } indicando cómo lo aprende el
+// Pokémon: por nivel (con el nivel), por MT/MO ("machine"), por tutor o por
+// huevo. Cuando un movimiento tiene varias formas de aprenderse (distintos
+// juegos/generaciones), se prioriza nivel > MT > tutor > huevo.
+const buildLearnMethodsFromApi = (
+  moves: any
+): Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> => {
+  const result: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> = {};
+  if (!Array.isArray(moves)) return result;
+  const priority = (m: string) => (m === "level-up" ? 0 : m === "machine" ? 1 : m === "tutor" ? 2 : m === "egg" ? 3 : 4);
+  moves.forEach((mv: any) => {
+    const mname = mv?.move?.name;
+    if (!mname) return;
+    const details = Array.isArray(mv.version_group_details) ? mv.version_group_details : [];
+    let best: any = null;
+    details.forEach((d: any) => {
+      const method = d?.move_learn_method?.name;
+      if (!best || priority(method) < priority(best?.move_learn_method?.name)) best = d;
+    });
+    if (!best) return;
+    const method = best.move_learn_method?.name;
+    if (method === "level-up") result[mname] = { type: "level", level: best.level_learned_at || undefined };
+    else if (method === "machine") result[mname] = { type: "mt" };
+    else if (method === "tutor") result[mname] = { type: "tutor" };
+    else if (method === "egg") result[mname] = { type: "egg" };
+  });
+  return result;
+};
+
 // Convert hyphens to spaces and capitalize each word
 const formatForDisplay = (name: string): string =>
   name
@@ -1415,6 +1684,7 @@ const normalizeMoveSearch = (text: string) =>
 type ZSlotSpriteOverride = { zoom?: number; x?: number; y?: number };
 const Z_SLOT_SPRITE_ZOOM_OVERRIDES: Record<string, ZSlotSpriteOverride> = {
   "Mega Delphox Z": { zoom: 1.6, x: -7, y: -20 },
+  "Tornadus Tótem": { x: 20 },
 };
 
 /** Convert a SpriteTransform into CSS object-position + scale values.
@@ -1433,6 +1703,66 @@ function buildSpriteStyle(transform: SpriteTransform | null | undefined, overrid
     transform: `translate(${posX}%, ${posY}%) scale(${scale})`,
     transformOrigin: "center center",
   };
+}
+
+/** <img> que evita el "parpadeo" de sprites:
+ *  - Mientras la imagen (src) no haya terminado de cargar, muestra el
+ *    placeholder (Pokéball) en vez de una imagen vieja o sin estilo aplicar.
+ *  - Precarga la imagen real oculta (display:none) y, recién en su onLoad,
+ *    la muestra ya con el style/transform puesto — así nunca se ve "cruda"
+ *    (sin recortar/redimensionar) un instante antes de ajustarse.
+ *  - Si `src` cambia (nuevo Pokémon), se resetea el estado de "cargado" para
+ *    no seguir mostrando el sprite anterior mientras llega el nuevo.
+ */
+function SpriteImg({
+  src,
+  alt,
+  className,
+  style,
+  onError,
+  placeholderClassName,
+}: {
+  src: string | null | undefined;
+  alt: string;
+  className?: string;
+  style?: React.CSSProperties;
+  onError?: () => void;
+  placeholderClassName?: string;
+}) {
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoadedSrc(null);
+  }, [src]);
+
+  if (!src) {
+    return <PokeballIcon className={placeholderClassName ?? "h-5 w-5 opacity-40"} />;
+  }
+
+  const isReady = loadedSrc === src;
+
+  return (
+    <>
+      {isReady ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={alt} className={className} style={style} onError={onError} />
+      ) : (
+        <PokeballIcon className={placeholderClassName ?? "h-5 w-5 opacity-40"} />
+      )}
+      {!isReady && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={src}
+          src={src}
+          alt=""
+          aria-hidden="true"
+          style={{ display: "none" }}
+          onLoad={() => setLoadedSrc(src)}
+          onError={onError}
+        />
+      )}
+    </>
+  );
 }
 
 // ─── Sprite Editor Modal ─────────────────────────────────────────────────────
@@ -2053,6 +2383,337 @@ function ContributionCard({
   );
 }
 
+// ─── Modal de filtros de movimientos (Pokémon Z / moves.json) ──────────────
+// Ventana que se abre dentro de la misma página (via createPortal) para
+// filtrar el dex completo de movimientos por categoría (físico/especial/
+// estado) y tipo, buscar por nombre, y ver cómo lo aprende el Pokémon del
+// slot activo (nivel / MT / tutor / huevo) antes de seleccionarlo.
+type MoveFilterEntry = {
+  internalName: string;
+  name: string;
+  nameEn: string;
+  category: "Physical" | "Special" | "Status";
+  type: string | null;
+  hackrom: boolean;
+  power: number | null;
+  accuracy: number | null;
+  pp: number | null;
+  descriptionEs: string;
+  descriptionEn: string;
+};
+
+function MoveFilterModal({
+  moves,
+  lang,
+  search,
+  onSearchChange,
+  categories,
+  onToggleCategory,
+  types,
+  onToggleType,
+  onClearFilters,
+  learnMethods,
+  onlyLearnable,
+  learnableSet,
+  badgeClass,
+  tn,
+  onSelect,
+  onClose,
+}: {
+  moves: MoveFilterEntry[];
+  lang: Lang;
+  search: string;
+  onSearchChange: (v: string) => void;
+  categories: Set<string>;
+  onToggleCategory: (c: string) => void;
+  types: Set<string>;
+  onToggleType: (ty: string) => void;
+  onClearFilters: () => void;
+  learnMethods: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> | null | undefined;
+  onlyLearnable: boolean;
+  learnableSet: Set<string> | null;
+  badgeClass: (t: string) => string;
+  tn: (apiKey: string) => string;
+  onSelect: (move: MoveFilterEntry) => void;
+  onClose: () => void;
+}) {
+  const allTypesList = Object.keys(TYPE_COLORS);
+  const [sortPower, setSortPower] = useState<"asc" | "desc" | null>(null);
+  const catLabel = (c: string) =>
+    c === "Physical" ? (lang === "es" ? "Físico" : "Physical")
+    : c === "Special" ? (lang === "es" ? "Especial" : "Special")
+    : (lang === "es" ? "Estado" : "Status");
+
+  // Mismo ícono SVG (espada/destello/remolino) que se usa en las tarjetas de
+  // ataque del equipo, para que la categoría se identifique de un vistazo
+  // sin tener que leer el texto "Físico/Especial/Estado".
+  const CategoryIcon = ({ cat, size = 16 }: { cat: string; size?: number }) => {
+    if (cat === "Physical") return (
+      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="8.5" fill="#C03028" stroke="#7f1010" strokeWidth="1"/>
+        <path d="M5 13L9 5L13 13" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        <circle cx="9" cy="5" r="1.5" fill="white"/>
+      </svg>
+    );
+    if (cat === "Special") return (
+      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="8.5" fill="#6890F0" stroke="#1e3a8a" strokeWidth="1"/>
+        <path d="M9 4L10.2 7.5H14L11 9.8L12.2 13.2L9 11L5.8 13.2L7 9.8L4 7.5H7.8L9 4Z" fill="white"/>
+      </svg>
+    );
+    return (
+      <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="8.5" fill="#705898" stroke="#3b1e6b" strokeWidth="1"/>
+        <circle cx="9" cy="9" r="3.5" fill="white" opacity="0.9"/>
+        <circle cx="9" cy="9" r="1.5" fill="#705898"/>
+      </svg>
+    );
+  };
+
+  const learnBadgeFor = (mv: MoveFilterEntry): string | null => {
+    const info = learnMethods?.[mv.internalName];
+    if (!info) return null;
+    if (info.type === "level") return info.level ? `${lang === "es" ? "Nv." : "Lv."} ${info.level}` : (lang === "es" ? "Nivel" : "Level");
+    if (info.type === "mt") return "MT";
+    if (info.type === "tutor") return lang === "es" ? "Tutor" : "Tutor";
+    if (info.type === "egg") return lang === "es" ? "Huevo" : "Egg";
+    return null;
+  };
+
+  const normalized = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const filtered = useMemo(() => {
+    const q = normalized(search.trim());
+    return moves
+      .filter((mv) => {
+        if (onlyLearnable && learnableSet && !learnableSet.has(mv.internalName)) return false;
+        if (categories.size > 0 && !categories.has(mv.category)) return false;
+        if (types.size > 0 && (!mv.type || !types.has(mv.type))) return false;
+        if (q.length > 0) {
+          const hay =
+            normalized(mv.name).includes(q) ||
+            normalized(mv.nameEn).includes(q) ||
+            normalized(mv.internalName).includes(q);
+          if (!hay) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        // Si el usuario activó el orden por potencia, manda por sobre todo lo demás.
+        if (sortPower) {
+          const pa = a.power ?? 0;
+          const pb = b.power ?? 0;
+          if (pa !== pb) return sortPower === "asc" ? pa - pb : pb - pa;
+          const nameA = lang === "es" ? a.name : a.nameEn;
+          const nameB = lang === "es" ? b.name : b.nameEn;
+          return nameA.localeCompare(nameB);
+        }
+        // Aprendibles primero (por nivel, MT, tutor, huevo), luego alfabético
+        const rank = (mv: MoveFilterEntry) => {
+          const info = learnMethods?.[mv.internalName];
+          if (!info) return 4;
+          if (info.type === "level") return 0;
+          if (info.type === "mt") return 1;
+          if (info.type === "tutor") return 2;
+          return 3;
+        };
+        const ra = rank(a), rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        if (ra === 0) {
+          const la = learnMethods?.[a.internalName]?.level ?? 0;
+          const lb = learnMethods?.[b.internalName]?.level ?? 0;
+          if (la !== lb) return la - lb;
+        }
+        const nameA = lang === "es" ? a.name : a.nameEn;
+        const nameB = lang === "es" ? b.name : b.nameEn;
+        return nameA.localeCompare(nameB);
+      });
+  }, [moves, search, categories, types, onlyLearnable, learnableSet, learnMethods, lang, sortPower]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[70] flex items-start sm:items-center justify-center bg-black/70 p-3 sm:p-4 overflow-y-auto"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-5xl rounded-3xl border border-slate-700 bg-slate-950/95 p-4 sm:p-6 text-slate-100 shadow-2xl shadow-black/60 my-auto max-h-[90vh] flex flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-slate-100">
+              {lang === "es" ? "Filtrar movimientos" : "Filter moves"}
+            </h3>
+            <p className="mt-1 text-xs sm:text-sm text-slate-400">
+              {lang === "es"
+                ? "Busca por categoría, tipo o nombre y selecciona el movimiento."
+                : "Search by category, type or name and pick the move."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="self-start rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+          >
+            {lang === "es" ? "Cerrar" : "Close"}
+          </button>
+        </div>
+
+        {/* Filtros de categoría y tipo, en la misma fila, en dos columnas */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {/* Filtro por categoría */}
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-[0.3em] text-slate-500">
+              {lang === "es" ? "Categoría" : "Category"}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {["Physical", "Special", "Status"].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => onToggleCategory(c)}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                    categories.has(c)
+                      ? "border-sky-500 bg-sky-600/30 text-sky-200"
+                      : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+                  }`}
+                >
+                  <CategoryIcon cat={c} size={20} />
+                  {catLabel(c)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtro por tipo */}
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-[0.3em] text-slate-500">
+              {lang === "es" ? "Tipo" : "Type"}
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {allTypesList.map((ty) => (
+                <button
+                  key={ty}
+                  type="button"
+                  onClick={() => onToggleType(ty)}
+                  className={`${badgeClass(ty)} type-picker-badge min-h-8 w-full px-2 py-1 transition ${
+                    types.has(ty) ? "ring-2 ring-white/70 opacity-100" : "opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  {tn(ty)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="text-xs text-slate-500 whitespace-nowrap">
+            {filtered.length} {lang === "es" ? "resultados" : "results"}
+          </span>
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={lang === "es" ? "Buscar movimiento…" : "Search move…"}
+              className="w-full max-w-[220px] rounded-lg border border-blue-800/40 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setSortPower((prev) => (prev === null ? "asc" : prev === "asc" ? "desc" : null))
+              }
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                sortPower
+                  ? "border-orange-500 bg-orange-600/20 text-orange-300"
+                  : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+              }`}
+              title={lang === "es" ? "Ordenar por potencia" : "Sort by power"}
+            >
+              <span aria-hidden>{sortPower === "asc" ? "🔼" : sortPower === "desc" ? "🔽" : "↕️"}</span>
+              {lang === "es" ? "Potencia" : "Power"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { onClearFilters(); setSortPower(null); }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-rose-800/50 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 transition hover:border-rose-500 hover:bg-rose-900/40 hover:text-rose-200"
+            >
+              <span aria-hidden>🧹</span>
+              {lang === "es" ? "Limpiar filtros" : "Clear filters"}
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de resultados */}
+        <div className="mt-3 flex-1 min-h-0 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60">
+          {filtered.length === 0 ? (
+            <div className="p-4 text-center text-sm text-slate-500">
+              {lang === "es" ? "Sin resultados." : "No results."}
+            </div>
+          ) : (
+            filtered.map((mv) => {
+              const label = lang === "es" ? mv.name : mv.nameEn;
+              const badge = learnBadgeFor(mv);
+              const powerText = mv.power && mv.power > 0 ? String(mv.power) : "—";
+              const accText = mv.accuracy && mv.accuracy > 0 ? `${mv.accuracy}%` : "—";
+              const ppText = mv.pp !== null && mv.pp !== undefined ? String(mv.pp) : "—";
+              const description = lang === "es" ? mv.descriptionEs : mv.descriptionEn;
+              return (
+                <button
+                  key={mv.internalName}
+                  type="button"
+                  onClick={() => onSelect(mv)}
+                  className="flex w-full items-stretch gap-2 border-b border-slate-800/60 px-3 py-2.5 text-left text-sm transition last:border-b-0 hover:bg-slate-800/80"
+                >
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span
+                      className="grid w-full min-w-0 items-center gap-2"
+                      style={{ gridTemplateColumns: "minmax(0,1fr) 246px" }}
+                    >
+                      <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+                        <span className="shrink-0" title={catLabel(mv.category)}>
+                          <CategoryIcon cat={mv.category} size={22} />
+                        </span>
+                        {mv.type && (
+                          <span className={`${badgeClass(mv.type)} shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold`}>
+                            {tn(mv.type)}
+                          </span>
+                        )}
+                        <span className="truncate font-medium text-slate-100">{label}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-orange-700/40 bg-orange-950/40 px-1.5 py-0.5 text-[11px] font-bold text-orange-300">
+                          {lang === "es" ? "Pot." : "Pow."} {powerText}
+                        </span>
+                        <span className="flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-emerald-700/40 bg-emerald-950/40 px-1.5 py-0.5 text-[11px] font-bold text-emerald-300">
+                          {lang === "es" ? "Prec." : "Acc."} {accText}
+                        </span>
+                        <span className="flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-sky-700/40 bg-sky-950/40 px-1.5 py-0.5 text-[11px] font-bold text-sky-300">
+                          PP {ppText}
+                        </span>
+                      </span>
+                    </span>
+                    {description && (
+                      <span className="truncate text-[11px] text-slate-500">{description}</span>
+                    )}
+                  </span>
+                  {badge && (
+                    <span className="flex w-16 shrink-0 items-center justify-center rounded-xl border border-slate-600 bg-slate-950/80 px-1 text-center text-[12px] font-semibold leading-tight text-emerald-300">
+                      {badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lang, setLang] = useState<Lang>("es");
@@ -2061,6 +2722,28 @@ export default function Home() {
   const pokedexDropdownRef = useRef<HTMLDivElement>(null);
   const [pokemonZData, setPokemonZData] = useState<any[]>([]);
   const [movesZData, setMovesZData] = useState<any[]>([]);
+  const [abilitiesZDescData, setAbilitiesZDescData] = useState<Record<string, { nameEn: string | null; nameEnDisplay?: string; description: string; descriptionEn?: string; customAbility?: boolean }>>({});
+  // Mapa "NOMBREENSINGUIONES" (ej. "WATERABSORB", tal como viene en nameEn)
+  // → nombre legible en inglés (ej. "Water Absorb"), construido una sola vez
+  // a partir del listado oficial de PokéAPI. abilities_descriptions.json NO
+  // trae un campo "nameEnDisplay" utilizable, así que sin este mapa el
+  // nombre de la habilidad se quedaba siempre en español aunque la
+  // descripción sí cambiara de idioma.
+  const [abilityEnDisplayNames, setAbilityEnDisplayNames] = useState<Record<string, string>>({});
+  // Nombre de una habilidad Z según el idioma activo: en español se muestra
+  // tal cual viene del JSON (clave del registro); en inglés se busca el
+  // nombre legible, ya sea en el propio JSON (nameEnDisplay, si algún día
+  // se agrega) o en el mapa derivado de PokéAPI (abilityEnDisplayNames), y
+  // si ninguno está disponible cae al nombre en español como último recurso.
+  const getAbilityDisplayName = (esName: string): string => {
+    if (lang === "es") return esName;
+    const entry = abilitiesZDescData[esName];
+    if (entry?.nameEnDisplay) return entry.nameEnDisplay;
+    if (CUSTOM_ABILITY_EN_NAMES[esName]) return CUSTOM_ABILITY_EN_NAMES[esName];
+    const nameEn = entry?.nameEn;
+    if (nameEn && abilityEnDisplayNames[nameEn]) return abilityEnDisplayNames[nameEn];
+    return esName;
+  };
   // Cache de sprites recortados para las tarjetas de recomendación en modo Z
   // key = id del Pokémon Z (string), value = dataURL del primer frame
   const [zSpritesCache, setZSpritesCache] = useState<Record<string, string>>({});
@@ -2158,6 +2841,9 @@ export default function Home() {
   const [expandedRec, setExpandedRec] = useState<Set<string>>(new Set());
   const [recFilterTypes, setRecFilterTypes] = useState<string[]>([]); // tipos incluidos (vacío = todos)
   const [recFilterType2, setRecFilterType2] = useState<string>(""); // segundo tipo para filtro dual
+  const [recFilterAbility, setRecFilterAbility] = useState<string>(""); // texto libre: filtra por habilidad (normal u oculta)
+  const [recFilterAbilityOpen, setRecFilterAbilityOpen] = useState(false); // dropdown de sugerencias abierto
+  const [recFilterAbilitySelectedIdx, setRecFilterAbilitySelectedIdx] = useState(-1); // índice resaltado (flechas ↑↓)
   const [recFilterGen, setRecFilterGen] = useState<number | null>(null); // null = todas las gens
   const [recShowFilters, setRecShowFilters] = useState(false);
   const [recFilterFinalEvo, setRecFilterFinalEvo] = useState(true);   // solo últimas evoluciones
@@ -2205,6 +2891,18 @@ export default function Home() {
   // reverse: en_slug → spanish display name  e.g. "flamethrower" → "Lanzallamas"
   const [moveEsDisplay, setMoveEsDisplay] = useState<Record<string, string>>({});
   const [pokemonSearch, setPokemonSearch] = useState<string[]>(() => Array.from({ length: 6 }, () => ""));
+  // Borrador del input de nombre de Pokémon del equipo: mientras el usuario
+  // está escribiendo/editando, el texto vive acá (no en slot.name), para que
+  // cosas que dependen del nombre YA CONFIRMADO (ej. Z_SLOT_SPRITE_ZOOM_OVERRIDES,
+  // el ajuste de sprite de "Mega Delphox Z") no se rompan a mitad de tipeo.
+  // null = no está editando (se muestra slot.name tal cual).
+  const [pokemonInputDraft, setPokemonInputDraft] = useState<(string | null)[]>(() => Array.from({ length: 6 }, () => null));
+  // URLs de sprite que fallaron al cargar (404, CORS, etc.) — se trackea por
+  // URL (no por índice de slot) para que, si el usuario cambia de Pokémon en
+  // ese mismo slot, la nueva URL no herede el estado de "falló" del anterior.
+  const [failedSpriteUrls, setFailedSpriteUrls] = useState<Set<string>>(new Set());
+  const markSpriteFailed = (url: string) =>
+    setFailedSpriteUrls((prev) => (prev.has(url) ? prev : new Set(prev).add(url)));
   const [pokemonResults, setPokemonResults] = useState<string[][]>(() => Array.from({ length: 6 }, () => []));
   const [pokemonOpen, setPokemonOpen] = useState<boolean[]>(() => Array.from({ length: 6 }, () => false));
   const [pokemonSelectedIdx, setPokemonSelectedIdx] = useState<number[]>(() => Array.from({ length: 6 }, () => -1));
@@ -2216,6 +2914,13 @@ export default function Home() {
   const [moveResults, setMoveResults] = useState<string[][][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => [])));
   const [moveOpen, setMoveOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
   const [moveSelectedIdx, setMoveSelectedIdx] = useState<number[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => -1)));
+  // ── Modal de filtros de movimientos (Pokémon Z) ──────────────────────────
+  // Se abre con el botón "Filtros" junto al buscador de cada movimiento.
+  // target: qué slot/movimiento va a recibir el movimiento seleccionado.
+  const [moveFilterTarget, setMoveFilterTarget] = useState<{ slotIdx: number; moveIdx: number } | null>(null);
+  const [moveFilterSearch, setMoveFilterSearch] = useState("");
+  const [moveFilterCategories, setMoveFilterCategories] = useState<Set<string>>(new Set());
+  const [moveFilterTypes, setMoveFilterTypes] = useState<Set<string>>(new Set());
   const [configSlotIndex, setConfigSlotIndex] = useState<number | null>(null);
   const [configDraftTypes, setConfigDraftTypes] = useState<string[]>([]);
   const [configDraftStats, setConfigDraftStats] = useState<BaseStatsInput>(EMPTY_STAT_INPUT);
@@ -2223,6 +2928,22 @@ export default function Home() {
   const [savedTeams, setSavedTeams] = useState<SavedTeam[]>([]);
   const [showPlantillas, setShowPlantillas] = useState(false);
   const [plantillaDraftName, setPlantillaDraftName] = useState("");
+  // Cuando está activo, el autocompletado de movimientos solo sugiere
+  // movimientos que el Pokémon del slot puede aprender realmente (nivel,
+  // tutor o huevo) en vez de la lista completa de movimientos existentes.
+  // Se persiste en localStorage para recordar la preferencia entre visitas.
+  const [onlyLearnableMoves, setOnlyLearnableMoves] = useState(true);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(ONLY_LEARNABLE_MOVES_KEY);
+      if (saved === "1" || saved === "0") setOnlyLearnableMoves(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ONLY_LEARNABLE_MOVES_KEY, onlyLearnableMoves ? "1" : "0");
+    } catch {}
+  }, [onlyLearnableMoves]);
   const [savingNew, setSavingNew] = useState(false);
   const [configDraftSprite, setConfigDraftSprite] = useState<string | null>(null);
   const [fakeSpriteSearch, setFakeSpriteSearch] = useState("");
@@ -2533,12 +3254,68 @@ export default function Home() {
         .catch((err) => console.error("[PokeRun] Error loading Pokémon Z data:", err));
     }
     if (movesZData.length === 0) {
-      fetch("/moves_z_completo.json")
+      // moves.json: dex completo de movimientos del hackrom (731 movimientos).
+      // Normalizamos cada entrada a la forma { internalName, name, nameEn,
+      // category, type, hackrom, descriptionEs, descriptionEn } para que todo
+      // el código existente (búsqueda, sugerencias, learnMethods) siga
+      // funcionando igual que antes, y además quede disponible para el nuevo
+      // modal de filtros.
+      fetch("/moves.json")
         .then((r) => r.json())
-        .then((data) => setMovesZData(data))
-        .catch((err) => console.error("[PokeRun] Error loading moves Z data:", err));
+        .then((data: any[]) => {
+          const normalized = data.map((mv) => {
+            const nameEs = typeof mv.name === "string" ? mv.name : mv.name?.es;
+            const nameEn = typeof mv.name === "string" ? mv.name : (mv.name?.en ?? nameEs);
+            return {
+              internalName: mv.internal_name,
+              name: nameEs,
+              nameEn,
+              category: mv.category,
+              type: typeof mv.type === "string" ? mv.type.toLowerCase() : null,
+              hackrom: !!mv.hackrom,
+              power: typeof mv.power === "number" ? mv.power : null,
+              accuracy: typeof mv.accuracy === "number" ? mv.accuracy : null,
+              pp: typeof mv.pp === "number" ? mv.pp : null,
+              descriptionEs: mv.description?.es ?? "",
+              descriptionEn: mv.description?.en ?? "",
+            };
+          });
+          setMovesZData(normalized);
+        })
+        .catch((err) => console.error("[PokeRun] Error loading moves.json:", err));
     }
-  }, [activePokedex, pokemonZData.length, movesZData.length]);
+    if (Object.keys(abilitiesZDescData).length === 0) {
+      fetch("/abilities_descriptions.json")
+        .then((r) => r.json())
+        .then((data) => setAbilitiesZDescData(data))
+        .catch((err) => console.error("[PokeRun] Error loading abilities Z descriptions:", err));
+    }
+  }, [activePokedex, pokemonZData.length, movesZData.length, abilitiesZDescData]);
+
+  // Carga (una sola vez, al montar) el listado completo de habilidades de
+  // PokéAPI para construir el mapa "NOMBREENSINGUIONES" → "Nombre Legible"
+  // (ej. "WATERABSORB" → "Water Absorb"). PokéAPI devuelve el slug con
+  // guiones (ej. "water-absorb"); nameEn en abilities_descriptions.json es
+  // ese mismo slug sin guiones y en mayúsculas, así que basta con quitar los
+  // guiones del slug para usarlo como clave del mapa.
+  useEffect(() => {
+    if (Object.keys(abilityEnDisplayNames).length > 0) return;
+    fetch("https://pokeapi.co/api/v2/ability?limit=400")
+      .then((r) => r.json())
+      .then((data: { results: { name: string }[] }) => {
+        const map: Record<string, string> = {};
+        for (const { name: slug } of data.results) {
+          const key = slug.replace(/-/g, "").toUpperCase();
+          const display = slug
+            .split("-")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ");
+          map[key] = display;
+        }
+        setAbilityEnDisplayNames(map);
+      })
+      .catch((err) => console.error("[PokeRun] Error loading ability display names:", err));
+  }, [abilityEnDisplayNames]);
 
   // Precargar sprites Z recortados en background cuando los datos estén listos
   // Se hace en lotes para no bloquear el hilo principal
@@ -2728,21 +3505,25 @@ export default function Home() {
       const gqlVariants = [
         {
           url: "https://beta.pokeapi.co/graphql/v1beta",
-          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } pokemon_v2_pokemonspecy { evolves_from_species_id id } } }`,
+          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemon_v2_pokemonabilities { is_hidden pokemon_v2_ability { name } } } }`,
           rowsKey: "pokemon_v2_pokemon",
           typesKey: "pokemon_v2_pokemontypes",
           typeNameKey: "pokemon_v2_type",
           statsKey: "pokemon_v2_pokemonstats",
           statNameKey: "pokemon_v2_stat",
+          abilitiesKey: "pokemon_v2_pokemonabilities",
+          abilityNameKey: "pokemon_v2_ability",
         },
         {
           url: "https://graphql.pokeapi.co/v1beta2",
-          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } species: pokemon_v2_pokemonspecy { evolves_from_species_id id } } }`,
+          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } species: pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemonabilities: pokemon_v2_pokemonabilities { is_hidden ability: pokemon_v2_ability { name } } } }`,
           rowsKey: "pokemon",
           typesKey: "pokemontypes",
           typeNameKey: "type",
           statsKey: "pokemonstats",
           statNameKey: "stat",
+          abilitiesKey: "pokemonabilities",
+          abilityNameKey: "ability",
         },
       ];
 
@@ -2758,7 +3539,7 @@ export default function Home() {
       // pueda decidir si aparecen o no sin necesitar un nuevo fetch.
       const EXCLUDED_FORM_PATTERN = /-(gmax|gigantamax|primal|totem|cap|starter|eternamax)\b/i;
 
-      for (const { url, query, rowsKey, typesKey, typeNameKey, statsKey, statNameKey } of gqlVariants) {
+      for (const { url, query, rowsKey, typesKey, typeNameKey, statsKey, statNameKey, abilitiesKey, abilityNameKey } of gqlVariants) {
         try {
           const r = await fetch(url, {
             method: "POST",
@@ -2789,6 +3570,12 @@ export default function Home() {
                 .filter(Boolean);
               if (types.length === 0) return null;
               const stats = buildStatsFromList(row[statsKey] ?? [], "base_stat", statNameKey);
+              const abilityRows: any[] = row[abilitiesKey] ?? [];
+              const abilities = abilityRows
+                .filter((ar: any) => !ar?.is_hidden)
+                .map((ar: any) => ar?.[abilityNameKey]?.name)
+                .filter(Boolean);
+              const hiddenAbility = abilityRows.find((ar: any) => ar?.is_hidden)?.[abilityNameKey]?.name ?? null;
               const sp = row.pokemon_v2_pokemonspecy ?? row.species;
               const speciesId: number | null = sp?.id ?? null;
               // Es última evolución si ningún otro Pokémon evoluciona desde su species id
@@ -2800,6 +3587,8 @@ export default function Home() {
                 types: (types.length === 1 ? [types[0]] : [types[0], types[1]]) as [string] | [string, string],
                 stats,
                 isFinalEvo,
+                abilities: abilities.length > 0 ? abilities : null,
+                hiddenAbility,
               };
             })
             .filter(Boolean) as AvailablePokemon[];
@@ -2821,7 +3610,7 @@ export default function Home() {
       const maxId = 1025;
 
       // Recopilamos datos crudos de pokemon y species juntos
-      type RawRest = { slug: string; id: number; types: string[]; stats: BaseStats | null; speciesId: number | null; evolvesFromSpeciesId: number | null };
+      type RawRest = { slug: string; id: number; types: string[]; stats: BaseStats | null; speciesId: number | null; evolvesFromSpeciesId: number | null; abilities: string[]; hiddenAbility: string | null };
       const rawList: RawRest[] = [];
 
       for (let start = 1; start <= maxId; start += chunkSize) {
@@ -2838,6 +3627,12 @@ export default function Home() {
               const types = d.types.map((t: any) => t.type.name);
               if (types.length === 0) return;
               const stats = buildStatsFromList(d.stats ?? [], "base_stat", "stat");
+              const abilityRows: any[] = d.abilities ?? [];
+              const abilities = abilityRows
+                .filter((ar: any) => !ar?.is_hidden)
+                .map((ar: any) => ar?.ability?.name)
+                .filter(Boolean);
+              const hiddenAbility = abilityRows.find((ar: any) => ar?.is_hidden)?.ability?.name ?? null;
               let evolvesFromSpeciesId: number | null = null;
               let speciesId: number | null = null;
               if (rSpec.ok) {
@@ -2847,7 +3642,7 @@ export default function Home() {
                   ? parseInt(sp.evolves_from_species.url.split("/").filter(Boolean).pop() ?? "0", 10) || null
                   : null;
               }
-              rawList.push({ slug: d.name, id: d.id, types, stats, speciesId, evolvesFromSpeciesId });
+              rawList.push({ slug: d.name, id: d.id, types, stats, speciesId, evolvesFromSpeciesId, abilities, hiddenAbility });
             } catch { /* skip */ }
           })
         );
@@ -2865,6 +3660,8 @@ export default function Home() {
         types: (p.types.length === 1 ? [p.types[0]] : [p.types[0], p.types[1]]) as [string] | [string, string],
         stats: p.stats,
         isFinalEvo: p.speciesId === null || !speciesIdsThatEvolveFrom.has(p.speciesId),
+        abilities: p.abilities.length > 0 ? p.abilities : null,
+        hiddenAbility: p.hiddenAbility,
       }));
 
       console.log(`[PokeRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
@@ -3051,6 +3848,7 @@ export default function Home() {
             const stdBaseNames = new Set(
               matches
                 .filter((p: any) => Z_FORM_SPECIES.has(p.name?.toLowerCase() ?? ""))
+                .filter((p: any) => !Z_FORM_NO_STANDARD_DUPLICATE.has(p.name?.toLowerCase() ?? ""))
                 .map((p: any) => p.name?.toLowerCase())
                 .filter(Boolean)
             );
@@ -3106,7 +3904,62 @@ export default function Home() {
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
     moveInputDraft.forEach((slotDrafts, idx) => {
+      // Si el filtro "solo movimientos aprendibles" está activo, restringimos
+      // las sugerencias de este slot al learnset real del Pokémon elegido
+      // (null = sin learnset conocido todavía → no se filtra, para no dejar
+      // el buscador vacío mientras carga o si el slot está vacío).
+      const learnableSet =
+        onlyLearnableMoves && team[idx]?.learnableMoves
+          ? new Set(team[idx]!.learnableMoves as string[])
+          : null;
+
       slotDrafts.forEach((draft, mi) => {
+        // Caso especial: si "solo aprendibles" está activo y el campo está
+        // vacío (recién enfocado, sin escribir nada todavía), mostramos de
+        // una vez la lista completa y ordenada del learnset, sin esperar a
+        // que el usuario escriba algo.
+        if (draft !== null && draft.trim().length === 0 && learnableSet) {
+          const lm = team[idx]?.learnMethods || {};
+          // Orden: nivel (ascendente) → MT → tutor → huevo → sin dato conocido.
+          const rank = (key: string) => {
+            const info = lm[key];
+            if (!info) return 4;
+            if (info.type === "level") return 0;
+            if (info.type === "mt") return 1;
+            if (info.type === "tutor") return 2;
+            if (info.type === "egg") return 3;
+            return 4;
+          };
+          const compareByLearnMethod = (keyA: string, keyB: string, labelA: string, labelB: string) => {
+            const ra = rank(keyA);
+            const rb = rank(keyB);
+            if (ra !== rb) return ra - rb;
+            if (ra === 0) {
+              const la = lm[keyA]?.level ?? 0;
+              const lb = lm[keyB]?.level ?? 0;
+              if (la !== lb) return la - lb;
+            }
+            return labelA.localeCompare(labelB);
+          };
+          let fullList: string[];
+          if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+            fullList = movesZData
+              .filter((m: any) => learnableSet.has(m.internalName))
+              .sort((a: any, b: any) => compareByLearnMethod(a.internalName, b.internalName, a.name ?? "", b.name ?? ""))
+              .map((m: any) => m.name as string);
+          } else {
+            fullList = moveList
+              .filter((enSlug) => learnableSet.has(enSlug))
+              .sort((a, b) => {
+                const la = lang === "es" ? (moveEsDisplay[a] ?? a) : a;
+                const lb = lang === "es" ? (moveEsDisplay[b] ?? b) : b;
+                return compareByLearnMethod(a, b, la, lb);
+              });
+          }
+          setMoveResults((prev) => prev.map((s, si) => si === idx ? s.map((l, mj) => mj === mi ? fullList : l) : s));
+          setMoveOpen((prev) => prev.map((s, si) => si === idx ? s.map((o, mj) => mj === mi ? fullList.length > 0 : o) : s));
+          return;
+        }
         // Only search when there's an active draft
         if (draft === null || draft.trim().length < 2) {
           setMoveResults((prev) => prev.map((s, si) => si === idx ? s.map((l, mj) => mj === mi ? [] : l) : s));
@@ -3120,17 +3973,24 @@ export default function Home() {
           if (activePokedex === "pokemon-z" && movesZData.length > 0) {
             // En modo Z: buscar por nombre español o internalName en el JSON Z
             merged = movesZData
-              .filter((m: any) =>
-                normalizeMoveSearch(m.name ?? "").includes(query) ||
-                normalizeMoveSearch(m.internalName ?? "").includes(query)
-              )
+              .filter((m: any) => {
+                const matchesQuery =
+                  normalizeMoveSearch(m.name ?? "").includes(query) ||
+                  normalizeMoveSearch(m.internalName ?? "").includes(query);
+                if (!matchesQuery) return false;
+                if (learnableSet && !learnableSet.has(m.internalName)) return false;
+                return true;
+              })
               .map((m: any) => m.name)
               .slice(0, 8);
           } else {
             const matches = moveList.filter((enSlug) => {
               const en = normalizeMoveSearch(enSlug.replace(/-/g, " "));
               const es = normalizeMoveSearch(moveEsDisplay[enSlug] ?? "");
-              return en.includes(query) || es.includes(query);
+              const matchesQuery = en.includes(query) || es.includes(query);
+              if (!matchesQuery) return false;
+              if (learnableSet && !learnableSet.has(enSlug)) return false;
+              return true;
             });
             merged = matches.slice(0, 8);
           }
@@ -3142,7 +4002,29 @@ export default function Home() {
       });
     });
     return () => timers.forEach(clearTimeout);
-  }, [moveInputDraft, moveList, moveEsDisplay, activePokedex, movesZData]);
+  }, [moveInputDraft, moveList, moveEsDisplay, activePokedex, movesZData, onlyLearnableMoves, team, lang]);
+
+  // Dado el nombre mostrado en una sugerencia del buscador de movimientos
+  // (slug en inglés en modo estándar, nombre en español en modo Pokémon Z),
+  // resuelve la etiqueta a mostrar a la derecha: "Nv. X" (nivel), "MT",
+  // "Tutor" o "Huevo". Devuelve null si no se conoce el método.
+  const getMoveLearnBadge = (slotIdx: number, name: string): string | null => {
+    const slot = team[slotIdx];
+    const lm = slot?.learnMethods;
+    if (!lm) return null;
+    let key = name;
+    if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+      const zm = movesZData.find((m: any) => m.name === name || m.internalName === name);
+      if (zm?.internalName) key = zm.internalName;
+    }
+    const info = lm[key];
+    if (!info) return null;
+    if (info.type === "level") return info.level ? `${t.moveBadgeLevelPrefix} ${info.level}` : t.moveBadgeLevelPrefix;
+    if (info.type === "mt") return t.moveBadgeMt;
+    if (info.type === "tutor") return t.moveBadgeTutor;
+    if (info.type === "egg") return t.moveBadgeEgg;
+    return null;
+  };
 
   const updateMove = (slotIdx: number, moveIdx: number, patch: Partial<Move>) => {
     setTeam((t) =>
@@ -3194,6 +4076,7 @@ export default function Home() {
 
   const selectPokemonSuggestion = (idx: number, name: string) => {
     setPokemonSearch((prev) => prev.map((value, i) => (i === idx ? "" : value)));
+    setPokemonInputDraft((prev) => prev.map((value, i) => (i === idx ? null : value)));
     setPokemonResults((prev) => prev.map((list, i) => (i === idx ? [] : list)));
     setPokemonOpen((prev) => prev.map((open, i) => (i === idx ? false : open)));
     setPokemonSelectedIdx((prev) => prev.map((sel, i) => (i === idx ? -1 : sel)));
@@ -3202,7 +4085,12 @@ export default function Home() {
     // la forma exacta por id y confirma el nombre final al terminar.
     const hashIdx = name.lastIndexOf("#");
     const displayLabel = hashIdx >= 0 ? name.slice(0, hashIdx) : name;
-    updateSlot(idx, { name: displayLabel, isFake: false });
+    // Limpiamos el sprite y su transform de inmediato: si no lo hacemos, el
+    // sprite del Pokémon ANTERIOR se queda visible mientras fetchPokemon (que
+    // es async) trae el nuevo, dando la sensación de que "el cambio de imagen
+    // se mantiene un poco". Con esto se ve la Pokéball de placeholder en su
+    // lugar hasta que el sprite nuevo esté listo.
+    updateSlot(idx, { name: displayLabel, isFake: false, sprite: null, spriteTransform: null });
     fetchPokemon(name, idx);
   };
 
@@ -3246,6 +4134,36 @@ export default function Home() {
     );
     updateMove(slotIdx, moveIdx, { name });
     fetchMove(name, slotIdx, moveIdx);
+  };
+
+  // ── Handlers del modal de filtros de movimientos ──────────────────────────
+  const openMoveFilter = (slotIdx: number, moveIdx: number) => {
+    setMoveFilterTarget({ slotIdx, moveIdx });
+  };
+  const closeMoveFilter = () => setMoveFilterTarget(null);
+  const toggleMoveFilterCategory = (c: string) => {
+    setMoveFilterCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c); else next.add(c);
+      return next;
+    });
+  };
+  const toggleMoveFilterType = (ty: string) => {
+    setMoveFilterTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(ty)) next.delete(ty); else next.add(ty);
+      return next;
+    });
+  };
+  const clearMoveFilters = () => {
+    setMoveFilterSearch("");
+    setMoveFilterCategories(new Set());
+    setMoveFilterTypes(new Set());
+  };
+  const selectMoveFromFilter = (mv: { name: string }) => {
+    if (!moveFilterTarget) return;
+    selectMoveSuggestion(moveFilterTarget.slotIdx, moveFilterTarget.moveIdx, mv.name);
+    setMoveFilterTarget(null);
   };
 
   // Recorta el primer frame de un spritesheet horizontal.
@@ -3310,7 +4228,11 @@ export default function Home() {
           const xyMatch = slug.match(/-mega-(x|y)$/);
           const megaSuffix = xyMatch ? ` ${xyMatch[1].toUpperCase()}` : "";
           const displayName = isMega ? `Mega ${formatForDisplay(baseSlug)}${megaSuffix}` : formatForDisplay(baseSlug);
-          updateSlot(idx, { name: displayName, types, sprite, stats });
+          const learnableMoves: string[] = Array.isArray(data.moves)
+            ? Array.from(new Set(data.moves.map((mv: any) => mv?.move?.name).filter(Boolean)))
+            : [];
+          const learnMethods = buildLearnMethodsFromApi(data.moves);
+          updateSlot(idx, { name: displayName, types, sprite, stats, abilities: null, hiddenAbility: null, learnableMoves, learnMethods });
         } catch (e) {
           alert("Pokémon no encontrado: " + name);
         }
@@ -3344,7 +4266,38 @@ export default function Home() {
         // sufijo " Z", Z_MEGA_ONLY_SPECIES no, Megas llevan "Mega X Z", y
         // Raichu base se muestra como "Raichu Alola" (ver definición arriba).
         const displayName = getZDisplayName(zEntry);
-        updateSlot(idx, { name: displayName, types, sprite, stats });
+        const abilities: string[] | null = Array.isArray(zEntry.abilities) && zEntry.abilities.length > 0 ? zEntry.abilities : null;
+        const hiddenAbility: string | null = zEntry.hiddenAbility ?? null;
+        // Learnset real: movimientos por nivel + tutor + huevo, como
+        // internalNames (ej. "THUNDERBOLT"), para poder filtrar el
+        // autocompletado contra movesZData (que también trae internalName).
+        const learnableMoves: string[] = Array.from(new Set([
+          ...(Array.isArray(zEntry.moves) ? zEntry.moves.map((mv: any) => mv?.move).filter(Boolean) : []),
+          ...(Array.isArray(zEntry.tutorMoves) ? zEntry.tutorMoves : []),
+          ...(Array.isArray(zEntry.eggMoves) ? zEntry.eggMoves : []),
+          ...(Array.isArray(zEntry.tmMoves) ? zEntry.tmMoves : []),
+        ]));
+        const learnMethods: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> = {};
+        if (Array.isArray(zEntry.moves)) {
+          zEntry.moves.forEach((mv: any) => {
+            const mname = mv?.move;
+            if (!mname) return;
+            const rawLevel = mv?.level ?? mv?.lvl;
+            const lvl = typeof rawLevel === "number" ? rawLevel : (typeof rawLevel === "string" ? parseInt(rawLevel, 10) : undefined);
+            learnMethods[mname] = { type: "level", level: Number.isFinite(lvl) ? lvl : undefined };
+          });
+        }
+        // Movimientos por MT: vienen en el arreglo "tmMoves" del JSON.
+        (zEntry.tmMoves ?? []).forEach?.((mname: string) => {
+          if (mname && !learnMethods[mname]) learnMethods[mname] = { type: "mt" };
+        });
+        (zEntry.tutorMoves ?? []).forEach?.((mname: string) => {
+          if (mname && !learnMethods[mname]) learnMethods[mname] = { type: "tutor" };
+        });
+        (zEntry.eggMoves ?? []).forEach?.((mname: string) => {
+          if (mname && !learnMethods[mname]) learnMethods[mname] = { type: "egg" };
+        });
+        updateSlot(idx, { name: displayName, types, sprite, stats, abilities, hiddenAbility, learnableMoves, learnMethods });
         return;
       }
       // Si no está en el JSON Z, cae al fetch normal de la API
@@ -3366,7 +4319,11 @@ export default function Home() {
         "SP.DEF": data.stats.find((s: any) => s.stat.name === "special-defense")?.base_stat ?? 0,
         SPE: data.stats.find((s: any) => s.stat.name === "speed")?.base_stat ?? 0,
       };
-      updateSlot(idx, { name: formatForDisplay(data.name), types, sprite, stats });
+      const learnableMoves: string[] = Array.isArray(data.moves)
+        ? Array.from(new Set(data.moves.map((mv: any) => mv?.move?.name).filter(Boolean)))
+        : [];
+      const learnMethods = buildLearnMethodsFromApi(data.moves);
+      updateSlot(idx, { name: formatForDisplay(data.name), types, sprite, stats, abilities: null, hiddenAbility: null, learnableMoves, learnMethods });
     } catch (e) {
       alert("Pokémon no encontrado: " + name);
     }
@@ -3393,10 +4350,10 @@ export default function Home() {
       );
       if (zMove) {
         const category: Move["category"] =
-          zMove.categoryEn === "Special" ? "Special" :
-          zMove.categoryEn === "Status"  ? "Status"  : "Physical";
+          zMove.category === "Special" ? "Special" :
+          zMove.category === "Status"  ? "Status"  : "Physical";
         updateMove(slotIdx, moveIdx, {
-          type: zMove.typeApi ?? null,
+          type: zMove.type ?? null,
           category,
           name: zMove.name,       // nombre en español del juego Z
           nameEs: zMove.name,
@@ -3730,11 +4687,34 @@ export default function Home() {
             p.id >= 899 ||
             !(speciesWithEvolution.has(p.id) || POKEMON_Z_PRE_EVOS.has(p.id)),
           formLabel: p.formLabel ?? null,
+          abilities: Array.isArray(p.abilities) && p.abilities.length > 0 ? p.abilities : null,
+          hiddenAbility: p.hiddenAbility ?? null,
         };
       });
     }
     return allPokemonData;
   }, [activePokedex, pokemonZData, allPokemonData, speciesWithEvolution]);
+
+  // Lista de nombres de habilidad únicos entre todos los candidatos activos,
+  // usada para las sugerencias del autocompletado del filtro por habilidad.
+  // En modo Z se muestran tal cual (ya en español); en modo estándar se
+  // formatean desde el slug de PokéAPI (ej. "water-absorb" → "Water Absorb").
+  const allAbilityNamesForFilter = useMemo(() => {
+    const set = new Set<string>();
+    activeCandidates.forEach((c) => {
+      (c.abilities ?? []).forEach((ab) => set.add(activePokedex === "pokemon-z" ? ab : formatForDisplay(ab)));
+      if (c.hiddenAbility) set.add(activePokedex === "pokemon-z" ? c.hiddenAbility : formatForDisplay(c.hiddenAbility));
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [activeCandidates, activePokedex]);
+
+  const recFilterAbilitySuggestions = useMemo(() => {
+    const q = normalizeApostrophe(recFilterAbility.trim().toLowerCase());
+    if (q.length < 2) return [];
+    return allAbilityNamesForFilter
+      .filter((ab) => ab.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [allAbilityNamesForFilter, recFilterAbility]);
 
   const pokemonRecommendations = useMemo(() => {
     if (!Object.keys(typeRelations).length) return [];
@@ -3823,22 +4803,41 @@ export default function Home() {
           const hasType = c.types.some((ty) => recFilterTypes.includes(ty));
           if (!hasType) return false;
         }
+        // Filtro por habilidad: texto libre, busca coincidencia parcial tanto
+        // en las habilidades normales como en la oculta (sin distinguir
+        // mayúsculas/acentos). En modo Z, los nombres ya vienen en español
+        // (ej. "Adaptable"); en modo estándar vienen como slug de PokéAPI
+        // (ej. "chlorophyll"), así que se compara también contra su versión
+        // formateada para que "clorofila" no falle si el usuario escribe en
+        // español sobre datos en inglés.
+        if (recFilterAbility.trim().length > 0) {
+          const q = normalizeApostrophe(recFilterAbility.trim().toLowerCase());
+          const candidateAbilityNames = [...(c.abilities ?? []), c.hiddenAbility ?? ""].filter(Boolean);
+          const hasMatch = candidateAbilityNames.some((ab) => {
+            const raw = ab.toLowerCase();
+            const display = formatForDisplay(ab).toLowerCase();
+            return raw.includes(q) || display.includes(q);
+          });
+          if (!hasMatch) return false;
+        }
         // Filtro: solo últimas evoluciones
         if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
         // Filtro: solo originales de Pokémon Z. Los rangos curados de
-        // Megas/Gigamax (90001-90025 y 90059-90078) ya se controlan aparte
-        // con los switches "Mostrar Megas"/"Mostrar Gigamax" (ver más abajo),
-        // así que se los exime de este chequeo por nombre. Si no, nunca
-        // podían pasar: sus nombres llevan prefijo "Mega "/"Gigamax " y hay
-        // casos (Mega Entei Z, todos los Gigamax curados) cuya especie base
-        // ni siquiera está en la lista de originales, aunque el Mega/Gigamax
-        // en sí sea contenido exclusivo de Pokémon Z.
+        // Gigamax (90009-90025) y el bloque nuevo de Megas/Primigenias
+        // (91000-91118, fuente única de verdad) ya se controlan aparte con
+        // los switches "Mostrar Megas"/"Mostrar Gigamax" (ver más abajo), así
+        // que se los exime de este chequeo por nombre. Si no, nunca podían
+        // pasar: sus nombres llevan prefijo "Mega "/"Gigamax " y hay casos
+        // cuya especie base ni siquiera está en la lista de originales,
+        // aunque el Mega/Gigamax en sí sea contenido exclusivo de Pokémon Z.
+        // (Los rangos viejos 90001-90008 y 90059-90078 ya no existen en el
+        // JSON — fueron migrados a 91000+ — así que se sacaron de acá.)
         if (recFilterOnlyOriginals) {
           const isCuratedMegaOrGmax =
             activePokedex === "pokemon-z" &&
-            ((c.id >= 90001 && c.id <= 90025) || (c.id >= 90059 && c.id <= 90078));
+            ((c.id >= 90009 && c.id <= 90025) || (c.id >= 91000 && c.id <= 91118));
           if (!isCuratedMegaOrGmax && !POKEMON_Z_ORIGINALS.has(stripZFormPrefixSuffix(normalizeApostrophe(c.name)))) return false;
         }
         // Filtro: Megas (dex normal, PokéAPI). Se detecta por el slug oficial
@@ -3847,10 +4846,11 @@ export default function Home() {
         // siempre; acá se controla con el switch.
         if (activePokedex !== "pokemon-z" && !recFilterShowMega && /-mega(-[xy])?\b/i.test(c.slug)) return false;
         // Filtro: Megas y Gigamax (dex Pokémon Z). Se usa el campo formLabel
-        // del JSON, que es el más confiable para esto — no se puede usar el
-        // ID (megas oficiales conviven en rangos 90001-90008 Y 90059-90078,
-        // Zygarde Mega está suelta en 90093) ni un substring del nombre
-        // (ej. "Meganium"/"Yanmega" contienen "mega" sin ser Megaevoluciones).
+        // del JSON, que es el más confiable para esto — no se puede usar un
+        // substring del nombre (ej. "Meganium"/"Yanmega" contienen "mega"
+        // sin ser Megaevoluciones). Los rangos viejos 90001-90008 y
+        // 90059-90078 ya no existen en el JSON (migrados a 91000-91118), así
+        // que se sacó el chequeo hardcodeado por esos IDs.
         if (activePokedex === "pokemon-z") {
           // OJO: el JSON usa formLabel "Mega" tanto para las Megas reales
           // como (por error/diseño) para la entrada BASE de 26 especies que
@@ -3859,9 +4859,7 @@ export default function Home() {
           // hay que exigir también que sea una entrada de la zona fakedex
           // (id >= 90000), o species base como Gyarados quedan atrapadas
           // por el switch igual que las Megas de verdad.
-          const isZMega = c.id >= 90059 && c.id <= 90078
-            ? true
-            : (c.formLabel === "Mega" && c.id >= 90000);
+          const isZMega = c.formLabel === "Mega" && c.id >= 90000;
           if (!recFilterZShowMega && isZMega) return false;
           if (!recFilterZShowGmax && c.formLabel === "Gmax") return false;
         }
@@ -4048,7 +5046,7 @@ export default function Home() {
       };
     });
     return result;
-  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual, activePokedex, recFilterShowMega, recFilterZShowMega, recFilterZShowGmax, recFilterSortStat, recFilterMinStats]);
+  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterAbility, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual, activePokedex, recFilterShowMega, recFilterZShowMega, recFilterZShowGmax, recFilterSortStat, recFilterMinStats]);
 
   // Priorizar la carga de sprites de los candidatos visibles actualmente
   useEffect(() => {
@@ -4832,9 +5830,29 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-600 font-mono">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{t.liveBadge}</span>
+            <div className="hidden sm:flex items-center gap-2">
+              <a
+                href="https://github.com/nixixo"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="GitHub: nixixo"
+                className="flex items-center justify-center h-7 w-7 rounded-full border border-slate-700/60 bg-slate-900/70 text-slate-400 transition hover:text-slate-100 hover:border-slate-500"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.06.78 2.14 0 1.54-.01 2.79-.01 3.17 0 .31.21.68.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+                </svg>
+              </a>
+              <a
+                href="https://discord.com/users/.nixixo"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Discord: .nixixo"
+                className="flex items-center justify-center h-7 w-7 rounded-full border border-slate-700/60 bg-slate-900/70 text-slate-400 transition hover:text-slate-100 hover:border-slate-500"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.26a18.27 18.27 0 0 0-5.48 0 12.6 12.6 0 0 0-.62-1.26.08.08 0 0 0-.08-.04c-1.7.29-3.36.8-4.89 1.52a.07.07 0 0 0-.03.03C.53 8.6-.32 12.7.1 16.76a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 6 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.9.08.08 0 0 1 0-.13c.13-.09.25-.19.37-.28a.07.07 0 0 1 .08 0c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08 0c.12.1.24.19.37.28a.08.08 0 0 1 0 .13c-.6.35-1.22.65-1.87.9a.08.08 0 0 0-.04.11c.36.7.78 1.37 1.23 2a.08.08 0 0 0 .08.03 19.84 19.84 0 0 0 6.01-3.03.08.08 0 0 0 .03-.06c.5-4.7-.83-8.76-3.5-12.36a.06.06 0 0 0-.03-.03ZM8.02 14.34c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Z" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
@@ -4968,6 +5986,19 @@ export default function Home() {
             <>
               <button
                 type="button"
+                onClick={() => setOnlyLearnableMoves((v) => !v)}
+                title={t.onlyLearnableMovesTitle}
+                aria-pressed={onlyLearnableMoves}
+                className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
+                  onlyLearnableMoves
+                    ? "bg-emerald-700/80 text-white hover:bg-emerald-600"
+                    : "bg-slate-700/60 text-slate-300 hover:bg-slate-600/60"
+                }`}
+              >
+                <span>{onlyLearnableMoves ? "✅" : "📖"}</span> <span>{t.onlyLearnableMoves}</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowPlantillas(true)}
                 className="inline-flex items-center justify-center gap-1.5 rounded-full bg-blue-700/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
@@ -4978,6 +6009,8 @@ export default function Home() {
                 onClick={() => {
                   const cleared = Array.from({ length: 6 }, EMPTY_SLOT);
                   setTeam(cleared);
+                  setPokemonInputDraft(Array.from({ length: 6 }, () => null));
+                  setPokemonSearch(Array.from({ length: 6 }, () => ""));
                   if (typeof window !== "undefined") {
                     localStorage.removeItem(STORAGE_KEY);
                   }
@@ -5031,17 +6064,14 @@ export default function Home() {
                   className="flex items-center gap-2 w-full text-left rounded-md px-1 py-1 -mx-1 transition hover:bg-slate-800/40"
                 >
                   <div className="w-9 h-9 bg-[#031421] rounded-md overflow-hidden flex items-center justify-center shrink-0">
-                    {slot.sprite ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={slot.sprite}
-                        alt={slot.name}
-                        className="w-8 h-8 object-contain"
-                        style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
-                      />
-                    ) : (
-                      <PokeballIcon className="h-5 w-5 opacity-40" />
-                    )}
+                    <SpriteImg
+                      src={slot.sprite && !failedSpriteUrls.has(slot.sprite) ? slot.sprite : null}
+                      alt={slot.name}
+                      className="w-8 h-8 object-contain"
+                      style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
+                      onError={() => markSpriteFailed(slot.sprite!)}
+                      placeholderClassName="h-5 w-5 opacity-40"
+                    />
                   </div>
                   <span className="flex-1 min-w-0 text-sm font-semibold text-slate-100 capitalize truncate">
                     {slot.name || "Pokémon"}
@@ -5052,25 +6082,22 @@ export default function Home() {
                 <>
                 <div className="flex gap-2 items-start">
                   <div className="w-16 h-16 sm:w-32 sm:h-32 bg-[#031421] flex items-center justify-center rounded-lg shrink-0 overflow-hidden">
-                    {slot.sprite ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={slot.sprite}
-                        alt={slot.name}
-                        className="w-14 h-14 sm:w-28 sm:h-28 object-contain"
-                        style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
-                      />
-                    ) : (
-                      <div className="text-xs text-slate-400">{t.noSprite}</div>
-                    )}
+                    <SpriteImg
+                      src={slot.sprite && !failedSpriteUrls.has(slot.sprite) ? slot.sprite : null}
+                      alt={slot.name}
+                      className="w-14 h-14 sm:w-28 sm:h-28 object-contain"
+                      style={buildSpriteStyle(slot.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[slot.name])}
+                      onError={() => markSpriteFailed(slot.sprite!)}
+                      placeholderClassName="h-8 w-8 sm:h-12 sm:w-12 opacity-40"
+                    />
                   </div>
                   <div className="flex-1 space-y-0.5">
                     <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-base font-semibold text-slate-100 capitalize">{slot.name || "Pokémon"}</div>
+                      <div className="flex items-center gap-2 flex-nowrap min-w-0">
+                        <div className="text-base font-semibold text-slate-100 capitalize truncate min-w-0" title={slot.name || "Pokémon"}>{slot.name || "Pokémon"}</div>
                         {slot.stats && isAdvanced ? (
                           <div
-                            className="relative inline-flex items-center group"
+                            className="relative inline-flex items-center group shrink-0"
                             onMouseEnter={() => openStatsTooltip(idx)}
                             onMouseLeave={() => scheduleCloseStatsTooltip(idx)}
                           >
@@ -5182,7 +6209,7 @@ export default function Home() {
                         ) : null}
                         {slot.stats && isAdvanced && (() => {
                           const role = getRole(slot.stats, lang);
-                          return role ? <RoleBadge label={role.label} color={role.color} /> : null;
+                          return role ? <span className="shrink-0"><RoleBadge label={role.label} color={role.color} /></span> : null;
                         })()}
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -5196,19 +6223,75 @@ export default function Home() {
                           <span className="text-sm text-slate-500">{t.noTypes}</span>
                         )}
                       </div>
+                      {(slot.abilities && slot.abilities.length > 0) || slot.hiddenAbility ? (
+                        <div className="flex flex-wrap gap-2">
+                          {(slot.abilities ?? []).map((ab) => (
+                            <FloatingTooltip
+                              key={ab}
+                              preferredPlacement="top"
+                              content={
+                                <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
+                                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">{getAbilityDisplayName(ab)}</div>
+                                  <div>{(lang === "es" ? abilitiesZDescData[ab]?.description : (abilitiesZDescData[ab]?.descriptionEn ?? abilitiesZDescData[ab]?.description)) ?? ""}</div>
+                                </div>
+                              }
+                            >
+                              <span className="inline-flex items-center gap-1 rounded-full border border-slate-600 bg-slate-800/90 px-2 py-0.5 text-[11px] font-semibold text-slate-200 cursor-default">
+                                {getAbilityDisplayName(ab)}
+                              </span>
+                            </FloatingTooltip>
+                          ))}
+                          {slot.hiddenAbility ? (
+                            <FloatingTooltip
+                              preferredPlacement="top"
+                              content={
+                                <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
+                                  <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">{getAbilityDisplayName(slot.hiddenAbility)} ({lang === "es" ? "oculta" : "hidden"})</div>
+                                  <div>{(lang === "es" ? abilitiesZDescData[slot.hiddenAbility]?.description : (abilitiesZDescData[slot.hiddenAbility]?.descriptionEn ?? abilitiesZDescData[slot.hiddenAbility]?.description)) ?? ""}</div>
+                                </div>
+                              }
+                            >
+                              <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-500 bg-slate-800/60 px-2 py-0.5 text-[11px] font-semibold text-slate-300 cursor-default">
+                                {getAbilityDisplayName(slot.hiddenAbility)}
+                              </span>
+                            </FloatingTooltip>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
 
                 <div className="relative flex flex-wrap items-center gap-2 text-sm text-slate-300">
                   <input
-                    value={slot.name}
+                    value={pokemonInputDraft[idx] !== null ? pokemonInputDraft[idx]! : slot.name}
+                    onFocus={() => {
+                      setPokemonInputDraft((prev) => prev.map((d, i) => (i === idx ? slot.name : d)));
+                    }}
                     onChange={(e) => {
                       const value = e.target.value;
-                      updateSlot(idx, { name: value });
+                      setPokemonInputDraft((prev) => prev.map((d, i) => (i === idx ? value : d)));
                       setPokemonSearch((prev) => prev.map((current, i) => (i === idx ? value : current)));
+                      // Solo tocamos el nombre "real" del slot cuando se borra por completo
+                      // (esto ya dispara el reseteo a EMPTY_SLOT dentro de updateSlot). Mientras
+                      // se está escribiendo/editando, el nombre confirmado NO cambia — así el
+                      // ajuste de sprite por nombre (ej. Mega Delphox Z) no se pierde a mitad de tipeo.
+                      if (value.trim() === "") {
+                        updateSlot(idx, { name: "" });
+                      }
+                    }}
+                    onBlur={() => {
+                      // Sin selección confirmada: se descarta el borrador y el input
+                      // vuelve a mostrar el nombre ya confirmado (cancela la edición).
+                      setPokemonInputDraft((prev) => prev.map((d, i) => (i === idx ? null : d)));
                     }}
                     onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        setPokemonInputDraft((prev) => prev.map((d, i) => (i === idx ? null : d)));
+                        setPokemonOpen((prev) => prev.map((open, i) => (i === idx ? false : open)));
+                        return;
+                      }
                       if (!pokemonOpen[idx] || pokemonResults[idx].length === 0) return;
                       if (e.key === "ArrowDown") {
                         e.preventDefault();
@@ -5227,9 +6310,6 @@ export default function Home() {
                         if (pokemonSelectedIdx[idx] >= 0 && pokemonSelectedIdx[idx] < pokemonResults[idx].length) {
                           selectPokemonSuggestion(idx, pokemonResults[idx][pokemonSelectedIdx[idx]]);
                         }
-                      } else if (e.key === "Escape") {
-                        e.preventDefault();
-                        setPokemonOpen((prev) => prev.map((open, i) => (i === idx ? false : open)));
                       }
                     }}
                     placeholder={slot.isFake ? t.searchFakemon : t.searchPokemon}
@@ -5238,7 +6318,7 @@ export default function Home() {
                   {!slot.isFake && (
                     <button
                       type="button"
-                      onClick={() => fetchPokemon(slot.name, idx)}
+                      onClick={() => fetchPokemon(pokemonInputDraft[idx] ?? slot.name, idx)}
                       className="inline-flex items-center gap-1.5 rounded-full bg-blue-700 px-2.5 sm:px-3.5 py-1.5 text-white btn-interactive whitespace-nowrap text-xs sm:text-sm font-semibold shadow-sm shadow-blue-950/40 transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                       <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -5366,7 +6446,7 @@ export default function Home() {
                       );
                     };
                     return (
-                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5 overflow-hidden" style={moveBgStyle(m.category, m.type)}>
+                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5" style={moveBgStyle(m.category, m.type)}>
                         <div className="mb-1.5 flex items-center justify-between gap-3">
                           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
                           {slot.isFake && (
@@ -5427,7 +6507,7 @@ export default function Home() {
                             </div>
                           </div>
                         ) : (
-                          <>
+                          <div className="relative">
                             <input
                               placeholder={t.movePlaceholder}
                               value={moveInputDraft[idx][mi] !== null
@@ -5508,15 +6588,26 @@ const enSlug =
                                   fetchMove(enSlug, idx, mi);
                                 }
                               }}
-                              className="w-full rounded-lg border border-blue-800/40 bg-slate-950/50 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                              className="w-full rounded-lg border border-blue-800/40 bg-slate-950/50 py-2 pl-3 pr-9 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
                             />
+                            {activePokedex === "pokemon-z" && movesZData.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => openMoveFilter(idx, mi)}
+                                className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800/80 hover:text-sky-300"
+                                title={lang === "es" ? "Filtrar movimientos" : "Filter moves"}
+                              >
+                                🔎
+                              </button>
+                            )}
                             {moveOpen[idx][mi] && moveResults[idx][mi].length > 0 && (
-                              <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-lg">
+                              <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
                                 {moveResults[idx][mi].map((name, resultIdx) => {
                                   // Show ES display name if available, EN slug as hint
                                   const esDisplay = moveEsDisplay[name];
                                   const label = lang === "es" && esDisplay ? esDisplay : formatForDisplay(name);
                                   const hint = lang === "es" && esDisplay ? formatForDisplay(name) : undefined;
+                                  const learnBadge = getMoveLearnBadge(idx, name);
                                   return (
                                     <button
                                       key={name}
@@ -5541,8 +6632,15 @@ const enSlug =
                                         moveSelectedIdx[idx][mi] === resultIdx ? "bg-blue-700/60" : "hover:bg-slate-700/80"
                                       }`}
                                     >
-                                      <span>{label}</span>
-                                      {hint && <span className="text-[11px] text-slate-500 shrink-0">{hint}</span>}
+                                      <span className="flex items-center gap-2 min-w-0">
+                                        <span className="truncate">{label}</span>
+                                        {hint && <span className="text-[11px] text-slate-500 shrink-0">{hint}</span>}
+                                      </span>
+                                      {learnBadge && (
+                                        <span className="shrink-0 rounded-full border border-slate-600 bg-slate-900/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                                          {learnBadge}
+                                        </span>
+                                      )}
                                     </button>
                                   );
                                 })}
@@ -5574,13 +6672,13 @@ const enSlug =
                                 )}
                               </div>
                             )}
-                          </>
+                          </div>
                         )}
 
                         <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-800/70 pt-3">
                           {isAdvanced ? (
                           <div className="flex items-center gap-1.5 min-w-0 shrink-0">
-                            <span className="shrink-0"><CategoryIcon cat={m.category} /></span>
+                            <span className="shrink-0"><CategoryIcon cat={m.category} size={22} /></span>
                             <span className="text-[10px] leading-none font-medium uppercase tracking-[0.06em] text-slate-400 whitespace-nowrap">
                               {m.category === "Physical" ? t.catPhysical : m.category === "Special" ? t.catSpecial : t.catStatus}
                             </span>
@@ -6405,10 +7503,10 @@ const enSlug =
                   <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
+                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
                     <button
                       type="button"
-                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterGen(null); setRecFilterRoleManual(null); setRecFilterSortStat(null); setRecFilterMinStats(EMPTY_STAT_INPUT); }}
+                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterAbility(""); setRecFilterGen(null); setRecFilterRoleManual(null); setRecFilterSortStat(null); setRecFilterMinStats(EMPTY_STAT_INPUT); }}
                       className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition"
                     >
                       {t.recFilterReset}
@@ -6418,12 +7516,12 @@ const enSlug =
                   <button
                     type="button"
                     onClick={() => setRecShowFilters((v) => !v)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                   >
                     🔍 {t.recFilterTitle}
-                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
+                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
                       <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-500 text-[9px] text-white font-bold">
-                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterGen !== null ? 1 : 0) + (recFilterSortStat !== null ? 1 : 0) + Object.values(recFilterMinStats).filter((v) => v.trim() !== "").length}
+                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterAbility.trim() !== "" ? 1 : 0) + (recFilterGen !== null ? 1 : 0) + (recFilterSortStat !== null ? 1 : 0) + Object.values(recFilterMinStats).filter((v) => v.trim() !== "").length}
                       </span>
                     )}
                   </button>
@@ -6525,6 +7623,71 @@ const enSlug =
                                 <span className={`${badgeClass(recFilterType2)} text-[12px] leading-none px-1.5 py-1`}>{tn(recFilterType2)}</span>
                               </div>
                             )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Filtro por habilidad — con autocompletado */}
+                      <div className="relative">
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                          {lang === "es" ? "Buscar por habilidad" : "Search by ability"}
+                        </div>
+                        <input
+                          type="text"
+                          value={recFilterAbility}
+                          maxLength={50}
+                          onChange={(e) => {
+                            setRecFilterAbility(e.target.value);
+                            setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
+                            setRecFilterAbilitySelectedIdx(-1);
+                          }}
+                          onFocus={() => {
+                            if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
+                          }}
+                          onBlur={() => {
+                            // Delay para permitir que el click en una sugerencia registre antes de cerrar
+                            setTimeout(() => setRecFilterAbilityOpen(false), 150);
+                          }}
+                          onKeyDown={(e) => {
+                            if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
+                            if (e.key === "ArrowDown") {
+                              e.preventDefault();
+                              setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
+                            } else if (e.key === "ArrowUp") {
+                              e.preventDefault();
+                              setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
+                            } else if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (recFilterAbilitySelectedIdx >= 0) {
+                                setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                                setRecFilterAbilityOpen(false);
+                              }
+                            } else if (e.key === "Escape") {
+                              setRecFilterAbilityOpen(false);
+                            }
+                          }}
+                          placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
+                          className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                        />
+                        {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
+                          <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                            {recFilterAbilitySuggestions.map((ab, i) => (
+                              <button
+                                key={ab}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setRecFilterAbility(ab);
+                                  setRecFilterAbilityOpen(false);
+                                }}
+                                onMouseEnter={() => setRecFilterAbilitySelectedIdx(i)}
+                                className={`w-full px-3 py-2 text-left ${
+                                  recFilterAbilitySelectedIdx === i ? "bg-blue-700/60" : "hover:bg-slate-700/80"
+                                }`}
+                              >
+                                {ab}
+                              </button>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -6738,7 +7901,7 @@ const enSlug =
                     const allResistances = newResistances.filter((ty) => !immunities.includes(ty));
 
                     return (
-                      <div key={candidate.slug} className="rounded-xl border border-blue-800/20 bg-slate-900/75 overflow-hidden">
+                      <div key={candidate.slug} className="rounded-xl border border-blue-800/20 bg-slate-900/75 overflow-hidden min-w-0">
 
                         {/* ── CUERPO PRINCIPAL: sprite izq + info der ── */}
                         <div className="flex">
@@ -6924,6 +8087,58 @@ const enSlug =
                               ))}
                             </div>
 
+                            {/* Fila 2.5: Habilidades del candidato (normales + oculta, si tiene) */}
+                            {((candidate.abilities && candidate.abilities.length > 0) || candidate.hiddenAbility) && (
+                              <div className="flex flex-wrap gap-1">
+                                {(candidate.abilities ?? []).map((ab) => (
+                                  <FloatingTooltip
+                                    key={ab}
+                                    preferredPlacement="top"
+                                    content={
+                                      <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
+                                        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
+                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : formatForDisplay(ab)}
+                                        </div>
+                                        <div>
+                                          {activePokedex === "pokemon-z"
+                                            ? (lang === "es" ? abilitiesZDescData[ab]?.description : (abilitiesZDescData[ab]?.descriptionEn ?? abilitiesZDescData[ab]?.description)) ?? ""
+                                            : ""}
+                                        </div>
+                                      </div>
+                                    }
+                                  >
+                                    <span className="rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] font-medium text-slate-300 cursor-default">
+                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : formatForDisplay(ab)}
+                                    </span>
+                                  </FloatingTooltip>
+                                ))}
+                                {candidate.hiddenAbility && (
+                                  <FloatingTooltip
+                                    preferredPlacement="top"
+                                    content={
+                                      <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
+                                        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
+                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : formatForDisplay(candidate.hiddenAbility)}
+                                          {" "}({lang === "es" ? "oculta" : "hidden"})
+                                        </div>
+                                        <div>
+                                          {activePokedex === "pokemon-z"
+                                            ? (lang === "es" ? abilitiesZDescData[candidate.hiddenAbility]?.description : (abilitiesZDescData[candidate.hiddenAbility]?.descriptionEn ?? abilitiesZDescData[candidate.hiddenAbility]?.description)) ?? ""
+                                            : ""}
+                                        </div>
+                                      </div>
+                                    }
+                                  >
+                                    <span
+                                      className="rounded-full border border-dashed border-slate-600 bg-slate-800/30 px-2 py-0.5 text-[10px] font-medium text-slate-400 cursor-default"
+                                    >
+                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : formatForDisplay(candidate.hiddenAbility)}
+                                    </span>
+                                  </FloatingTooltip>
+                                )}
+                              </div>
+                            )}
+
                             {/* Fila 3: Rol del candidato (solo modo avanzado; requiere entender el sistema de roles) */}
                             {isAdvanced && (
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -6951,8 +8166,25 @@ const enSlug =
                                 primero (arriba) y el relleno invisible va al final — así nunca
                                 queda un hueco vacío antes de "Cubre"/"Añade". */}
                             <div className="flex flex-col gap-1">
-                              {[...fixedReasonRows]
-                                .sort((a, b) => (b.types.length > 0 ? 1 : 0) - (a.types.length > 0 ? 1 : 0))
+                              {noNewCritical && groupedReasons.length === 0 && (
+                                // Sin ninguna razón real: el check ocupa la 1ª de las 3
+                                // filas reservadas (va arriba), y solo quedan 2 filas
+                                // fantasma de relleno debajo — así el total sigue siendo
+                                // 3 filas, igual que en las demás tarjetas. Los badges reales
+                                // usan la clase CSS propia `type-badge` (con su padding y
+                                // line-height particulares), así que un <span> de texto plano
+                                // con px/py de Tailwind NO alcanza la misma altura. Por eso acá
+                                // se agrega un badge invisible real (misma clase que el resto)
+                                // solo para forzar que la fila mida exactamente lo mismo.
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] font-semibold text-emerald-500 inline-flex items-center gap-1">
+                                    ✓ {t.recNoNewCritical}
+                                  </span>
+                                  <span className={`${badgeClass("normal")} invisible text-[11px] px-1.5 py-0.5 shrink-0`} aria-hidden="true">·</span>
+                                </div>
+                              )}
+                              {(noNewCritical && groupedReasons.length === 0 ? fixedReasonRows.slice(1) : [...fixedReasonRows]
+                                .sort((a, b) => (b.types.length > 0 ? 1 : 0) - (a.types.length > 0 ? 1 : 0)))
                                 .map((row) => (
                                 <div key={row.key} className="flex items-center gap-2">
                                   <span className={`${row.labelCl} text-[11px] font-semibold shrink-0 w-16 inline-flex items-center gap-1 ${row.types.length === 0 ? "invisible" : ""}`}>
@@ -6972,9 +8204,6 @@ const enSlug =
                                   </div>
                                 </div>
                               ))}
-                              {noNewCritical && groupedReasons.length === 0 && (
-                                <span className="text-[11px] text-emerald-500">✓ {t.recNoNewCritical}</span>
-                              )}
                             </div>
 
                             {/* Fila 5: botón expandible — solo modo avanzado */}
@@ -7389,17 +8618,13 @@ const enSlug =
         >
           <div className="flex items-center gap-2">
             <div className="w-12 h-12 bg-[#031421] rounded-lg overflow-hidden flex items-center justify-center shrink-0">
-              {team[dragFromIdx]?.sprite ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={team[dragFromIdx].sprite as string}
-                  alt={team[dragFromIdx].name}
-                  className="w-10 h-10 object-contain"
-                  style={buildSpriteStyle(team[dragFromIdx].spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[team[dragFromIdx].name])}
-                />
-              ) : (
-                <PokeballIcon className="h-6 w-6 opacity-40" />
-              )}
+              <SpriteImg
+                src={team[dragFromIdx]?.sprite ?? null}
+                alt={team[dragFromIdx]?.name ?? ""}
+                className="w-10 h-10 object-contain"
+                style={buildSpriteStyle(team[dragFromIdx]?.spriteTransform, Z_SLOT_SPRITE_ZOOM_OVERRIDES[team[dragFromIdx]?.name ?? ""])}
+                placeholderClassName="h-6 w-6 opacity-40"
+              />
             </div>
             <span className="text-sm font-semibold text-slate-100 truncate">
               {team[dragFromIdx]?.name || "—"}
@@ -7423,6 +8648,31 @@ const enSlug =
             setSpriteEditorOpen(false);
             setSpriteEditorSrc(null);
           }}
+        />
+      )}
+      {/* ── Modal de filtros de movimientos ── */}
+      {moveFilterTarget && (
+        <MoveFilterModal
+          moves={movesZData as MoveFilterEntry[]}
+          lang={lang}
+          search={moveFilterSearch}
+          onSearchChange={setMoveFilterSearch}
+          categories={moveFilterCategories}
+          onToggleCategory={toggleMoveFilterCategory}
+          types={moveFilterTypes}
+          onToggleType={toggleMoveFilterType}
+          onClearFilters={clearMoveFilters}
+          learnMethods={team[moveFilterTarget.slotIdx]?.learnMethods}
+          onlyLearnable={onlyLearnableMoves}
+          learnableSet={
+            team[moveFilterTarget.slotIdx]?.learnableMoves
+              ? new Set(team[moveFilterTarget.slotIdx]!.learnableMoves as string[])
+              : null
+          }
+          badgeClass={badgeClass}
+          tn={tn}
+          onSelect={selectMoveFromFilter}
+          onClose={closeMoveFilter}
         />
       )}
     </div>
