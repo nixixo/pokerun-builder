@@ -1765,6 +1765,53 @@ function SpriteImg({
   );
 }
 
+/** Dropdown "teletransportado" al final del <body> vía portal, posicionado con
+ *  `position: fixed` calculando las coordenadas del elemento ancla en cada
+ *  apertura/scroll/resize. Se usa para listas desplegables (como las
+ *  sugerencias de movimientos) que de otro modo podrían quedar recortadas o
+ *  tapadas por contenedores padres con su propio stacking context / overflow
+ *  (tarjetas con blur, paneles con scroll, etc.) — al vivir fuera de esos
+ *  contenedores, siempre se pinta por encima de todo el contenido normal.
+ */
+function AnchoredDropdown({
+  anchorEl,
+  open,
+  children,
+}: {
+  anchorEl: HTMLElement | null;
+  open: boolean;
+  children: React.ReactNode;
+}) {
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !anchorEl) {
+      setRect(null);
+      return;
+    }
+    const update = () => {
+      const r = anchorEl.getBoundingClientRect();
+      setRect({ top: r.bottom + 6, left: r.left, width: r.width });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, anchorEl]);
+
+  if (!open || !rect || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, zIndex: 9999 }}>
+      {children}
+    </div>,
+    document.body
+  );
+}
+
 // ─── Sprite Editor Modal ─────────────────────────────────────────────────────
 
 type SpriteEditorProps = {
@@ -3005,6 +3052,7 @@ export default function Home() {
   const dragGhostSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const dragGrabOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const teamCardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const moveInputWrapRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const prevSlotRects = useRef<Map<number, DOMRect>>(new Map());
 
   // Captura la posición actual de cada tarjeta antes de reordenar el array,
@@ -5562,6 +5610,10 @@ export default function Home() {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeSlideDown {
+          from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+          to   { opacity: 1; transform: translateY(0); max-height: 200px; }
+        }
         /* ── PokeRun custom scrollbars ── */
         :root {
           --sb-track: #0a1628;
@@ -5977,7 +6029,7 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr] gap-4">
         <CollapsibleSection
           as="section"
-          className="pokedex-panel p-3 sm:p-4 rounded-lg h-full"
+          className={`pokedex-panel p-3 sm:p-4 rounded-lg h-full relative ${moveOpen.some((s) => s?.some(Boolean)) ? "z-40" : ""}`}
           headerClassName="mb-4"
           icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>}
           title={t.myTeam}
@@ -6037,12 +6089,14 @@ export default function Home() {
           }
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-            {team.map((slot, idx) => (
+            {team.map((slot, idx) => {
+              const hasOpenMoveDropdown = moveOpen[idx]?.some(Boolean);
+              return (
               <div
                 key={idx}
                 data-slot-idx={idx}
                 ref={(el) => { teamCardRefs.current[idx] = el; }}
-                className={`pokedex-card relative hover:z-20 p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30 scale-[1.02]" : ""} ${dragFromIdx === idx ? "opacity-30" : ""}`}
+                className={`pokedex-card relative hover:z-20 ${hasOpenMoveDropdown ? "z-30" : ""} p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-all ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30 scale-[1.02]" : ""} ${dragFromIdx === idx ? "opacity-30" : ""}`}
               >
                 {/* Drag handle */}
                 <div
@@ -6508,6 +6562,7 @@ export default function Home() {
                           </div>
                         ) : (
                           <div className="relative">
+                            <div className="relative" ref={(el) => { moveInputWrapRefs.current[`${idx}-${mi}`] = el; }}>
                             <input
                               placeholder={t.movePlaceholder}
                               value={moveInputDraft[idx][mi] !== null
@@ -6600,8 +6655,11 @@ const enSlug =
                                 🔎
                               </button>
                             )}
-                            {moveOpen[idx][mi] && moveResults[idx][mi].length > 0 && (
-                              <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                            <AnchoredDropdown
+                              anchorEl={moveInputWrapRefs.current[`${idx}-${mi}`]}
+                              open={moveOpen[idx][mi] && moveResults[idx][mi].length > 0}
+                            >
+                              <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
                                 {moveResults[idx][mi].map((name, resultIdx) => {
                                   // Show ES display name if available, EN slug as hint
                                   const esDisplay = moveEsDisplay[name];
@@ -6645,9 +6703,10 @@ const enSlug =
                                   );
                                 })}
                               </div>
-                            )}
+                            </AnchoredDropdown>
+                            </div>
                             {isHP && isAdvanced && (
-                              <div className="mt-3 rounded-lg border border-sky-900/50 bg-sky-950/20 p-2">
+                              <div className="mt-3 rounded-lg border border-sky-900/50 bg-sky-950/20 p-2 animate-[fadeSlideDown_0.18s_ease-out]">
                                 <button
                                   type="button"
                                   onClick={() => toggleHpType(idx, mi)}
@@ -6700,7 +6759,8 @@ const enSlug =
                 </>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </CollapsibleSection>
 
