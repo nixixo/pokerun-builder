@@ -5843,7 +5843,7 @@ export default function Home() {
                 </svg>
               </a>
               <a
-                href="https://discord.com/users/.nixixo"
+                href="https://discord.com/users/436280183977279500"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Discord: .nixixo"
@@ -6423,22 +6423,22 @@ export default function Home() {
                 <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                   {slot.moves.map((m, mi) => {
                     const isHP = /hidden.?power|poder.?oculto/i.test(m.name);
-                    const CategoryIcon = ({ cat }: { cat: string }) => {
+                    const CategoryIcon = ({ cat, size = 18 }: { cat: string; size?: number }) => {
                       if (cat === "Physical") return (
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="9" cy="9" r="8.5" fill="#C03028" stroke="#7f1010" strokeWidth="1"/>
                           <path d="M5 13L9 5L13 13" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                           <circle cx="9" cy="5" r="1.5" fill="white"/>
                         </svg>
                       );
                       if (cat === "Special") return (
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="9" cy="9" r="8.5" fill="#6890F0" stroke="#1e3a8a" strokeWidth="1"/>
                           <path d="M9 4L10.2 7.5H14L11 9.8L12.2 13.2L9 11L5.8 13.2L7 9.8L4 7.5H7.8L9 4Z" fill="white"/>
                         </svg>
                       );
                       return (
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width={size} height={size} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <circle cx="9" cy="9" r="8.5" fill="#705898" stroke="#3b1e6b" strokeWidth="1"/>
                           <circle cx="9" cy="9" r="3.5" fill="white" opacity="0.9"/>
                           <circle cx="9" cy="9" r="1.5" fill="#705898"/>
