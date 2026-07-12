@@ -1347,6 +1347,12 @@ const UI: Record<Lang, Record<string, string>> = {
     appSubtitle: "Arma tu equipo, analízalo y encuentra sus puntos débiles.",
     statSlots: "6 slots", statMoves: "4 por slot", statAnalysis: "En tiempo real",
     labelSlots: "Equipos", labelMoves: "Movimientos", labelAnalysis: "Análisis",
+    guideTypes: "Tipo", guideAbilities: "Habilidad", guideMoves: "Movimientos",
+    guideTeamSection: "En esta sección arma tu equipo de hasta 6 Pokémon. Busca cada Pokémon por su nombre, elige sus movimientos y revisa sus tipos y habilidades. La información de debilidades y recomendaciones más abajo se actualiza automáticamente a medida que completas tu equipo.",
+    guideDefenseSection: "Aquí se muestra cómo le va a tu equipo defensivamente según los tipos de cada Pokémon. Las debilidades son los tipos de ataque que le hacen más daño a tu equipo, y las resistencias son los tipos frente a los que tu equipo aguanta mejor. Úsalo para detectar puntos flacos antes de que te sorprendan en batalla.",
+    guideCoverageSection: "Aquí se muestra qué tan bien atacan los movimientos de tu equipo a los demás tipos. Si algún tipo aparece sin cobertura, significa que ningún Pokémon de tu equipo tiene un movimiento eficaz contra él, y conviene agregar uno que lo cubra.",
+    guideRecommendedSection: "Esta lista sugiere Pokémon que podrían complementar bien a tu equipo actual, tomando en cuenta sus tipos, sus debilidades y lo que le falta cubrir. Puedes usar los filtros de abajo para acotar la búsqueda por tipo, habilidad, generación o estadística más alta.",
+    guideReplaceSection: "Aquí se muestra qué Pokémon de tu equipo aporta menos en este momento, considerando su cobertura de tipos, si repite algo que ya cubre otro miembro y sus debilidades compartidas. Es una guía útil si estás pensando en cambiar a alguno por otro más útil para el equipo.",
     // Equipo
     myTeam: "Mi Equipo", saveTemplates: "Plantillas", clearTeam: "Limpiar equipo",
     onlyLearnableMoves: "Solo aprendibles", onlyLearnableMovesTitle: "Si está activo, el buscador de movimientos solo sugiere los que cada Pokémon puede aprender de verdad (nivel, tutor o huevo), en vez de todos los movimientos existentes.",
@@ -1474,6 +1480,12 @@ const UI: Record<Lang, Record<string, string>> = {
     appSubtitle: "Build your team, analyze, and find its weak spots.",
     statSlots: "6 slots", statMoves: "4 per slot", statAnalysis: "Real-time",
     labelSlots: "Team slots", labelMoves: "Moves", labelAnalysis: "Analysis",
+    guideTypes: "Type", guideAbilities: "Ability", guideMoves: "Moves",
+    guideTeamSection: "In this section you build your team of up to 6 Pokémon. Search for each Pokémon by name, choose its moves, and review its types and abilities. The weaknesses and recommendations below update automatically as you complete your team.",
+    guideDefenseSection: "Here you can see how your team holds up defensively based on each Pokémon's types. Weaknesses are the attack types that deal the most damage to your team, and resistances are the types your team handles best. Use it to spot weak points before they surprise you in battle.",
+    guideCoverageSection: "Here you can see how well your team's moves hit the other types. If a type shows up with no coverage, it means no Pokémon on your team has an effective move against it, and you may want to add one that does.",
+    guideRecommendedSection: "This list suggests Pokémon that could complement your current team well, based on their types, weaknesses, and what your team still needs to cover. You can use the filters below to narrow the search by type, ability, generation, or highest stat.",
+    guideReplaceSection: "Here you can see which Pokémon on your team is contributing the least right now, based on its type coverage, whether it repeats coverage another member already provides, and shared weaknesses. It's a useful guide if you're thinking about swapping one out for something more useful.",
     myTeam: "My Team", saveTemplates: "Templates", clearTeam: "Clear team",
     onlyLearnableMoves: "Learnable only", onlyLearnableMovesTitle: "When on, the move search only suggests moves each Pokémon can actually learn (level-up, tutor, or egg), instead of every move that exists.",
     moveBadgeLevelPrefix: "Lv.", moveBadgeMt: "TM", moveBadgeTutor: "Tutor", moveBadgeEgg: "Egg",
@@ -2129,6 +2141,7 @@ type CollapsibleSectionProps = {
   title: React.ReactNode;
   icon?: React.ReactNode;
   headerExtra?: React.ReactNode; // controles extra en la cabecera (ej. botones de Mi Equipo)
+  guide?: React.ReactNode; // texto guía (modo sencillo) explicando para qué sirve la sección
   defaultOpen?: boolean;
   storageKey?: string; // si se define, persiste el estado abierto/cerrado en localStorage
   as?: "section" | "div";
@@ -2142,6 +2155,7 @@ function CollapsibleSection({
   title,
   icon,
   headerExtra,
+  guide,
   defaultOpen = true,
   storageKey,
   as = "section",
@@ -2226,6 +2240,12 @@ function CollapsibleSection({
         }}
       >
         <div ref={contentRef} className={bodyClassName}>
+          {guide && (
+            <div className="mb-4 flex items-start gap-3 rounded-xl border border-sky-700/50 bg-sky-950/40 px-4 py-3 text-[14px] sm:text-[15px] leading-relaxed text-sky-200">
+              <span className="shrink-0 text-xl leading-none">💡</span>
+              <span>{guide}</span>
+            </div>
+          )}
           {children}
         </div>
       </div>
@@ -6033,6 +6053,7 @@ export default function Home() {
           headerClassName="mb-4"
           icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">📋</span>}
           title={t.myTeam}
+          guide={!isAdvanced ? t.guideTeamSection : undefined}
           storageKey="my-team"
           headerExtra={
             <>
@@ -6266,6 +6287,9 @@ export default function Home() {
                           return role ? <span className="shrink-0"><RoleBadge label={role.label} color={role.color} /></span> : null;
                         })()}
                       </div>
+                      {!isAdvanced && (
+                        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.guideTypes}</div>
+                      )}
                       <div className="flex flex-wrap gap-2">
                         {slot.types.filter(Boolean).length ? (
                           slot.types.filter(Boolean).map((t_) => (
@@ -6278,6 +6302,10 @@ export default function Home() {
                         )}
                       </div>
                       {(slot.abilities && slot.abilities.length > 0) || slot.hiddenAbility ? (
+                        <div className="space-y-1">
+                        {!isAdvanced && (
+                          <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.guideAbilities}</div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           {(slot.abilities ?? []).map((ab) => (
                             <FloatingTooltip
@@ -6310,6 +6338,7 @@ export default function Home() {
                               </span>
                             </FloatingTooltip>
                           ) : null}
+                        </div>
                         </div>
                       ) : null}
                     </div>
@@ -6474,6 +6503,9 @@ export default function Home() {
                   </div>
                 ) : null}
 
+                {!isAdvanced && (
+                  <div className="mt-3 mb-1 text-[10px] uppercase tracking-[0.2em] text-slate-500">{t.guideMoves}</div>
+                )}
                 <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                   {slot.moves.map((m, mi) => {
                     const isHP = /hidden.?power|poder.?oculto/i.test(m.name);
@@ -6778,6 +6810,7 @@ const enSlug =
               headerClassName="mb-2 sm:mb-3"
               icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚔️</span>}
               title={lang === "es" ? "Tipos" : "Types"}
+              guide={!isAdvanced ? t.guideDefenseSection : undefined}
               storageKey="defensive-coverage"
             >
               {loadingRelations ? (
@@ -6979,6 +7012,7 @@ const enSlug =
               headerClassName="mb-2 sm:mb-3"
               icon={<span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200">⚡</span>}
               title={t.coverageTitle}
+              guide={!isAdvanced ? t.guideCoverageSection : undefined}
               storageKey="offensive-coverage"
               bodyClassName="flex-1 grid gap-3 min-h-0 overflow-hidden"
             >
@@ -7077,6 +7111,7 @@ const enSlug =
                     )}
                   </div>
                 )}
+                {isAdvanced && (
                 <div>
                   <div className="font-semibold text-slate-100 mb-2 text-sm">{t.superEffective}</div>
                   <div className="flex flex-wrap gap-2">
@@ -7093,7 +7128,8 @@ const enSlug =
                     )}
                   </div>
                 </div>
-                {moveTypeRedundancy.length > 0 && (
+                )}
+                {isAdvanced && moveTypeRedundancy.length > 0 && (
                   <div className="rounded-lg border border-slate-700/40 bg-slate-900/60 px-3 py-2.5">
                     <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-1.5 font-medium">
                       {lang === "es" ? "Movimientos ofensivos repetidos" : "Repeated offensive moves"}
@@ -7492,6 +7528,12 @@ const enSlug =
               {lang === "es" ? "¿Quién conviene reemplazar?" : "Who should you replace?"}
             </h2>
           </div>
+          {!isAdvanced && (
+            <div className="flex items-start gap-3 rounded-xl border border-sky-700/50 bg-sky-950/40 px-4 py-3 text-[14px] sm:text-[15px] leading-relaxed text-sky-200">
+              <span className="shrink-0 text-xl leading-none">💡</span>
+              <span>{t.guideReplaceSection}</span>
+            </div>
+          )}
           <p className="text-xs text-slate-400 -mt-1">
             {lang === "es"
               ? "Ordenado de menor a mayor aporte real al equipo (cobertura única, redundancia, debilidades compartidas y stats totales)."
@@ -7562,6 +7604,14 @@ const enSlug =
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">⭐</span>
                   <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
                 </div>
+              </div>
+              {!isAdvanced && (
+                <div className="flex items-start gap-3 rounded-xl border border-sky-700/50 bg-sky-950/40 px-4 py-3 text-[14px] sm:text-[15px] leading-relaxed text-sky-200">
+                  <span className="shrink-0 text-xl leading-none">💡</span>
+                  <span>{t.guideRecommendedSection}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
                     <button
@@ -7610,7 +7660,9 @@ const enSlug =
                               ]),
                           { key: "noDup", emoji: "🚫", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
                           { key: "prioritizeCoverage", emoji: "🛡️", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
-                        ].map(({ key, emoji, label, value, setter }) => (
+                        ]
+                          .filter((sw) => isAdvanced || (sw.key !== "noDup" && sw.key !== "prioritizeCoverage"))
+                          .map(({ key, emoji, label, value, setter }) => (
                           <label key={key} className="flex items-center gap-1.5 cursor-pointer select-none">
                             <button
                               type="button"
@@ -7687,7 +7739,8 @@ const enSlug =
                         )}
                       </div>
 
-                      {/* Filtro por habilidad — con autocompletado */}
+                      {/* Filtro por habilidad — con autocompletado (modo avanzado, columna izquierda) */}
+                      {isAdvanced && (
                       <div className="relative">
                         <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
                           {lang === "es" ? "Buscar por habilidad" : "Search by ability"}
@@ -7751,8 +7804,10 @@ const enSlug =
                           </div>
                         )}
                       </div>
+                      )}
 
-                      {/* Filtro por generación */}
+                      {/* Filtro por generación (modo avanzado, columna izquierda) */}
+                      {isAdvanced && (
                       <div>
                         <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
                         <div className="flex flex-wrap gap-1.5">
@@ -7775,6 +7830,7 @@ const enSlug =
                           ))}
                         </div>
                       </div>
+                      )}
                     </div>
 
                     {/* ══════════ COLUMNA DERECHA ══════════ */}
@@ -7881,7 +7937,99 @@ const enSlug =
                         </div>
                       </div>
 
-                      {/* Mínimos por stat — 2 filas de 3, compacto */}
+                      {/* En modo sencillo: habilidad y generación se muestran acá, a la derecha */}
+                      {!isAdvanced && (
+                        <>
+                          <div className="relative">
+                            <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                              {lang === "es" ? "Buscar por habilidad" : "Search by ability"}
+                            </div>
+                            <input
+                              type="text"
+                              value={recFilterAbility}
+                              maxLength={50}
+                              onChange={(e) => {
+                                setRecFilterAbility(e.target.value);
+                                setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
+                                setRecFilterAbilitySelectedIdx(-1);
+                              }}
+                              onFocus={() => {
+                                if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
+                              }}
+                              onBlur={() => {
+                                setTimeout(() => setRecFilterAbilityOpen(false), 150);
+                              }}
+                              onKeyDown={(e) => {
+                                if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
+                                if (e.key === "ArrowDown") {
+                                  e.preventDefault();
+                                  setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
+                                } else if (e.key === "ArrowUp") {
+                                  e.preventDefault();
+                                  setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
+                                } else if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  if (recFilterAbilitySelectedIdx >= 0) {
+                                    setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                                    setRecFilterAbilityOpen(false);
+                                  }
+                                } else if (e.key === "Escape") {
+                                  setRecFilterAbilityOpen(false);
+                                }
+                              }}
+                              placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
+                              className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                            />
+                            {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
+                              <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                                {recFilterAbilitySuggestions.map((ab, i) => (
+                                  <button
+                                    key={ab}
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      setRecFilterAbility(ab);
+                                      setRecFilterAbilityOpen(false);
+                                    }}
+                                    onMouseEnter={() => setRecFilterAbilitySelectedIdx(i)}
+                                    className={`w-full px-3 py-2 text-left ${
+                                      recFilterAbilitySelectedIdx === i ? "bg-blue-700/60" : "hover:bg-slate-700/80"
+                                    }`}
+                                  >
+                                    {ab}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setRecFilterGen(null)}
+                                className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterGen === null ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                              >
+                                {t.recFilterGenAll}
+                              </button>
+                              {GEN_RANGES.map(({ gen, label }) => (
+                                <button
+                                  key={gen}
+                                  type="button"
+                                  onClick={() => setRecFilterGen(recFilterGen === gen ? null : gen)}
+                                  className={`rounded-full border px-2.5 py-1.5 text-[14px] leading-none font-medium transition ${recFilterGen === gen ? "border-sky-500 bg-sky-800/50 text-sky-200" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Mínimos por stat — 2 filas de 3, compacto (solo modo avanzado) */}
+                      {isAdvanced && (
                       <div className="pt-2 border-t border-slate-800/80">
                         <div className="flex items-baseline justify-between">
                           <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1">{t.recFilterMinStatsTitle}</div>
@@ -7908,6 +8056,7 @@ const enSlug =
                           })}
                         </div>
                       </div>
+                      )}
                     </div>
                   </div>
                 </div>
