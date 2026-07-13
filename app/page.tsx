@@ -1795,6 +1795,7 @@ function AnchoredDropdown({
   children: React.ReactNode;
 }) {
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
     if (!open || !anchorEl) {
@@ -1806,10 +1807,20 @@ function AnchoredDropdown({
       setRect({ top: r.bottom + 6, left: r.left, width: r.width });
     };
     update();
-    window.addEventListener("scroll", update, true);
+    const onScroll = (e: Event) => {
+      // Si el scroll ocurre DENTRO del propio dropdown (ej. arrastrando su
+      // scrollbar interno), no hay que reposicionarlo: el ancla (el input)
+      // no se movió. Antes esto disparaba un setRect por cada pixel
+      // scrolleado, forzando renders de más y, en la práctica, "peleando"
+      // con el drag del scrollbar y haciéndolo saltar de vuelta arriba.
+      const target = e.target as Node | null;
+      if (portalRef.current && target && portalRef.current.contains(target)) return;
+      update();
+    };
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", update);
     return () => {
-      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", update);
     };
   }, [open, anchorEl]);
@@ -1817,7 +1828,7 @@ function AnchoredDropdown({
   if (!open || !rect || typeof document === "undefined") return null;
 
   return createPortal(
-    <div style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, zIndex: 9999 }}>
+    <div ref={portalRef} data-move-dropdown="true" style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, zIndex: 9999 }}>
       {children}
     </div>,
     document.body
@@ -2789,6 +2800,7 @@ export default function Home() {
   const pokedexDropdownRef = useRef<HTMLDivElement>(null);
   const [pokemonZData, setPokemonZData] = useState<any[]>([]);
   const [movesZData, setMovesZData] = useState<any[]>([]);
+  const [movesStandardData, setMovesStandardData] = useState<any[]>([]);
   const [abilitiesZDescData, setAbilitiesZDescData] = useState<Record<string, { nameEn: string | null; nameEnDisplay?: string; description: string; descriptionEn?: string; customAbility?: boolean }>>({});
   // Mapa "NOMBREENSINGUIONES" (ej. "WATERABSORB", tal como viene en nameEn)
   // → nombre legible en inglés (ej. "Water Absorb"), construido una sola vez
@@ -3073,6 +3085,7 @@ export default function Home() {
   const dragGrabOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const teamCardRefs = useRef<Array<HTMLDivElement | null>>([]);
   const moveInputWrapRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const pokemonInputWrapRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const prevSlotRects = useRef<Map<number, DOMRect>>(new Map());
 
   // Captura la posición actual de cada tarjeta antes de reordenar el array,
@@ -3415,24 +3428,46 @@ export default function Home() {
   }, [activePokedex, pokemonZData]);
 
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length === 6 && parsed.every(isValidSlot)) {
-        setTeam(parsed);
-      }
-    } catch {
-      // invalid saved data, ignore
-    }
-  }, []);
+  // ── Equipo guardado por Pokédex ─────────────────────────────────────────
+  // Cada Pokédex (estándar / Z) guarda su propio equipo bajo una key distinta
+  // en localStorage, para que al cambiar de dex el equipo se "vacíe" en
+  // pantalla (porque son Pokémon distintos) sin perder lo que ya se armó:
+  // si se vuelve a la dex anterior, el equipo aparece tal cual se dejó.
+  const justSwitchedDexRef = useRef(true);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(team));
-  }, [team]);
+    justSwitchedDexRef.current = true;
+    try {
+      let raw = localStorage.getItem(`${STORAGE_KEY}-${activePokedex}`);
+      // Migración: equipos guardados antes de este cambio usaban una sola key
+      // sin distinguir dex. Si es la dex estándar y no hay nada bajo la key
+      // nueva, se recupera lo que hubiera bajo la key vieja.
+      if (!raw && activePokedex === "standard") {
+        raw = localStorage.getItem(STORAGE_KEY);
+      }
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (Array.isArray(parsed) && parsed.length === 6 && parsed.every(isValidSlot)) {
+        setTeam(parsed);
+      } else {
+        setTeam(Array.from({ length: 6 }, EMPTY_SLOT));
+      }
+    } catch {
+      setTeam(Array.from({ length: 6 }, EMPTY_SLOT));
+    }
+  }, [activePokedex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (justSwitchedDexRef.current) {
+      // Este disparo es consecuencia de haber cambiado de dex (el equipo en
+      // memoria todavía es el de la dex anterior); no lo guardamos para no
+      // pisar el equipo recién cargado de la nueva dex.
+      justSwitchedDexRef.current = false;
+      return;
+    }
+    localStorage.setItem(`${STORAGE_KEY}-${activePokedex}`, JSON.stringify(team));
+  }, [team, activePokedex]);
 
   // When lang changes, fetch missing translations for moves that don't have them yet
   useEffect(() => {
@@ -3499,6 +3534,75 @@ export default function Home() {
       )
     );
   };
+
+  useEffect(() => {
+    // Dataset completo de movimientos de la Pokédex estándar (nombre, tipo,
+    // categoría, potencia, precisión, PP) para alimentar el mismo modal de
+    // filtros que ya existe para la dex Z, ahora también en modo normal.
+    // Se carga una sola vez, independiente de la dex activa.
+    if (movesStandardData.length > 0) return;
+    const gqlVariants = [
+      {
+        url: "https://beta.pokeapi.co/graphql/v1beta",
+        query: `{ pokemon_v2_move(limit: 2000) { name power pp accuracy pokemon_v2_movedamageclass { name } pokemon_v2_type { name } pokemon_v2_movenames(where: { pokemon_v2_language: { name: { _eq: "es" } } }) { name } } }`,
+        movesKey: "pokemon_v2_move",
+        damageClassKey: "pokemon_v2_movedamageclass",
+        typeKey: "pokemon_v2_type",
+        namesKey: "pokemon_v2_movenames",
+      },
+      {
+        url: "https://graphql.pokeapi.co/v1beta2",
+        query: `{ move(limit: 2000) { name power pp accuracy damage_class: pokemon_v2_movedamageclass { name } type: pokemon_v2_type { name } move_names: pokemon_v2_movenames(where: { language: { name: { _eq: "es" } } }) { name } } }`,
+        movesKey: "move",
+        damageClassKey: "damage_class",
+        typeKey: "type",
+        namesKey: "move_names",
+      },
+    ];
+
+    (async () => {
+      for (const { url, query, movesKey, damageClassKey, typeKey, namesKey } of gqlVariants) {
+        try {
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+          });
+          if (!r.ok) continue;
+          const data = await r.json();
+          if (data.errors) continue;
+          const rows = data?.data?.[movesKey] ?? [];
+          if (rows.length === 0) continue;
+          const normalized = rows.map((m: any) => {
+            const dcName: string | undefined = m[damageClassKey]?.name;
+            const category: "Physical" | "Special" | "Status" =
+              dcName === "special" ? "Special" : dcName === "status" ? "Status" : "Physical";
+            const esRaw: string | undefined = m[namesKey]?.[0]?.name;
+            const nameEn = formatForDisplay(m.name);
+            return {
+              internalName: m.name, // slug en inglés (ej. "flamethrower"), usado para seleccionar/buscar
+              name: esRaw ? esRaw.charAt(0).toUpperCase() + esRaw.slice(1) : nameEn,
+              nameEn,
+              category,
+              type: m[typeKey]?.name ?? null,
+              hackrom: false,
+              power: typeof m.power === "number" ? m.power : null,
+              accuracy: typeof m.accuracy === "number" ? m.accuracy : null,
+              pp: typeof m.pp === "number" ? m.pp : null,
+              descriptionEs: "",
+              descriptionEn: "",
+            };
+          });
+          console.log(`[PokeRun] Standard moves dataset loaded: ${normalized.length}`);
+          setMovesStandardData(normalized);
+          return;
+        } catch {
+          continue;
+        }
+      }
+      console.warn("[PokeRun] Could not load standard moves dataset (filter modal disabled for standard dex)");
+    })();
+  }, []);
 
   useEffect(() => {
     // fetch types list
@@ -3849,11 +3953,18 @@ export default function Home() {
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // El dropdown de movimientos se renderiza vía createPortal en
+      // document.body (para poder posicionarse "fixed" y escapar overflows),
+      // así que queda fuera de rootRef. Sin este chequeo, cualquier mousedown
+      // ahí adentro —incluido arrastrar su propio scrollbar— se detectaba
+      // como "click afuera" y cerraba el dropdown al instante.
+      if ((target as HTMLElement)?.closest?.("[data-move-dropdown]")) return;
+      if (rootRef.current && !rootRef.current.contains(target)) {
         setPokemonOpen((prev) => prev.map(() => false));
         setMoveOpen((prev) => prev.map((arr) => arr.map(() => false)));
       }
-      if (pokedexDropdownRef.current && !pokedexDropdownRef.current.contains(event.target as Node)) {
+      if (pokedexDropdownRef.current && !pokedexDropdownRef.current.contains(target)) {
         setPokedexDropdownOpen(false);
       }
     };
@@ -4228,9 +4339,9 @@ export default function Home() {
     setMoveFilterCategories(new Set());
     setMoveFilterTypes(new Set());
   };
-  const selectMoveFromFilter = (mv: { name: string }) => {
+  const selectMoveFromFilter = (mv: { name: string; internalName?: string }) => {
     if (!moveFilterTarget) return;
-    selectMoveSuggestion(moveFilterTarget.slotIdx, moveFilterTarget.moveIdx, mv.name);
+    selectMoveSuggestion(moveFilterTarget.slotIdx, moveFilterTarget.moveIdx, mv.internalName ?? mv.name);
     setMoveFilterTarget(null);
   };
 
@@ -4548,6 +4659,13 @@ export default function Home() {
   // más conviene reemplazarlo. Se ordena de menor a mayor (peor primero).
   const teamContribution = useMemo(() => {
     if (!Object.keys(typeRelations).length) return [];
+    // No sugerir a quién reemplazar con menos de 3 Pokémon cargados: con tan
+    // pocos miembros cualquier comparación de "aporte" es poco significativa
+    // (casi siempre el equipo entero terminaría siendo "único" en algo).
+    const filledSlotsCount = team.filter(
+      (s) => s.name.trim() !== "" && s.types.filter(Boolean).length > 0
+    ).length;
+    if (filledSlotsCount < 3) return [];
     const { weakMemberIdx, resistMemberIdx, weaknesses: teamWeaknesses } = analysis;
 
     return team
@@ -5949,8 +6067,21 @@ export default function Home() {
             </div>
 
             {/* Team score — destacado, centro del hero */}
-            {teamScore && (
+            {team.some((s) => s.name.trim() !== "") && (
               <div className="flex justify-center shrink-0 order-first sm:order-none">
+                {!teamScore ? (
+                  <div className="flex flex-col items-center gap-1 cursor-default">
+                    <div className="relative h-[88px] w-[88px] sm:h-[104px] sm:w-[104px] flex items-center justify-center">
+                      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90 absolute inset-0">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="9" />
+                      </svg>
+                      <span className="text-xl">🔒</span>
+                    </div>
+                    <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500 max-w-[110px] text-center leading-tight">
+                      {lang === "es" ? "Se calcula con 3+ Pokémon" : "Unlocks with 3+ Pokémon"}
+                    </span>
+                  </div>
+                ) : (
                 <FloatingTooltip
                   preferredPlacement="bottom"
                   content={
@@ -6015,6 +6146,7 @@ export default function Home() {
                     <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500">{t.teamScore}</span>
                   </div>
                 </FloatingTooltip>
+                )}
               </div>
             )}
 
@@ -6345,7 +6477,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="relative flex flex-wrap items-center gap-2 text-sm text-slate-300">
+                <div className="relative flex flex-wrap items-center gap-2 text-sm text-slate-300" ref={(el) => { pokemonInputWrapRefs.current[idx] = el; }}>
                   <input
                     value={pokemonInputDraft[idx] !== null ? pokemonInputDraft[idx]! : slot.name}
                     onFocus={() => {
@@ -6451,40 +6583,45 @@ export default function Home() {
                     ) : null}
                   </div>
                 </div>
-                {!slot.isFake && pokemonOpen[idx] && pokemonResults[idx].length > 0 && (
-                  <div className="mt-2 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 shadow-lg text-sm">
-                    {pokemonResults[idx].map((name, resultIdx) => {
-                      // El value interno puede venir codificado como "Label#id"
-                      // (formas/megas Z); separamos para mostrar solo el label limpio.
-                      const hashIdx = name.lastIndexOf("#");
-                      const displayLabel = hashIdx >= 0 ? name.slice(0, hashIdx) : name;
-                      return (
-                      <button
-                        key={name}
-                        type="button"
-                        ref={(el) => {
-                          if (el && pokemonSelectedIdx[idx] === resultIdx) {
-                            el.scrollIntoView({ block: "nearest" });
+                {!slot.isFake && (
+                  <AnchoredDropdown
+                    anchorEl={pokemonInputWrapRefs.current[idx]}
+                    open={pokemonOpen[idx] && pokemonResults[idx].length > 0}
+                  >
+                    <div data-move-dropdown="true" className="max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 shadow-lg text-sm" onMouseDown={(e) => e.stopPropagation()}>
+                      {pokemonResults[idx].map((name, resultIdx) => {
+                        // El value interno puede venir codificado como "Label#id"
+                        // (formas/megas Z); separamos para mostrar solo el label limpio.
+                        const hashIdx = name.lastIndexOf("#");
+                        const displayLabel = hashIdx >= 0 ? name.slice(0, hashIdx) : name;
+                        return (
+                        <button
+                          key={name}
+                          type="button"
+                          ref={(el) => {
+                            if (el && pokemonSelectedIdx[idx] === resultIdx) {
+                              el.scrollIntoView({ block: "nearest" });
+                            }
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectPokemonSuggestion(idx, name);
+                          }}
+                          onMouseEnter={() =>
+                            setPokemonSelectedIdx((prev) =>
+                              prev.map((sel, i) => (i === idx ? resultIdx : sel))
+                            )
                           }
-                        }}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          selectPokemonSuggestion(idx, name);
-                        }}
-                        onMouseEnter={() =>
-                          setPokemonSelectedIdx((prev) =>
-                            prev.map((sel, i) => (i === idx ? resultIdx : sel))
-                          )
-                        }
-                        className={`w-full text-left px-3 py-2 ${
-                          pokemonSelectedIdx[idx] === resultIdx ? "bg-blue-700/60" : "hover:bg-slate-700/80"
-                        } focus:bg-slate-700/80`}
-                      >
-                        {formatForDisplay(displayLabel)}
-                      </button>
-                      );
-                    })}
-                  </div>
+                          className={`w-full text-left px-3 py-2 ${
+                            pokemonSelectedIdx[idx] === resultIdx ? "bg-blue-700/60" : "hover:bg-slate-700/80"
+                          } focus:bg-slate-700/80`}
+                        >
+                          {formatForDisplay(displayLabel)}
+                        </button>
+                        );
+                      })}
+                    </div>
+                  </AnchoredDropdown>
                 )}
                 {slot.isFake ? (
                   <div className="mt-3 rounded-2xl border border-slate-800/60 bg-slate-950/60 p-3 text-slate-300">
@@ -6677,7 +6814,8 @@ const enSlug =
                               }}
                               className="w-full rounded-lg border border-blue-800/40 bg-slate-950/50 py-2 pl-3 pr-9 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
                             />
-                            {activePokedex === "pokemon-z" && movesZData.length > 0 && (
+                            {((activePokedex === "pokemon-z" && movesZData.length > 0) ||
+                              (activePokedex === "standard" && movesStandardData.length > 0)) && (
                               <button
                                 type="button"
                                 onClick={() => openMoveFilter(idx, mi)}
@@ -6691,12 +6829,11 @@ const enSlug =
                               anchorEl={moveInputWrapRefs.current[`${idx}-${mi}`]}
                               open={moveOpen[idx][mi] && moveResults[idx][mi].length > 0}
                             >
-                              <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                              <div data-move-dropdown="true" className="max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
                                 {moveResults[idx][mi].map((name, resultIdx) => {
-                                  // Show ES display name if available, EN slug as hint
+                                  // Mostrar solo el nombre en el idioma activo, igual que en la dex Z
                                   const esDisplay = moveEsDisplay[name];
                                   const label = lang === "es" && esDisplay ? esDisplay : formatForDisplay(name);
-                                  const hint = lang === "es" && esDisplay ? formatForDisplay(name) : undefined;
                                   const learnBadge = getMoveLearnBadge(idx, name);
                                   return (
                                     <button
@@ -6724,7 +6861,6 @@ const enSlug =
                                     >
                                       <span className="flex items-center gap-2 min-w-0">
                                         <span className="truncate">{label}</span>
-                                        {hint && <span className="text-[11px] text-slate-500 shrink-0">{hint}</span>}
                                       </span>
                                       {learnBadge && (
                                         <span className="shrink-0 rounded-full border border-slate-600 bg-slate-900/80 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
@@ -6845,15 +6981,16 @@ const enSlug =
                       </div>
                     </div>
                   )}
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
-                    <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 items-stretch">
+                    <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20 h-full flex flex-col">
                       <div className="flex items-center gap-2 mb-2">
+                        <span className="text-base leading-none">🔻</span>
                         <span className="font-semibold text-slate-100">{t.weaknesses} (×2+)</span>
                         {Object.values(analysis.weaknesses).some(c => c >= 4) && (
                           <span className="inline-flex items-center rounded-full bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-300 uppercase tracking-wider">⚠ ×4</span>
                         )}
                       </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 flex-1">
                         {Object.entries(analysis.weaknesses).length ? (
                           Object.entries(analysis.weaknesses)
                             .sort(([, a], [, b]) => b - a)
@@ -6922,16 +7059,19 @@ const enSlug =
                               );
                             })
                         ) : (
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-4 text-slate-500 text-sm gap-2">
+                          <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-8 text-slate-500 text-sm gap-2 w-full min-h-[96px]">
                             <span className="text-lg">∘</span>
                             <span>{lang === "es" ? "No hay datos de debilidades aún" : "No weakness data yet"}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20">
-                      <div className="font-semibold text-slate-100 mb-2">{t.strengths} (≤×0.5)</div>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20 h-full flex flex-col">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-base leading-none">🛡️</span>
+                        <span className="font-semibold text-slate-100">{t.strengths} (≤×0.5)</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 flex-1">
                         {Object.entries(analysis.strengths).length ? (
                           Object.entries(analysis.strengths)
                             .sort(([, a], [, b]) => b - a)
@@ -6994,7 +7134,7 @@ const enSlug =
                               );
                             })
                         ) : (
-                          <div className="flex flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-4 text-slate-500 text-sm gap-2">
+                          <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-slate-900/80 px-3 py-8 text-slate-500 text-sm gap-2 w-full min-h-[96px]">
                             <span className="text-lg">∘</span>
                             <span>No hay datos de resistencias aún</span>
                           </div>
@@ -7026,6 +7166,17 @@ const enSlug =
                       de ataque justo al lado (antes estaban separados por toda
                       la grilla completa en el medio). */}
                   {Object.keys(typeRelations).length > 0 && (() => {
+                    const hasAnyOffensiveData = Object.values(coverage.canHitSupereffective).some((v) => v > 0);
+                    if (!hasAnyOffensiveData) {
+                      return (
+                        <div className="mt-1 flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-700/50 bg-slate-900/60 px-3 py-6 text-center">
+                          <span className="text-xl">🎯</span>
+                          <span className="text-sm text-slate-500">
+                            {lang === "es" ? "Añade movimientos para ver cobertura" : "Add moves to see coverage"}
+                          </span>
+                        </div>
+                      );
+                    }
                     const uncovered = Object.keys(typeRelations).filter(
                       (ty) => !coverage.canHitSupereffective[ty] || coverage.canHitSupereffective[ty] === 0
                     );
@@ -7114,6 +7265,12 @@ const enSlug =
                 {isAdvanced && (
                 <div>
                   <div className="font-semibold text-slate-100 mb-2 text-sm">{t.superEffective}</div>
+                  {Object.values(coverage.canHitSupereffective).every((v) => v === 0) ? (
+                    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-700/50 bg-slate-900/60 px-3 py-6 text-center">
+                      <span className="text-xl">⚔️</span>
+                      <span className="text-sm text-slate-500">{lang === "es" ? "Añade movimientos para ver cobertura" : "Add moves to see coverage"}</span>
+                    </div>
+                  ) : (
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(coverage.canHitSupereffective)
                       .filter(([_, v]) => v > 0)
@@ -7123,10 +7280,8 @@ const enSlug =
                           <span className="text-xs font-semibold text-slate-300">{coverage.canHitSupereffective[ty]}×</span>
                         </div>
                       ))}
-                    {Object.values(coverage.canHitSupereffective).every((v) => v === 0) && (
-                      <span className="text-sm text-slate-500">{lang === "es" ? "Añade movimientos para ver cobertura" : "Add moves to see coverage"}</span>
-                    )}
                   </div>
+                  )}
                 </div>
                 )}
                 {isAdvanced && moveTypeRedundancy.length > 0 && (
@@ -7519,7 +7674,7 @@ const enSlug =
       </div>
       )}
       {/* ── ¿QUIÉN CONVIENE REEMPLAZAR? ─────────────────────────────── */}
-      {teamSummary && teamContribution.length > 0 && (
+      {(
       <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -7539,7 +7694,17 @@ const enSlug =
               ? "Ordenado de menor a mayor aporte real al equipo (cobertura única, redundancia, debilidades compartidas y stats totales)."
               : "Sorted from least to most real contribution to the team (unique coverage, redundancy, shared weaknesses, and total stats)."}
           </p>
-          {(() => {
+          {teamContribution.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 text-slate-500 text-sm gap-2 text-center">
+              <span className="text-2xl">🔁</span>
+              <span>
+                {lang === "es"
+                  ? "Agrega al menos 3 Pokémon con tipo para ver a quién conviene reemplazar."
+                  : "Add at least 3 Pokémon with a type to see who's worth replacing."}
+              </span>
+            </div>
+          ) : (
+          (() => {
             const [worst, ...rest] = teamContribution;
             const isActuallyWeakest = rest.length > 0 ? worst.value < rest[0].value : true;
             const handleRemove = (idx: number) => updateSlot(idx, { name: "" });
@@ -7589,12 +7754,13 @@ const enSlug =
                 )}
               </div>
             );
-          })()}
+          })()
+          )}
         </div>
       </div>
       )}
       {/* ── POKÉMON RECOMENDADOS (fila 2 — ancho completo) ───────────── */}
-      {teamSummary && (
+      {(
       <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
             {/* ── Pokémon recomendados ── */}
             <div className="space-y-3">
@@ -7783,7 +7949,7 @@ const enSlug =
                           className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
                         />
                         {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
-                          <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                          <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl" onMouseDown={(e) => e.preventDefault()}>
                             {recFilterAbilitySuggestions.map((ab, i) => (
                               <button
                                 key={ab}
@@ -7981,7 +8147,7 @@ const enSlug =
                               className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
                             />
                             {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
-                              <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl">
+                              <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl" onMouseDown={(e) => e.preventDefault()}>
                                 {recFilterAbilitySuggestions.map((ab, i) => (
                                   <button
                                     key={ab}
@@ -8478,6 +8644,15 @@ const enSlug =
                   <span className="inline-block h-3 w-3 rounded-full border-2 border-slate-600 border-t-slate-300 animate-spin" />
                   <span>{t.loadingRecommendations}</span>
                 </div>
+              ) : !team.some((s) => s.name.trim() !== "") ? (
+                <div className="flex flex-col items-center justify-center py-6 text-slate-500 text-sm gap-2 text-center">
+                  <span className="text-2xl">⭐</span>
+                  <span>
+                    {lang === "es"
+                      ? "Agrega al menos 1 Pokémon a tu equipo para ver recomendaciones."
+                      : "Add at least 1 Pokémon to your team to see recommendations."}
+                  </span>
+                </div>
               ) : (
                 <div className="text-[11px] text-slate-500 text-center py-2">{t.recFilterNoResults}</div>
               )}
@@ -8862,7 +9037,7 @@ const enSlug =
       {/* ── Modal de filtros de movimientos ── */}
       {moveFilterTarget && (
         <MoveFilterModal
-          moves={movesZData as MoveFilterEntry[]}
+          moves={(activePokedex === "pokemon-z" ? movesZData : movesStandardData) as MoveFilterEntry[]}
           lang={lang}
           search={moveFilterSearch}
           onSearchChange={setMoveFilterSearch}

@@ -90,7 +90,7 @@
       "SKULLBASH",
       "SLUDGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/1.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/001.png",
     "abilities": [
       "Espesura"
     ],
@@ -230,7 +230,7 @@
       "SKULLBASH",
       "SLUDGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/2.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/002.png",
     "abilities": [
       "Espesura"
     ],
@@ -375,7 +375,7 @@
       "SKULLBASH",
       "SLUDGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/3.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/003.png",
     "abilities": [
       "Espesura"
     ],
@@ -496,7 +496,7 @@
       "METALCLAW",
       "OUTRAGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/4.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/004.png",
     "abilities": [
       "Mar Llamas"
     ],
@@ -628,7 +628,7 @@
       "METALCLAW",
       "OUTRAGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/5.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/005.png",
     "abilities": [
       "Mar Llamas"
     ],
@@ -791,7 +791,7 @@
       "METALCLAW",
       "OUTRAGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/6.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/006.png",
     "abilities": [
       "Mar Llamas"
     ],
@@ -931,7 +931,7 @@
       "WATERSPOUT",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/7.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/007.png",
     "abilities": [
       "Torrente"
     ],
@@ -1070,7 +1070,7 @@
       "WATERSPOUT",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/8.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/008.png",
     "abilities": [
       "Torrente"
     ],
@@ -1221,7 +1221,7 @@
       "WATERSPOUT",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/9.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/009.png",
     "abilities": [
       "Torrente"
     ],
@@ -1302,7 +1302,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/10.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/010.png",
     "abilities": [
       "Polvo Escudo"
     ],
@@ -1344,7 +1344,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/11.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/011.png",
     "abilities": [
       "Mudar"
     ],
@@ -1435,7 +1435,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/12.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/012.png",
     "abilities": [
       "Ojocompuesto"
     ],
@@ -1505,7 +1505,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/13.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/013.png",
     "abilities": [
       "Polvo Escudo"
     ],
@@ -1548,7 +1548,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/14.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/014.png",
     "abilities": [
       "Mudar"
     ],
@@ -1647,7 +1647,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/15.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/015.png",
     "abilities": [
       "Enjambre",
       "Francotirador"
@@ -1776,7 +1776,7 @@
       "STEELWING",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/16.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/016.png",
     "abilities": [
       "Vista Lince",
       "Tumbos"
@@ -1909,7 +1909,7 @@
       "STEELWING",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/17.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/017.png",
     "abilities": [
       "Vista Lince",
       "Tumbos"
@@ -2039,7 +2039,7 @@
       "STEELWING",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/18.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/018.png",
     "abilities": [
       "Vista Lince",
       "Tumbos"
@@ -2150,7 +2150,7 @@
       "SCREECH",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/19.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/019.png",
     "abilities": [
       "Fuga",
       "Agallas"
@@ -2307,7 +2307,7 @@
       "SCREECH",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/20.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/020.png",
     "abilities": [
       "Fuga",
       "Agallas"
@@ -2423,7 +2423,7 @@
       "UPROAR",
       "WHIRLWIND"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/21.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/021.png",
     "abilities": [
       "Vista Lince"
     ],
@@ -2547,7 +2547,7 @@
       "UPROAR",
       "WHIRLWIND"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/22.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/022.png",
     "abilities": [
       "Penetrante"
     ],
@@ -2675,7 +2675,7 @@
       "SUCKERPUNCH",
       "SWITCHEROO"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/23.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/023.png",
     "abilities": [
       "Intimidación",
       "Mudar"
@@ -2840,7 +2840,7 @@
       "SUCKERPUNCH",
       "SWITCHEROO"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/24.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/024.png",
     "abilities": [
       "Intimidación",
       "Mudar"
@@ -2999,7 +2999,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/25.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/025.png",
     "abilities": [
       "Toque Tóxico"
     ],
@@ -3121,7 +3121,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/26.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/026.png",
     "isDefault": true,
     "dexId": 26,
     "formLabel": "Z",
@@ -3261,7 +3261,7 @@
       "RAPIDSPIN",
       "ROCKCLIMB"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/27.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/027.png",
     "abilities": [
       "Piel Tosca"
     ],
@@ -3429,7 +3429,7 @@
       "RAPIDSPIN",
       "ROCKCLIMB"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/28.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/028.png",
     "abilities": [
       "Piel Tosca"
     ],
@@ -3556,7 +3556,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/29.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/029.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -3685,7 +3685,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/30.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/030.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -3793,7 +3793,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/31.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/031.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -3939,7 +3939,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/32.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/032.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -4067,7 +4067,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/33.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/033.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -4174,7 +4174,7 @@
       "SUPERSONIC",
       "TAKEDOWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/34.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/034.png",
     "abilities": [
       "Punto Tóxico",
       "Rivalidad"
@@ -4354,7 +4354,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/35.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/035.png",
     "abilities": [
       "Ignorante"
     ],
@@ -4476,7 +4476,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/36.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/036.png",
     "abilities": [
       "Ignorante"
     ],
@@ -4638,7 +4638,7 @@
       "SPITE",
       "TAILSLAP"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/37.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/037.png",
     "abilities": [
       "Absorbe Fuego"
     ],
@@ -4737,7 +4737,7 @@
       "SPITE",
       "TAILSLAP"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/38.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/038.png",
     "abilities": [
       "Absorbe Fuego"
     ],
@@ -4872,7 +4872,7 @@
       "SLEEPTALK",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/39.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/039.png",
     "abilities": [
       "Tenacidad"
     ],
@@ -4999,7 +4999,7 @@
       "SLEEPTALK",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/40.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/040.png",
     "abilities": [
       "Tenacidad"
     ],
@@ -5137,7 +5137,7 @@
       "WHIRLWIND",
       "ZENHEADBUTT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/41.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/041.png",
     "abilities": [
       "Foco Interno"
     ],
@@ -5269,7 +5269,7 @@
       "WHIRLWIND",
       "ZENHEADBUTT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/42.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/042.png",
     "abilities": [
       "Foco Interno"
     ],
@@ -5384,7 +5384,7 @@
       "TEETERDANCE",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/43.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/043.png",
     "abilities": [
       "Clorofila"
     ],
@@ -5503,7 +5503,7 @@
       "TEETERDANCE",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/44.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/044.png",
     "abilities": [
       "Clorofila"
     ],
@@ -5607,7 +5607,7 @@
       "TEETERDANCE",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/45.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/045.png",
     "abilities": [
       "Clorofila"
     ],
@@ -5734,7 +5734,7 @@
       "SCREECH",
       "SWEETSCENT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/46.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/046.png",
     "abilities": [
       "Presencia Rara"
     ],
@@ -5884,7 +5884,7 @@
       "SCREECH",
       "SWEETSCENT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/47.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/047.png",
     "abilities": [
       "Presencia Rara"
     ],
@@ -6008,7 +6008,7 @@
       "SKILLSWAP",
       "TOXICSPIKES"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/48.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/048.png",
     "abilities": [
       "Ojocompuesto",
       "Cromolente"
@@ -6148,7 +6148,7 @@
       "SKILLSWAP",
       "TOXICSPIKES"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/49.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/049.png",
     "abilities": [
       "Polvo Escudo",
       "Cromolente"
@@ -6271,7 +6271,7 @@
       "SCREECH",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/50.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/050.png",
     "abilities": [
       "Velo arena",
       "Trampa Arena"
@@ -6404,7 +6404,7 @@
       "SCREECH",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/51.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/051.png",
     "abilities": [
       "Velo arena",
       "Trampa Arena"
@@ -6531,7 +6531,7 @@
       "SPITE",
       "TAILWHIP"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/52.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/052.png",
     "abilities": [
       "Recogida",
       "Experto"
@@ -6689,7 +6689,7 @@
       "SPITE",
       "TAILWHIP"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/53.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/053.png",
     "abilities": [
       "Flexibilidad",
       "Experto"
@@ -6831,7 +6831,7 @@
       "SYNCHRONOISE",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/54.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/054.png",
     "abilities": [
       "Nado Rápido",
       "Aclimatación"
@@ -6996,7 +6996,7 @@
       "SYNCHRONOISE",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/55.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/055.png",
     "abilities": [
       "Nado Rápido",
       "Aclimatación"
@@ -7140,7 +7140,7 @@
       "SLEEPTALK",
       "SMELLINGSALT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/56.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/056.png",
     "abilities": [
       "Acometida",
       "Irascible"
@@ -7288,7 +7288,7 @@
       "SLEEPTALK",
       "SMELLINGSALT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/57.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/057.png",
     "abilities": [
       "Acometida",
       "Irascible"
@@ -7439,7 +7439,7 @@
       "MORNINGSUN",
       "THRASH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/58.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/058.png",
     "abilities": [
       "Intimidación",
       "Absorbe Fuego"
@@ -7554,7 +7554,7 @@
       "MORNINGSUN",
       "THRASH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/59.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/059.png",
     "abilities": [
       "Intimidación",
       "Absorbe Fuego"
@@ -7681,7 +7681,7 @@
       "WATERPULSE",
       "WATERSPORT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/60.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/060.png",
     "abilities": [
       "Absorbe Agua"
     ],
@@ -7804,7 +7804,7 @@
       "WATERPULSE",
       "WATERSPORT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/61.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/061.png",
     "abilities": [
       "Absorbe Agua"
     ],
@@ -7915,7 +7915,7 @@
       "WATERPULSE",
       "WATERSPORT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/62.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/062.png",
     "abilities": [
       "Absorbe Agua"
     ],
@@ -8004,7 +8004,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/63.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/063.png",
     "abilities": [
       "Sincronía"
     ],
@@ -8139,7 +8139,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/64.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/064.png",
     "abilities": [
       "Sincronía"
     ],
@@ -8275,7 +8275,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/65.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/065.png",
     "abilities": [
       "Sincronía"
     ],
@@ -8409,7 +8409,7 @@
       "THUNDERPUNCH",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/66.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/066.png",
     "abilities": [
       "Agallas",
       "Indefenso"
@@ -8547,7 +8547,7 @@
       "THUNDERPUNCH",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/67.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/067.png",
     "abilities": [
       "Agallas",
       "Indefenso"
@@ -8693,7 +8693,7 @@
       "THUNDERPUNCH",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/68.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/068.png",
     "abilities": [
       "Agallas",
       "Indefenso"
@@ -8820,7 +8820,7 @@
       "WEATHERBALL",
       "WORRYSEED"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/69.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/069.png",
     "abilities": [
       "Clorofila"
     ],
@@ -8943,7 +8943,7 @@
       "WEATHERBALL",
       "WORRYSEED"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/70.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/070.png",
     "abilities": [
       "Clorofila"
     ],
@@ -9066,7 +9066,7 @@
       "WEATHERBALL",
       "WORRYSEED"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/71.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/071.png",
     "abilities": [
       "Clorofila"
     ],
@@ -9191,7 +9191,7 @@
       "RAPIDSPIN",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/72.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/072.png",
     "abilities": [
       "Cuerpo Puro",
       "Lodo Líquido"
@@ -9465,7 +9465,7 @@
       "MEGAPUNCH",
       "ROCKCLIMB"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/74.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/074.png",
     "abilities": [
       "Cabeza Roca",
       "Robustez"
@@ -9603,7 +9603,7 @@
       "MEGAPUNCH",
       "ROCKCLIMB"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/75.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/075.png",
     "abilities": [
       "Cabeza Roca",
       "Robustez"
@@ -9749,7 +9749,7 @@
       "MEGAPUNCH",
       "ROCKCLIMB"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/76.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/076.png",
     "abilities": [
       "Cabeza Roca",
       "Robustez"
@@ -9874,7 +9874,7 @@
       "MORNINGSUN",
       "THRASH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/77.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/077.png",
     "abilities": [
       "Fuga",
       "Absorbe Fuego"
@@ -10033,7 +10033,7 @@
       "MORNINGSUN",
       "THRASH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/78.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/078.png",
     "abilities": [
       "Audaz",
       "Absorbe Fuego"
@@ -10163,7 +10163,7 @@
       "WONDERROOM",
       "ZENHEADBUTT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/79.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/079.png",
     "abilities": [
       "Despiste",
       "Ritmo Propio"
@@ -10322,7 +10322,7 @@
       "WONDERROOM",
       "ZENHEADBUTT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/80.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/080.png",
     "abilities": [
       "Despiste",
       "Regeneración"
@@ -10468,7 +10468,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/81.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/081.png",
     "abilities": [
       "Imán",
       "Robustez"
@@ -10610,7 +10610,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/82.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/082.png",
     "abilities": [
       "Imán",
       "Robustez"
@@ -10755,7 +10755,7 @@
       "STEELWING",
       "TRUMPCARD"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/83.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/083.png",
     "abilities": [
       "Impasible"
     ],
@@ -10875,7 +10875,7 @@
       "QUICKATTACK",
       "SUPERSONIC"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/84.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/084.png",
     "abilities": [
       "Camorrista",
       "Experto"
@@ -11012,7 +11012,7 @@
       "QUICKATTACK",
       "SUPERSONIC"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/85.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/085.png",
     "abilities": [
       "Camorrista",
       "Experto"
@@ -11147,7 +11147,7 @@
       "SWALLOW",
       "WATERPULSE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/86.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/086.png",
     "abilities": [
       "Sebo",
       "Hidratación"
@@ -11303,7 +11303,7 @@
       "SWALLOW",
       "WATERPULSE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/87.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/087.png",
     "abilities": [
       "Sebo",
       "Pelaje Recio"
@@ -11429,7 +11429,7 @@
       "STOCKPILE",
       "SWALLOW"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/88.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/088.png",
     "abilities": [
       "Hedor",
       "Viscosidad"
@@ -11573,7 +11573,7 @@
       "STOCKPILE",
       "SWALLOW"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/89.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/089.png",
     "abilities": [
       "Hedor",
       "Toque Tóxico"
@@ -11713,7 +11713,7 @@
       "TWINEEDLE",
       "WATERPULSE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/90.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/090.png",
     "abilities": [
       "Caparazón",
       "Encadenado"
@@ -11805,7 +11805,7 @@
       "TWINEEDLE",
       "WATERPULSE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/91.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/091.png",
     "abilities": [
       "Caparazón",
       "Encadenado"
@@ -11930,7 +11930,7 @@
       "SMOG",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/92.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/092.png",
     "abilities": [
       "Levitación"
     ],
@@ -12067,7 +12067,7 @@
       "SMOG",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/93.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/093.png",
     "abilities": [
       "Levitación"
     ],
@@ -12206,7 +12206,7 @@
       "SMOG",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/94.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/094.png",
     "abilities": [
       "Cuerpo Maldito"
     ],
@@ -12372,7 +12372,7 @@
       "ROLLOUT",
       "STEALTHROCK"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/95.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/095.png",
     "abilities": [
       "Cabeza Roca",
       "Robustez"
@@ -12512,7 +12512,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/96.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/096.png",
     "abilities": [
       "Mal Sueño"
     ],
@@ -12672,7 +12672,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/97.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/097.png",
     "abilities": [
       "Mal Sueño"
     ],
@@ -12805,7 +12805,7 @@
       "SLAM",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/98.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/098.png",
     "abilities": [
       "Corte Fuerte",
       "Caparazón"
@@ -12950,7 +12950,7 @@
       "SLAM",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/99.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/099.png",
     "abilities": [
       "Corte Fuerte",
       "Caparazón"
@@ -138341,7 +138341,7 @@
       "SKILLSWAP",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/65.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/065.png",
     "abilities": [
       "Rastro"
     ],
@@ -139345,7 +139345,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/15.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/015.png",
     "abilities": [
       "Adaptable"
     ],
@@ -139501,7 +139501,7 @@
       "WATERSPOUT",
       "YAWN"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/9.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/009.png",
     "abilities": [
       "Megadisparador"
     ],
@@ -139797,7 +139797,7 @@
     ],
     "tutorMoves": [],
     "eggMoves": [],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/12.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/012.png",
     "abilities": [
       "Ojocompuesto"
     ],
@@ -140338,7 +140338,7 @@
       "METALCLAW",
       "OUTRAGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/6.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/006.png",
     "abilities": [
       "Garra Dura"
     ],
@@ -140514,7 +140514,7 @@
       "METALCLAW",
       "OUTRAGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/6.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/006.png",
     "abilities": [
       "Sequía"
     ],
@@ -141297,7 +141297,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/36.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/036.png",
     "abilities": [
       "Espejomágico"
     ],
@@ -148151,7 +148151,7 @@
       "SLAM",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/99.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/099.png",
     "abilities": [
       "Garra Dura"
     ],
@@ -149062,7 +149062,7 @@
       "THUNDERPUNCH",
       "TICKLE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/68.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/068.png",
     "abilities": [
       "Indefenso"
     ],
@@ -150373,7 +150373,7 @@
       "STEELWING",
       "UPROAR"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/18.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/018.png",
     "abilities": [
       "Indefenso"
     ],
@@ -150762,7 +150762,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/26.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/026.png",
     "abilities": [
       "Ensañamiento"
     ],
@@ -152688,7 +152688,7 @@
       "WONDERROOM",
       "ZENHEADBUTT"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/80.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/080.png",
     "abilities": [
       "Caparazón"
     ],
@@ -154078,7 +154078,7 @@
       "SKULLBASH",
       "SLUDGE"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/3.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/003.png",
     "abilities": [
       "Sebo"
     ],
@@ -154212,7 +154212,7 @@
       "WEATHERBALL",
       "WORRYSEED"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/71.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/071.png",
     "abilities": [
       "Corrosión"
     ],
@@ -156684,7 +156684,7 @@
       "SMOG",
       "THUNDERPUNCH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/94.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/094.png",
     "abilities": [
       "Sombratrampa"
     ],
@@ -157332,7 +157332,7 @@
       "TICKLE",
       "WISH"
     ],
-    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/25.png",
+    "sprite": "https://minio-p0ogk8cks8sc0k0coksoccco.195.200.15.5.sslip.io/fakedex/z/sprites/Battlers/025.png",
     "abilities": [
       "Sobrecarga"
     ],
