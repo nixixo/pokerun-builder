@@ -137746,7 +137746,7 @@
   {
     "id": 91002,
     "dexId": 359,
-    "name": "Mega Absol",
+    "name": "Mega Absol Z",
     "internalName": "ABSOL_MEGA_F2",
     "formLabel": "Mega",
     "formKind": "mega-rb-script",
@@ -145047,7 +145047,7 @@
   {
     "id": 91052,
     "dexId": 445,
-    "name": "Mega Garchomp",
+    "name": "Mega Garchomp Z",
     "internalName": "GARCHOMP_MEGA_F2",
     "formLabel": "Mega",
     "formKind": "mega-rb-script",
