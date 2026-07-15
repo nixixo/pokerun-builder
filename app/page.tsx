@@ -10,6 +10,13 @@ type Move = {
   type?: string | null;
   isFake?: boolean;
   hiddenPowerType?: string | null;
+  // Datos extra para el tooltip informativo del movimiento (opcional: puede
+  // no estar disponible si el movimiento es inventado o no se encontró).
+  descriptionEs?: string | null;
+  descriptionEn?: string | null;
+  power?: number | null;
+  accuracy?: number | null;
+  pp?: number | null;
 };
 
 type BaseStats = {
@@ -2497,6 +2504,8 @@ function MoveFilterModal({
   tn,
   onSelect,
   onClose,
+  sortPower,
+  onSortPowerChange,
 }: {
   moves: MoveFilterEntry[];
   lang: Lang;
@@ -2514,9 +2523,12 @@ function MoveFilterModal({
   tn: (apiKey: string) => string;
   onSelect: (move: MoveFilterEntry) => void;
   onClose: () => void;
+  // Orden por potencia: ahora vive en el estado del padre (por Pokémon) para
+  // que se recuerde entre aperturas del modal, en vez de resetearse cada vez.
+  sortPower: "asc" | "desc" | null;
+  onSortPowerChange: (v: "asc" | "desc" | null) => void;
 }) {
   const allTypesList = Object.keys(TYPE_COLORS);
-  const [sortPower, setSortPower] = useState<"asc" | "desc" | null>(null);
   const catLabel = (c: string) =>
     c === "Physical" ? (lang === "es" ? "Físico" : "Physical")
     : c === "Special" ? (lang === "es" ? "Especial" : "Special")
@@ -2700,7 +2712,7 @@ function MoveFilterModal({
             <button
               type="button"
               onClick={() =>
-                setSortPower((prev) => (prev === null ? "asc" : prev === "asc" ? "desc" : null))
+                onSortPowerChange(sortPower === null ? "asc" : sortPower === "asc" ? "desc" : null)
               }
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                 sortPower
@@ -2714,7 +2726,7 @@ function MoveFilterModal({
             </button>
             <button
               type="button"
-              onClick={() => { onClearFilters(); setSortPower(null); }}
+              onClick={() => { onClearFilters(); }}
               className="inline-flex items-center gap-1.5 rounded-full border border-rose-800/50 bg-rose-950/30 px-3 py-1.5 text-xs font-semibold text-rose-300 transition hover:border-rose-500 hover:bg-rose-900/40 hover:text-rose-200"
             >
               <span aria-hidden>🧹</span>
@@ -2993,13 +3005,27 @@ export default function Home() {
   const [moveResults, setMoveResults] = useState<string[][][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => [])));
   const [moveOpen, setMoveOpen] = useState<boolean[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => false)));
   const [moveSelectedIdx, setMoveSelectedIdx] = useState<number[][]>(() => Array.from({ length: 6 }, () => Array.from({ length: 4 }, () => -1)));
+  // ── Drag & drop simple de movimientos (reordenar los 4 ataques de un mismo
+  // Pokémon). A diferencia del drag&drop de Pokémon del equipo (que sigue el
+  // puntero con una tarjeta fantasma), este usa el drag&drop nativo de HTML5:
+  // mucho más simple porque solo reordena un array corto (4 elementos) dentro
+  // del mismo slot, sin necesitar sprite fantasma ni cálculos de posición.
+  const [dragMoveFrom, setDragMoveFrom] = useState<{ slotIdx: number; moveIdx: number } | null>(null);
+  const [moveDragOverIdx, setMoveDragOverIdx] = useState<{ slotIdx: number; moveIdx: number } | null>(null);
   // ── Modal de filtros de movimientos (Pokémon Z) ──────────────────────────
   // Se abre con el botón "Filtros" junto al buscador de cada movimiento.
   // target: qué slot/movimiento va a recibir el movimiento seleccionado.
   const [moveFilterTarget, setMoveFilterTarget] = useState<{ slotIdx: number; moveIdx: number } | null>(null);
-  const [moveFilterSearch, setMoveFilterSearch] = useState("");
-  const [moveFilterCategories, setMoveFilterCategories] = useState<Set<string>>(new Set());
-  const [moveFilterTypes, setMoveFilterTypes] = useState<Set<string>>(new Set());
+  // Los filtros ahora se guardan POR POKÉMON (un set de filtros por cada uno
+  // de los 6 slots del equipo), no globales. Así el Pokémon 1 puede tener
+  // filtrado "Físico + Fuego" mientras el Pokémon 2 tiene otro filtro distinto,
+  // y no se pisan entre sí. El orden por potencia también se guarda acá por
+  // la misma razón (antes vivía como estado local del modal y se perdía cada
+  // vez que se cerraba).
+  const [moveFilterSearch, setMoveFilterSearch] = useState<string[]>(() => Array.from({ length: 6 }, () => ""));
+  const [moveFilterCategories, setMoveFilterCategories] = useState<Set<string>[]>(() => Array.from({ length: 6 }, () => new Set<string>()));
+  const [moveFilterTypes, setMoveFilterTypes] = useState<Set<string>[]>(() => Array.from({ length: 6 }, () => new Set<string>()));
+  const [moveFilterSortPower, setMoveFilterSortPower] = useState<("asc" | "desc" | null)[]>(() => Array.from({ length: 6 }, () => null));
   const [configSlotIndex, setConfigSlotIndex] = useState<number | null>(null);
   const [configDraftTypes, setConfigDraftTypes] = useState<string[]>([]);
   const [configDraftStats, setConfigDraftStats] = useState<BaseStatsInput>(EMPTY_STAT_INPUT);
@@ -4232,6 +4258,13 @@ export default function Home() {
               category: patch.category ?? m.category,
               // Preserve nameEs from patch if provided, else keep existing
               nameEs: patch.nameEs !== undefined ? patch.nameEs : m.nameEs,
+              // Datos para el tooltip de descripción: si vienen en el patch los
+              // tomamos, si no, mantenemos los que ya tenía el movimiento.
+              descriptionEs: patch.descriptionEs !== undefined ? patch.descriptionEs : m.descriptionEs,
+              descriptionEn: patch.descriptionEn !== undefined ? patch.descriptionEn : m.descriptionEn,
+              power: patch.power !== undefined ? patch.power : m.power,
+              accuracy: patch.accuracy !== undefined ? patch.accuracy : m.accuracy,
+              pp: patch.pp !== undefined ? patch.pp : m.pp,
             };
           }
           // Generic partial update (hiddenPowerType, category, type, etc.)
@@ -4240,6 +4273,29 @@ export default function Home() {
         return { ...s, moves };
       })
     );
+  };
+
+  // Intercambia dos movimientos dentro del mismo Pokémon (drag & drop simple).
+  // También resetea el estado de UI por-movimiento (draft de búsqueda, dropdown
+  // abierto, índice seleccionado, etc.) de ese slot para evitar que quede
+  // desalineado con su nueva posición.
+  const swapMoves = (slotIdx: number, fromMoveIdx: number, toMoveIdx: number) => {
+    if (fromMoveIdx === toMoveIdx) return;
+    setTeam((t) =>
+      t.map((s, i) => {
+        if (i !== slotIdx) return s;
+        const moves = [...s.moves];
+        const tmp = moves[fromMoveIdx];
+        moves[fromMoveIdx] = moves[toMoveIdx];
+        moves[toMoveIdx] = tmp;
+        return { ...s, moves };
+      })
+    );
+    const resetRow4 = <TVal,>(fill: TVal) => Array.from({ length: 4 }, () => fill);
+    setMoveInputDraft((prev) => prev.map((row, i) => (i === slotIdx ? resetRow4(null) : row)));
+    setMoveResults((prev) => prev.map((row, i) => (i === slotIdx ? resetRow4([] as string[]) : row)));
+    setMoveOpen((prev) => prev.map((row, i) => (i === slotIdx ? resetRow4(false) : row)));
+    setMoveSelectedIdx((prev) => prev.map((row, i) => (i === slotIdx ? resetRow4(-1) : row)));
   };
 
   const swapSlots = (fromIdx: number, toIdx: number) => {
@@ -4321,23 +4377,36 @@ export default function Home() {
   };
   const closeMoveFilter = () => setMoveFilterTarget(null);
   const toggleMoveFilterCategory = (c: string) => {
-    setMoveFilterCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(c)) next.delete(c); else next.add(c);
-      return next;
-    });
+    const slotIdx = moveFilterTarget?.slotIdx;
+    if (slotIdx == null) return;
+    setMoveFilterCategories((prev) =>
+      prev.map((set, i) => {
+        if (i !== slotIdx) return set;
+        const next = new Set(set);
+        if (next.has(c)) next.delete(c); else next.add(c);
+        return next;
+      })
+    );
   };
   const toggleMoveFilterType = (ty: string) => {
-    setMoveFilterTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(ty)) next.delete(ty); else next.add(ty);
-      return next;
-    });
+    const slotIdx = moveFilterTarget?.slotIdx;
+    if (slotIdx == null) return;
+    setMoveFilterTypes((prev) =>
+      prev.map((set, i) => {
+        if (i !== slotIdx) return set;
+        const next = new Set(set);
+        if (next.has(ty)) next.delete(ty); else next.add(ty);
+        return next;
+      })
+    );
   };
   const clearMoveFilters = () => {
-    setMoveFilterSearch("");
-    setMoveFilterCategories(new Set());
-    setMoveFilterTypes(new Set());
+    const slotIdx = moveFilterTarget?.slotIdx;
+    if (slotIdx == null) return;
+    setMoveFilterSearch((prev) => prev.map((v, i) => (i === slotIdx ? "" : v)));
+    setMoveFilterCategories((prev) => prev.map((v, i) => (i === slotIdx ? new Set<string>() : v)));
+    setMoveFilterTypes((prev) => prev.map((v, i) => (i === slotIdx ? new Set<string>() : v)));
+    setMoveFilterSortPower((prev) => prev.map((v, i) => (i === slotIdx ? null : v)));
   };
   const selectMoveFromFilter = (mv: { name: string; internalName?: string }) => {
     if (!moveFilterTarget) return;
@@ -4420,14 +4489,24 @@ export default function Home() {
 
       const encodedId = encoded.startsWith("z:") ? parseInt(encoded.slice(2), 10) : NaN;
 
-      const zEntry = !isNaN(encodedId)
-        ? pokemonZData.find((p: any) => p.id === encodedId)
-        : pokemonZData.find(
-            (p: any) =>
-              p.name?.toLowerCase() === needle ||
-              p.internalName?.toLowerCase() === needle ||
-              formatForDisplay(p.name ?? "").toLowerCase() === needle
-          );
+      // Buscamos primero por id (comparando como número en ambos lados, ya
+      // que algunos JSON pueden traer el id como string) y, si no aparece
+      // nada (id inconsistente o ausente), caemos a buscar por nombre en vez
+      // de seguir de largo hacia el fetch estándar de la API con un nombre
+      // codificado (p.ej. "Pikachu#z:25") que ahí sí fallaría siempre. Esto
+      // evita que el sprite quede sin cargar al agregar un Pokémon desde el
+      // botón "+" de recomendados.
+      const zEntry =
+        (!isNaN(encodedId)
+          ? pokemonZData.find((p: any) => Number(p.id) === encodedId)
+          : undefined) ??
+        pokemonZData.find(
+          (p: any) =>
+            p.name?.toLowerCase() === needle ||
+            p.internalName?.toLowerCase() === needle ||
+            formatForDisplay(p.name ?? "").toLowerCase() === needle ||
+            getZDisplayName(p).toLowerCase() === needle
+        );
       if (zEntry) {
         // Tipos del JSON vienen en español → convertir a slugs de API
         const types = (zEntry.types as string[])
@@ -4536,6 +4615,11 @@ export default function Home() {
           category,
           name: zMove.name,       // nombre en español del juego Z
           nameEs: zMove.name,
+          descriptionEs: zMove.descriptionEs ?? null,
+          descriptionEn: zMove.descriptionEn ?? null,
+          power: zMove.power ?? null,
+          accuracy: zMove.accuracy ?? null,
+          pp: zMove.pp ?? null,
         });
         return;
       }
@@ -4553,8 +4637,24 @@ export default function Home() {
       // Try to get Spanish name, fallback to formatted English
       const esName = data.names?.find((n: any) => n.language.name === "es")?.name ?? null;
       const enName = formatForDisplay(data.name);
+      // Descripción ("flavor text"): tomamos la entrada más reciente disponible
+      // para cada idioma (el array trae una por versión de juego).
+      const flavorEntries: any[] = Array.isArray(data.flavor_text_entries) ? data.flavor_text_entries : [];
+      const cleanFlavor = (txt: string) => txt.replace(/[\n\f\r]+/g, " ").replace(/\s+/g, " ").trim();
+      const descEs = [...flavorEntries].reverse().find((f) => f.language?.name === "es")?.flavor_text;
+      const descEn = [...flavorEntries].reverse().find((f) => f.language?.name === "en")?.flavor_text;
       // Store both so we can switch language without re-fetching
-      updateMove(slotIdx, moveIdx, { type: mType, category, name: enName, nameEs: esName ?? enName });
+      updateMove(slotIdx, moveIdx, {
+        type: mType,
+        category,
+        name: enName,
+        nameEs: esName ?? enName,
+        descriptionEs: descEs ? cleanFlavor(descEs) : null,
+        descriptionEn: descEn ? cleanFlavor(descEn) : null,
+        power: typeof data.power === "number" ? data.power : null,
+        accuracy: typeof data.accuracy === "number" ? data.accuracy : null,
+        pp: typeof data.pp === "number" ? data.pp : null,
+      });
     } catch (e) {
       // ignore, leave type null
     }
@@ -6668,10 +6768,51 @@ export default function Home() {
                         </svg>
                       );
                     };
+                    const moveDescription = lang === "es"
+                      ? (m.descriptionEs || m.descriptionEn)
+                      : (m.descriptionEn || m.descriptionEs);
+                    const isDraggingThisMove = dragMoveFrom?.slotIdx === idx && dragMoveFrom?.moveIdx === mi;
+                    const isDragOverThisMove = moveDragOverIdx?.slotIdx === idx && moveDragOverIdx?.moveIdx === mi;
                     return (
-                      <div key={mi} className="pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5" style={moveBgStyle(m.category, m.type)}>
+                      <div
+                        key={mi}
+                        className={`pokedex-card rounded-xl border-blue-800/30 p-2 sm:p-2.5 transition ${isDraggingThisMove ? "opacity-40" : ""} ${isDragOverThisMove ? "ring-2 ring-sky-400/70" : ""}`}
+                        style={moveBgStyle(m.category, m.type)}
+                        onDragOver={(e) => {
+                          if (dragMoveFrom && dragMoveFrom.slotIdx === idx) {
+                            e.preventDefault();
+                            setMoveDragOverIdx({ slotIdx: idx, moveIdx: mi });
+                          }
+                        }}
+                        onDrop={(e) => {
+                          if (dragMoveFrom && dragMoveFrom.slotIdx === idx) {
+                            e.preventDefault();
+                            swapMoves(idx, dragMoveFrom.moveIdx, mi);
+                          }
+                          setDragMoveFrom(null);
+                          setMoveDragOverIdx(null);
+                        }}
+                      >
                         <div className="mb-1.5 flex items-center justify-between gap-3">
-                          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            {/* Handle simple de drag & drop: solo reordena movimientos dentro del mismo Pokémon */}
+                            <span
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.effectAllowed = "move";
+                                setDragMoveFrom({ slotIdx: idx, moveIdx: mi });
+                              }}
+                              onDragEnd={() => {
+                                setDragMoveFrom(null);
+                                setMoveDragOverIdx(null);
+                              }}
+                              title={lang === "es" ? "Arrastrar para reordenar" : "Drag to reorder"}
+                              className="cursor-grab active:cursor-grabbing select-none text-slate-500 hover:text-slate-300 text-sm leading-none px-0.5"
+                            >
+                              ⠿
+                            </span>
+                            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t.attackSlot} {mi + 1}</div>
+                          </div>
                           {slot.isFake && (
                             <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer select-none">
                               <span className="pr-checkbox">
@@ -6812,9 +6953,42 @@ const enSlug =
                                   fetchMove(enSlug, idx, mi);
                                 }
                               }}
-                              className="w-full rounded-lg border border-blue-800/40 bg-slate-950/50 py-2 pl-3 pr-9 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                              className="w-full rounded-lg border border-blue-800/40 bg-slate-950/50 py-2 pl-3 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                              style={{
+                                paddingRight:
+                                  moveDescription ? "4.2rem" : "2.25rem",
+                              }}
                             />
-                            {((activePokedex === "pokemon-z" && movesZData.length > 0) ||
+                            {!m.isFake && m.name && moveDescription && (
+                              <div className="absolute right-9 top-1/2 -translate-y-1/2">
+                                <FloatingTooltip
+                                  preferredPlacement="right"
+                                  content={
+                                    <div className="w-64 rounded-xl border border-slate-700 bg-slate-950/98 p-3 shadow-xl shadow-black/50 text-sm text-slate-100">
+                                      <div className="text-[11px] uppercase tracking-[0.25em] text-slate-500 mb-1.5">
+                                        {lang === "es" ? "Descripción" : "Description"}
+                                      </div>
+                                      <p className="text-[13px] leading-snug text-slate-200">{moveDescription}</p>
+                                      {(m.power != null || m.accuracy != null || m.pp != null) && (
+                                        <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-center gap-3 text-[11px] text-slate-400">
+                                          <span>{lang === "es" ? "Poder" : "Power"}: <span className="text-slate-200 font-semibold">{m.power ?? "—"}</span></span>
+                                          <span>{lang === "es" ? "Precisión" : "Accuracy"}: <span className="text-slate-200 font-semibold">{m.accuracy ?? "—"}</span></span>
+                                          <span>PP: <span className="text-slate-200 font-semibold">{m.pp ?? "—"}</span></span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  }
+                                >
+                                  <button
+                                    type="button"
+                                    className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800/80 hover:text-sky-300"
+                                    title={lang === "es" ? "Descripción del movimiento" : "Move description"}
+                                  >
+                                    ⓘ
+                                  </button>
+                                </FloatingTooltip>
+                              </div>
+                            )}                            {((activePokedex === "pokemon-z" && movesZData.length > 0) ||
                               (activePokedex === "standard" && movesStandardData.length > 0)) && (
                               <button
                                 type="button"
@@ -7158,18 +7332,20 @@ const enSlug =
             >
                 <div className="rounded-lg bg-slate-950/70 p-3 border border-blue-800/20 text-slate-200">
                   <div className="text-sm uppercase tracking-[0.2em] text-slate-400 mb-1">{t.coverageTypesCovered}</div>
-                  <div className="flex items-baseline gap-2 mb-2">
+                  <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-semibold">{coverage.supCount}</span>
                     <span className="text-slate-500 text-sm">/ {Object.keys(typeRelations).length} {t.coverageOf}</span>
                   </div>
-                  {/* Tipos NO cubiertos — protagonismo principal, con su sugerencia
-                      de ataque justo al lado (antes estaban separados por toda
-                      la grilla completa en el medio). */}
-                  {Object.keys(typeRelations).length > 0 && (() => {
+                </div>
+                {/* Tipos NO cubiertos — ahora es su propia tarjeta hermana (antes
+                    quedaba anidada dentro del cuadro de arriba, mientras que
+                    "Tipos con menor cobertura" ya era una tarjeta aparte; así
+                    las dos quedan al mismo nivel y con el mismo tratamiento). */}
+                {Object.keys(typeRelations).length > 0 && (() => {
                     const hasAnyOffensiveData = Object.values(coverage.canHitSupereffective).some((v) => v > 0);
                     if (!hasAnyOffensiveData) {
                       return (
-                        <div className="mt-1 flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-700/50 bg-slate-900/60 px-3 py-6 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-700/50 bg-slate-900/60 px-3 py-6 text-center">
                           <span className="text-xl">🎯</span>
                           <span className="text-sm text-slate-500">
                             {lang === "es" ? "Añade movimientos para ver cobertura" : "Add moves to see coverage"}
@@ -7181,7 +7357,7 @@ const enSlug =
                       (ty) => !coverage.canHitSupereffective[ty] || coverage.canHitSupereffective[ty] === 0
                     );
                     return uncovered.length > 0 ? (
-                      <div className="mt-1 rounded-lg border border-red-800/40 bg-red-950/20 px-2.5 py-2">
+                      <div className="rounded-lg border border-red-800/40 bg-red-950/20 px-2.5 py-2">
                         <div className="text-[11px] uppercase tracking-[0.2em] text-red-400 mb-1.5 font-medium">
                           {lang === "es" ? "Sin cobertura frente a" : "No coverage against"}
                         </div>
@@ -7219,12 +7395,11 @@ const enSlug =
                         )}
                       </div>
                     ) : (
-                      <div className="mt-1 rounded-lg border border-emerald-800/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-400">
+                      <div className="rounded-lg border border-emerald-800/30 bg-emerald-950/20 px-2.5 py-1.5 text-[11px] text-emerald-400">
                         ✓ {lang === "es" ? "Cobertura completa" : "Full coverage"}
                       </div>
                     );
-                  })()}
-                </div>
+                })()}
                 {weakCoverageSuggestion && weakCoverageSuggestion.weakTypes.length > 0 && (
                   <div className="rounded-lg border border-amber-800/40 bg-amber-950/10 px-3 py-2.5">
                     <div className="text-[11px] uppercase tracking-[0.2em] text-amber-400 mb-1.5 font-medium">
@@ -9039,13 +9214,21 @@ const enSlug =
         <MoveFilterModal
           moves={(activePokedex === "pokemon-z" ? movesZData : movesStandardData) as MoveFilterEntry[]}
           lang={lang}
-          search={moveFilterSearch}
-          onSearchChange={setMoveFilterSearch}
-          categories={moveFilterCategories}
+          search={moveFilterSearch[moveFilterTarget.slotIdx] ?? ""}
+          onSearchChange={(v) => {
+            const slotIdx = moveFilterTarget.slotIdx;
+            setMoveFilterSearch((prev) => prev.map((s, i) => (i === slotIdx ? v : s)));
+          }}
+          categories={moveFilterCategories[moveFilterTarget.slotIdx] ?? new Set<string>()}
           onToggleCategory={toggleMoveFilterCategory}
-          types={moveFilterTypes}
+          types={moveFilterTypes[moveFilterTarget.slotIdx] ?? new Set<string>()}
           onToggleType={toggleMoveFilterType}
           onClearFilters={clearMoveFilters}
+          sortPower={moveFilterSortPower[moveFilterTarget.slotIdx] ?? null}
+          onSortPowerChange={(v) => {
+            const slotIdx = moveFilterTarget.slotIdx;
+            setMoveFilterSortPower((prev) => prev.map((s, i) => (i === slotIdx ? v : s)));
+          }}
           learnMethods={team[moveFilterTarget.slotIdx]?.learnMethods}
           onlyLearnable={onlyLearnableMoves}
           learnableSet={
