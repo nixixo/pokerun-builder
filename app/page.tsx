@@ -4477,8 +4477,8 @@ export default function Home() {
                 .map((ar: any) => ar?.ability?.name)
                 .filter(Boolean);
               const hiddenAbility = abilityRows.find((ar: any) => ar?.is_hidden)?.ability?.name ?? null;
-              const learnableMoveNames = Array.isArray(d.moves)
-                ? Array.from(new Set(d.moves.map((mv: any) => mv?.move?.name).filter(Boolean)))
+              const learnableMoveNames: string[] = Array.isArray(d.moves)
+                ? Array.from(new Set<string>(d.moves.map((mv: any) => mv?.move?.name).filter(Boolean)))
                 : [];
               let evolvesFromSpeciesId: number | null = null;
               let speciesId: number | null = null;
