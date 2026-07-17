@@ -60,6 +60,14 @@ type Slot = {
   // Se usa para mostrar a la derecha del movimiento si es por nivel (con el
   // nivel), por MT o por huevo.
   learnMethods?: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> | null;
+  // Rol elegido manualmente por el usuario para ESTE Pokémon del equipo,
+  // que reemplaza al rol calculado automáticamente por stats (getRole).
+  // Se guarda el label en inglés (clave `en` de RoleDefinition) para que
+  // no dependa del idioma activo. null/undefined = automático (usa stats).
+  // Útil cuando el usuario piensa entrenar al Pokémon en una dirección
+  // distinta a la que sugieren sus stats base (ej. un "Tanque Especial"
+  // por stats que en la práctica se va a entrenar en Velocidad).
+  manualRoleEn?: string | null;
 };
 
 const EMPTY_MOVE = (): Move => ({ name: "", category: "Physical", type: null });
@@ -151,6 +159,7 @@ const EMPTY_SLOT = (): Slot => ({
   hiddenAbility: null,
   learnableMoves: null,
   learnMethods: null,
+  manualRoleEn: null,
 });
 
 const EMPTY_STAT_INPUT: BaseStatsInput = {
@@ -168,6 +177,9 @@ const VIEW_MODE_KEY = "pokerun-builder-view-mode";
 const POKEDEX_KEY = "pokerun-builder-active-pokedex";
 const FAKEMON_MODE_KEY = "pokerun-builder-fakemon-mode";
 const ONLY_LEARNABLE_MOVES_KEY = "pokerun-builder-only-learnable-moves";
+const MOVE_FILTER_ONLY_Z_KEY = "pokerun-builder-move-filter-only-z";
+const REC_FILTER_MOVE_ONLY_Z_KEY = "pokerun-builder-rec-move-filter-only-z";
+const REC_ABILITY_MODAL_ONLY_Z_KEY = "pokerun-builder-rec-ability-modal-only-z";
 const MAX_PLANTILLAS = 5;
 
 // ─── Pokedex selector ────────────────────────────────────────────────────────
@@ -249,6 +261,16 @@ const Z_FORM_NO_STANDARD_DUPLICATE = new Set(
 // un sufijo " Z" visible: solo su Mega lleva sufijo ("Mega Entei Z", etc.).
 const Z_MEGA_ONLY_SPECIES = new Set(
   ["Entei", "Volcarona", "Florges", "Grimmsnarl"].map((n) => n.toLowerCase())
+);
+
+// Caso inverso a Z_MEGA_ONLY_SPECIES: especies cuya entrada BASE sí es
+// original de Pokémon Z (stats/habilidad alterados, están en
+// POKEMON_Z_ORIGINALS), pero cuya Mega puntual es una réplica de la Mega
+// oficial de PokéAPI (no contenido exclusivo del fangame). Se usa en el
+// filtro "solo originales" para no contar esas Megas como originales aunque
+// su especie base sí lo sea.
+const Z_MEGA_OFFICIAL_DUPLICATE_SPECIES = new Set(
+  ["Chesnaught", "Delphox", "Greninja"].map((n) => n.toLowerCase())
 );
 
 // ─── Formas regionales / alternas de PokéAPI ────────────────────────────────
@@ -774,6 +796,23 @@ const getRole = (stats: BaseStats, lang: Lang = "es"): { label: string; color: s
   return { label: best.role[lang], color: best.role.color };
 };
 
+// Igual que getRole, pero respeta el rol manual elegido por el usuario para
+// ESE Pokémon del equipo (slot.manualRoleEn), si existe. Se usa en todos los
+// cálculos agregados del equipo (resumen de roles, redundancia, rol que le
+// falta al equipo, recomendaciones) para que un cambio manual de rol se
+// refleje en TODA la app, no solo en la tarjeta del Pokémon.
+const getEffectiveRole = (
+  slot: { stats?: BaseStats | null; manualRoleEn?: string | null },
+  lang: Lang = "es"
+): { label: string; color: string } | null => {
+  if (slot.manualRoleEn) {
+    const roleDef = [...ROLES, BALANCED_ROLE].find((r) => r.en === slot.manualRoleEn);
+    if (roleDef) return { label: roleDef[lang], color: roleDef.color };
+  }
+  if (!slot.stats) return null;
+  return getRole(slot.stats, lang);
+};
+
 // ─── Filtro de rol por stats núcleo ────────────────────────────────────────────
 // Cada rol define las stats mínimas que un Pokémon DEBE tener para calificar.
 // Reemplaza el sistema de margen/ranking, que fallaba con stats comprimidas.
@@ -975,6 +1014,12 @@ type AvailablePokemon = {
                               // en el nombre sin ser Megaevoluciones, por ejemplo).
   abilities?: string[] | null;   // habilidades normales (no oculta)
   hiddenAbility?: string | null; // habilidad oculta, si tiene
+  learnableMoveNames?: string[] | null; // Todos los movimientos que puede aprender el
+                                         // candidato, usados por el filtro "por movimiento"
+                                         // de recomendaciones. En modo Z son internalNames
+                                         // (nivel + MT + tutor + huevo); en modo estándar son
+                                         // slugs de PokéAPI (todos los métodos que devuelve
+                                         // el endpoint /pokemon, sin distinguir el método).
 };
 
 // Rangos de ID por generación (Pokedex nacional)
@@ -1090,9 +1135,21 @@ const Z_FAKEMON_LEGENDARY_NAMES = new Set([
 const isLegendary = (pokemon: AvailablePokemon): boolean => {
   if (Z_FAKEMON_LEGENDARY_NAMES.has(pokemon.name)) return true;
   if (Z_FAKEMON_NEW_NAMES.has(pokemon.name)) return false;
+  // OJO: para las entradas Mega/Gigamax de Pokémon Z, `id` es un id curado
+  // de la fakedex (90000+) que no dice nada de la especie real — hay que
+  // mirar `dexId` (el id nacional real que sí trae el JSON para esas
+  // entradas) o si no, el `id` normal se sigue comprobando igual.
+  if (LEGENDARY_IDS.has(pokemon.dexId ?? pokemon.id)) return true;
   if (LEGENDARY_IDS.has(pokemon.id)) return true;
+  // Igual que con el id: el slug de una Mega/Gigamax trae un prefijo/sufijo
+  // ("mega-zygarde", "zygarde-mega", "zygarde-gmax"...) que rompe el
+  // startsWith de abajo. Se limpia antes de comparar contra los prefijos.
+  const baseSlug = pokemon.slug
+    .replace(/^mega-/, "")
+    .replace(/-mega(-[xy])?$/, "")
+    .replace(/-gmax$/, "");
   return [...LEGENDARY_SLUG_PREFIXES].some((prefix) =>
-    pokemon.slug.startsWith(prefix)
+    baseSlug.startsWith(prefix)
   );
 };
 
@@ -2496,6 +2553,9 @@ function MoveFilterModal({
   onToggleCategory,
   types,
   onToggleType,
+  onlyZOriginals,
+  onToggleOnlyZOriginals,
+  showOnlyZFilter,
   onClearFilters,
   learnMethods,
   onlyLearnable,
@@ -2515,6 +2575,9 @@ function MoveFilterModal({
   onToggleCategory: (c: string) => void;
   types: Set<string>;
   onToggleType: (ty: string) => void;
+  onlyZOriginals: boolean;
+  onToggleOnlyZOriginals: () => void;
+  showOnlyZFilter: boolean;
   onClearFilters: () => void;
   learnMethods: Record<string, { type: "level" | "mt" | "tutor" | "egg"; level?: number }> | null | undefined;
   onlyLearnable: boolean;
@@ -2580,6 +2643,7 @@ function MoveFilterModal({
         if (onlyLearnable && learnableSet && !learnableSet.has(mv.internalName)) return false;
         if (categories.size > 0 && !categories.has(mv.category)) return false;
         if (types.size > 0 && (!mv.type || !types.has(mv.type))) return false;
+        if (onlyZOriginals && showOnlyZFilter && !mv.hackrom) return false;
         if (q.length > 0) {
           const hay =
             normalized(mv.name).includes(q) ||
@@ -2619,7 +2683,7 @@ function MoveFilterModal({
         const nameB = lang === "es" ? b.name : b.nameEn;
         return nameA.localeCompare(nameB);
       });
-  }, [moves, search, categories, types, onlyLearnable, learnableSet, learnMethods, lang, sortPower]);
+  }, [moves, search, categories, types, onlyZOriginals, showOnlyZFilter, onlyLearnable, learnableSet, learnMethods, lang, sortPower]);
 
   if (typeof document === "undefined") return null;
 
@@ -2702,6 +2766,23 @@ function MoveFilterModal({
             {filtered.length} {lang === "es" ? "resultados" : "results"}
           </span>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+            {showOnlyZFilter && (
+              <label
+                className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                  onlyZOriginals
+                    ? "border-amber-500 bg-amber-950/40 text-amber-300"
+                    : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={onlyZOriginals}
+                  onChange={onToggleOnlyZOriginals}
+                  className="h-3.5 w-3.5 rounded accent-amber-500"
+                />
+                {lang === "es" ? "Solo originales Z" : "Only Z originals"}
+              </label>
+            )}
             <input
               type="text"
               value={search}
@@ -2742,16 +2823,16 @@ function MoveFilterModal({
               {lang === "es" ? "Sin resultados." : "No results."}
             </div>
           ) : (
-            filtered.map((mv) => {
+            filtered.map((mv, mvIdx) => {
               const label = lang === "es" ? mv.name : mv.nameEn;
               const badge = learnBadgeFor(mv);
               const powerText = mv.power && mv.power > 0 ? String(mv.power) : "—";
               const accText = mv.accuracy && mv.accuracy > 0 ? `${mv.accuracy}%` : "—";
               const ppText = mv.pp !== null && mv.pp !== undefined ? String(mv.pp) : "—";
-              const description = lang === "es" ? mv.descriptionEs : mv.descriptionEn;
+              const description = (lang === "es" ? mv.descriptionEs : mv.descriptionEn) || (lang === "es" ? mv.descriptionEn : mv.descriptionEs) || "";
               return (
                 <button
-                  key={mv.internalName}
+                  key={`${mv.internalName}__${mvIdx}`}
                   type="button"
                   onClick={() => onSelect(mv)}
                   className="flex w-full items-stretch gap-2 border-b border-slate-800/60 px-3 py-2.5 text-left text-sm transition last:border-b-0 hover:bg-slate-800/80"
@@ -2771,6 +2852,14 @@ function MoveFilterModal({
                           </span>
                         )}
                         <span className="truncate font-medium text-slate-100">{label}</span>
+                        {mv.hackrom && (
+                          <span
+                            title={lang === "es" ? "Movimiento exclusivo de Pokémon Z" : "Pokémon Z exclusive move"}
+                            className="shrink-0 rounded-full border border-amber-500/50 bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300"
+                          >
+                            {lang === "es" ? "Original Z" : "Z Original"}
+                          </span>
+                        )}
                       </span>
                       <span className="flex items-center gap-1.5">
                         <span className="flex flex-1 items-center justify-center whitespace-nowrap rounded-md border border-orange-700/40 bg-orange-950/40 px-1.5 py-0.5 text-[11px] font-bold text-orange-300">
@@ -2804,6 +2893,168 @@ function MoveFilterModal({
   );
 }
 
+// Modal de exploración de habilidades — versión simplificada del
+// MoveFilterModal: solo busca por nombre y muestra la descripción de cada
+// habilidad. Solo se usa con datos de Pokémon Z (única pokédex con
+// descripciones locales precargadas).
+function AbilityFilterModal({
+  abilities,
+  lang,
+  search,
+  onSearchChange,
+  descSearch,
+  onDescSearchChange,
+  onlyZOriginals,
+  onToggleOnlyZOriginals,
+  onSelect,
+  onClose,
+}: {
+  abilities: { value: string; name: string; description: string; isOriginal?: boolean }[];
+  lang: Lang;
+  search: string;
+  onSearchChange: (v: string) => void;
+  descSearch: string;
+  onDescSearchChange: (v: string) => void;
+  onlyZOriginals: boolean;
+  onToggleOnlyZOriginals: () => void;
+  onSelect: (value: string) => void;
+  onClose: () => void;
+}) {
+  const normalized = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  // Ícono de lupa reutilizado en ambos inputs del modal (mismo estilo que el
+  // botón de buscar Pokémon).
+  const SearchIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+      <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="2" />
+      <path d="M13.6 13.6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+
+  const filtered = useMemo(() => {
+    const qName = normalized(search.trim());
+    const qDesc = normalized(descSearch.trim());
+    return abilities
+      .filter((ab) => qName.length === 0 || normalized(ab.name).includes(qName))
+      .filter((ab) => qDesc.length === 0 || normalized(ab.description).includes(qDesc))
+      .filter((ab) => !onlyZOriginals || !!ab.isOriginal)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [abilities, search, descSearch, onlyZOriginals]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[70] flex items-start sm:items-center justify-center bg-black/70 p-3 sm:p-4 overflow-y-auto"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-950/95 p-4 sm:p-6 text-slate-100 shadow-2xl shadow-black/60 my-auto max-h-[90vh] flex flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-slate-100">
+              {lang === "es" ? "Filtrar habilidades" : "Filter abilities"}
+            </h3>
+            <p className="mt-1 text-xs sm:text-sm text-slate-400">
+              {lang === "es"
+                ? "Busca por nombre y selecciona la habilidad."
+                : "Search by name and pick the ability."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="self-start rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+          >
+            {lang === "es" ? "Cerrar" : "Close"}
+          </button>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <span className="text-xs text-slate-500 whitespace-nowrap">
+            {filtered.length} {lang === "es" ? "resultados" : "results"}
+          </span>
+          <div className="relative w-full max-w-[260px]">
+            <SearchIcon />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={lang === "es" ? "Buscar por nombre…" : "Search by name…"}
+              className="w-full rounded-lg border border-blue-800/40 bg-slate-900/70 pl-8 pr-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+            />
+          </div>
+        </div>
+
+        {/* Buscador por descripción: filtra habilidades cuyo texto descriptivo
+            contenga lo escrito (ej. "quita el sueño"), independiente del
+            buscador por nombre de arriba. */}
+        <div className="mt-2 relative">
+          <SearchIcon />
+          <input
+            type="text"
+            value={descSearch}
+            onChange={(e) => onDescSearchChange(e.target.value)}
+            placeholder={lang === "es" ? "Buscar por descripción…" : "Search by description…"}
+            className="w-full rounded-lg border border-slate-700 bg-slate-900/70 pl-8 pr-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+          />
+        </div>
+
+        <div className="mt-2 flex justify-end">
+          <label
+            className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+              onlyZOriginals
+                ? "border-amber-500 bg-amber-950/40 text-amber-300"
+                : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={onlyZOriginals}
+              onChange={onToggleOnlyZOriginals}
+              className="h-3.5 w-3.5 rounded accent-amber-500"
+            />
+            {lang === "es" ? "Solo originales Z" : "Only Z originals"}
+          </label>
+        </div>
+
+        <div className="mt-3 flex-1 min-h-0 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60">
+          {filtered.length === 0 ? (
+            <div className="p-4 text-center text-sm text-slate-500">
+              {lang === "es" ? "Sin resultados." : "No results."}
+            </div>
+          ) : (
+            filtered.map((ab) => (
+              <button
+                key={ab.value}
+                type="button"
+                onClick={() => onSelect(ab.value)}
+                className="flex w-full flex-col gap-1 border-b border-slate-800/60 px-3 py-2.5 text-left text-sm transition last:border-b-0 hover:bg-slate-800/80"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="font-medium text-slate-100">{ab.name}</span>
+                  {ab.isOriginal && (
+                    <span
+                      title={lang === "es" ? "Habilidad exclusiva de Pokémon Z" : "Pokémon Z exclusive ability"}
+                      className="shrink-0 rounded-full border border-amber-500/50 bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300"
+                    >
+                      {lang === "es" ? "Original Z" : "Z Original"}
+                    </span>
+                  )}
+                </span>
+                {ab.description && (
+                  <span className="text-[11px] text-slate-500">{ab.description}</span>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lang, setLang] = useState<Lang>("es");
@@ -2813,6 +3064,7 @@ export default function Home() {
   const [pokemonZData, setPokemonZData] = useState<any[]>([]);
   const [movesZData, setMovesZData] = useState<any[]>([]);
   const [movesStandardData, setMovesStandardData] = useState<any[]>([]);
+  const [abilitiesStandardData, setAbilitiesStandardData] = useState<{ slug: string; nameEs: string; nameEn: string; descriptionEs: string; descriptionEn: string }[]>([]);
   const [abilitiesZDescData, setAbilitiesZDescData] = useState<Record<string, { nameEn: string | null; nameEnDisplay?: string; description: string; descriptionEn?: string; customAbility?: boolean }>>({});
   // Mapa "NOMBREENSINGUIONES" (ej. "WATERABSORB", tal como viene en nameEn)
   // → nombre legible en inglés (ej. "Water Absorb"), construido una sola vez
@@ -2935,7 +3187,43 @@ export default function Home() {
   const [recFilterAbility, setRecFilterAbility] = useState<string>(""); // texto libre: filtra por habilidad (normal u oculta)
   const [recFilterAbilityOpen, setRecFilterAbilityOpen] = useState(false); // dropdown de sugerencias abierto
   const [recFilterAbilitySelectedIdx, setRecFilterAbilitySelectedIdx] = useState(-1); // índice resaltado (flechas ↑↓)
+  const [recAbilityModalOpen, setRecAbilityModalOpen] = useState(false); // modal "estilo movimientos" para explorar habilidades con descripción
+  const [recAbilityModalSearch, setRecAbilityModalSearch] = useState("");
+  const [recAbilityModalDescSearch, setRecAbilityModalDescSearch] = useState(""); // texto libre: filtra habilidades por su descripción
   const [recFilterGen, setRecFilterGen] = useState<number | null>(null); // null = todas las gens
+  // Filtro por movimiento (solo Pokémon Z): hasta 4 movimientos a la vez;
+  // el candidato debe poder aprenderlos TODOS (AND), no basta con uno solo.
+  // Se guardan como internalName (clave del JSON de movimientos Z).
+  const [recFilterMoves, setRecFilterMoves] = useState<string[]>([]);
+  const [recFilterMoveModalOpen, setRecFilterMoveModalOpen] = useState(false);
+  const [recFilterMoveSearch, setRecFilterMoveSearch] = useState<string>("");
+  const [recFilterMoveCategories, setRecFilterMoveCategories] = useState<Set<string>>(new Set());
+  const [recFilterMoveTypes, setRecFilterMoveTypes] = useState<Set<string>>(new Set());
+  const [recFilterMoveOnlyZ, setRecFilterMoveOnlyZ] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(REC_FILTER_MOVE_ONLY_Z_KEY);
+      if (saved === "1" || saved === "0") setRecFilterMoveOnlyZ(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(REC_FILTER_MOVE_ONLY_Z_KEY, recFilterMoveOnlyZ ? "1" : "0");
+    } catch {}
+  }, [recFilterMoveOnlyZ]);
+  const [recAbilityModalOnlyZ, setRecAbilityModalOnlyZ] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(REC_ABILITY_MODAL_ONLY_Z_KEY);
+      if (saved === "1" || saved === "0") setRecAbilityModalOnlyZ(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(REC_ABILITY_MODAL_ONLY_Z_KEY, recAbilityModalOnlyZ ? "1" : "0");
+    } catch {}
+  }, [recAbilityModalOnlyZ]);
+  const [recFilterMoveSortPower, setRecFilterMoveSortPower] = useState<"asc" | "desc" | null>(null);
   const [recShowFilters, setRecShowFilters] = useState(false);
   const [recFilterFinalEvo, setRecFilterFinalEvo] = useState(true);   // solo últimas evoluciones
   const [recFilterLegendary, setRecFilterLegendary] = useState(false); // ocultar legendarios por defecto
@@ -2964,6 +3252,8 @@ export default function Home() {
   // Dex normal: las Megas están excluidas por defecto (comportamiento previo);
   // este switch permite incluirlas explícitamente.
   const [recFilterShowMega, setRecFilterShowMega] = useState(false);
+  // Igual que recFilterShowMega, pero para Gigamax (dex estándar).
+  const [recFilterShowGmax, setRecFilterShowGmax] = useState(false);
   // Dex Pokémon Z: Megas y Gigamax SÍ se mostraban antes sin control alguno;
   // estos switches arrancan en `true` para no cambiar el comportamiento
   // existente, pero permiten excluirlas si se desea.
@@ -3025,6 +3315,20 @@ export default function Home() {
   const [moveFilterSearch, setMoveFilterSearch] = useState<string[]>(() => Array.from({ length: 6 }, () => ""));
   const [moveFilterCategories, setMoveFilterCategories] = useState<Set<string>[]>(() => Array.from({ length: 6 }, () => new Set<string>()));
   const [moveFilterTypes, setMoveFilterTypes] = useState<Set<string>[]>(() => Array.from({ length: 6 }, () => new Set<string>()));
+  const [moveFilterOnlyZ, setMoveFilterOnlyZ] = useState(false);
+  // Índice del slot cuyo selector de rol manual está abierto (null = ninguno).
+  const [roleSelectOpenIdx, setRoleSelectOpenIdx] = useState<number | null>(null);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(MOVE_FILTER_ONLY_Z_KEY);
+      if (saved === "1" || saved === "0") setMoveFilterOnlyZ(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(MOVE_FILTER_ONLY_Z_KEY, moveFilterOnlyZ ? "1" : "0");
+    } catch {}
+  }, [moveFilterOnlyZ]);
   const [moveFilterSortPower, setMoveFilterSortPower] = useState<("asc" | "desc" | null)[]>(() => Array.from({ length: 6 }, () => null));
   const [configSlotIndex, setConfigSlotIndex] = useState<number | null>(null);
   const [configDraftTypes, setConfigDraftTypes] = useState<string[]>([]);
@@ -3387,7 +3691,20 @@ export default function Home() {
               descriptionEn: mv.description?.en ?? "",
             };
           });
-          setMovesZData(normalized);
+          // Deduplicar por internalName: el JSON del hackrom a veces trae la
+          // misma entrada repetida (ej. "Sable Místico"), y como el modal usa
+          // internalName como key de React, dos filas con la misma key hacen
+          // que React reutilice mal el nodo del DOM entre ellas — se ve como
+          // que esa fila "se bugea" (muestra datos de la otra) cada vez que
+          // el orden de la lista cambia al tocar un filtro. Nos quedamos con
+          // la primera aparición de cada internalName.
+          const seenInternalNames = new Set<string>();
+          const deduped = normalized.filter((mv) => {
+            if (!mv.internalName || seenInternalNames.has(mv.internalName)) return false;
+            seenInternalNames.add(mv.internalName);
+            return true;
+          });
+          setMovesZData(deduped);
         })
         .catch((err) => console.error("[PokeRun] Error loading moves.json:", err));
     }
@@ -3570,7 +3887,7 @@ export default function Home() {
     const gqlVariants = [
       {
         url: "https://beta.pokeapi.co/graphql/v1beta",
-        query: `{ pokemon_v2_move(limit: 2000) { name power pp accuracy pokemon_v2_movedamageclass { name } pokemon_v2_type { name } pokemon_v2_movenames(where: { pokemon_v2_language: { name: { _eq: "es" } } }) { name } } }`,
+        query: `{ pokemon_v2_move(limit: 2000) { name power pp accuracy pokemon_v2_movedamageclass { name } pokemon_v2_type { name } pokemon_v2_movenames(where: { pokemon_v2_language: { name: { _eq: "es" } } }) { name } descEs: pokemon_v2_moveflavortexts(where: { pokemon_v2_language: { name: { _eq: "es" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } descEn: pokemon_v2_moveflavortexts(where: { pokemon_v2_language: { name: { _eq: "en" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } } }`,
         movesKey: "pokemon_v2_move",
         damageClassKey: "pokemon_v2_movedamageclass",
         typeKey: "pokemon_v2_type",
@@ -3578,7 +3895,7 @@ export default function Home() {
       },
       {
         url: "https://graphql.pokeapi.co/v1beta2",
-        query: `{ move(limit: 2000) { name power pp accuracy damage_class: pokemon_v2_movedamageclass { name } type: pokemon_v2_type { name } move_names: pokemon_v2_movenames(where: { language: { name: { _eq: "es" } } }) { name } } }`,
+        query: `{ move(limit: 2000) { name power pp accuracy damage_class: pokemon_v2_movedamageclass { name } type: pokemon_v2_type { name } move_names: pokemon_v2_movenames(where: { language: { name: { _eq: "es" } } }) { name } descEs: pokemon_v2_moveflavortexts(where: { pokemon_v2_language: { name: { _eq: "es" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } descEn: pokemon_v2_moveflavortexts(where: { pokemon_v2_language: { name: { _eq: "en" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } } }`,
         movesKey: "move",
         damageClassKey: "damage_class",
         typeKey: "type",
@@ -3599,12 +3916,15 @@ export default function Home() {
           if (data.errors) continue;
           const rows = data?.data?.[movesKey] ?? [];
           if (rows.length === 0) continue;
+          const cleanFlavor = (txt: string) => txt.replace(/[\n\f\r]+/g, " ").replace(/\s+/g, " ").trim();
           const normalized = rows.map((m: any) => {
             const dcName: string | undefined = m[damageClassKey]?.name;
             const category: "Physical" | "Special" | "Status" =
               dcName === "special" ? "Special" : dcName === "status" ? "Status" : "Physical";
             const esRaw: string | undefined = m[namesKey]?.[0]?.name;
             const nameEn = formatForDisplay(m.name);
+            const descEsRaw: string | undefined = m.descEs?.[0]?.flavor_text;
+            const descEnRaw: string | undefined = m.descEn?.[0]?.flavor_text;
             return {
               internalName: m.name, // slug en inglés (ej. "flamethrower"), usado para seleccionar/buscar
               name: esRaw ? esRaw.charAt(0).toUpperCase() + esRaw.slice(1) : nameEn,
@@ -3615,8 +3935,8 @@ export default function Home() {
               power: typeof m.power === "number" ? m.power : null,
               accuracy: typeof m.accuracy === "number" ? m.accuracy : null,
               pp: typeof m.pp === "number" ? m.pp : null,
-              descriptionEs: "",
-              descriptionEn: "",
+              descriptionEs: descEsRaw ? cleanFlavor(descEsRaw) : "",
+              descriptionEn: descEnRaw ? cleanFlavor(descEnRaw) : "",
             };
           });
           console.log(`[PokeRun] Standard moves dataset loaded: ${normalized.length}`);
@@ -3627,6 +3947,65 @@ export default function Home() {
         }
       }
       console.warn("[PokeRun] Could not load standard moves dataset (filter modal disabled for standard dex)");
+    })();
+  }, []);
+
+  useEffect(() => {
+    // Dataset de TODAS las habilidades de la Pokédex estándar (nombre ES/EN +
+    // descripción ES/EN), para alimentar el mismo modal "explorar habilidades"
+    // que ya existe para Pokémon Z, ahora también en modo normal. Se carga
+    // una sola vez, independiente de la dex activa.
+    if (abilitiesStandardData.length > 0) return;
+    const gqlVariants = [
+      {
+        url: "https://beta.pokeapi.co/graphql/v1beta",
+        query: `{ pokemon_v2_ability(limit: 500) { name pokemon_v2_abilitynames(where: { pokemon_v2_language: { name: { _eq: "es" } } }) { name } descEs: pokemon_v2_abilityflavortexts(where: { pokemon_v2_language: { name: { _eq: "es" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } descEn: pokemon_v2_abilityflavortexts(where: { pokemon_v2_language: { name: { _eq: "en" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } } }`,
+        abilitiesKey: "pokemon_v2_ability",
+        namesKey: "pokemon_v2_abilitynames",
+      },
+      {
+        url: "https://graphql.pokeapi.co/v1beta2",
+        query: `{ ability(limit: 500) { name ability_names: pokemon_v2_abilitynames(where: { language: { name: { _eq: "es" } } }) { name } descEs: pokemon_v2_abilityflavortexts(where: { pokemon_v2_language: { name: { _eq: "es" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } descEn: pokemon_v2_abilityflavortexts(where: { pokemon_v2_language: { name: { _eq: "en" } } }, order_by: { version_group_id: desc }, limit: 1) { flavor_text } } }`,
+        abilitiesKey: "ability",
+        namesKey: "ability_names",
+      },
+    ];
+
+    (async () => {
+      for (const { url, query, abilitiesKey, namesKey } of gqlVariants) {
+        try {
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+          });
+          if (!r.ok) continue;
+          const data = await r.json();
+          if (data.errors) continue;
+          const rows = data?.data?.[abilitiesKey] ?? [];
+          if (rows.length === 0) continue;
+          const cleanFlavor = (txt: string) => txt.replace(/[\n\f\r]+/g, " ").replace(/\s+/g, " ").trim();
+          const normalized = rows.map((a: any) => {
+            const esRaw: string | undefined = a[namesKey]?.[0]?.name;
+            const nameEn = formatForDisplay(a.name);
+            const descEsRaw: string | undefined = a.descEs?.[0]?.flavor_text;
+            const descEnRaw: string | undefined = a.descEn?.[0]?.flavor_text;
+            return {
+              slug: a.name, // slug en inglés (ej. "chlorophyll"), usado para filtrar/seleccionar
+              nameEs: esRaw ? esRaw.charAt(0).toUpperCase() + esRaw.slice(1) : nameEn,
+              nameEn,
+              descriptionEs: descEsRaw ? cleanFlavor(descEsRaw) : "",
+              descriptionEn: descEnRaw ? cleanFlavor(descEnRaw) : "",
+            };
+          });
+          console.log(`[PokeRun] Standard abilities dataset loaded: ${normalized.length}`);
+          setAbilitiesStandardData(normalized);
+          return;
+        } catch {
+          continue;
+        }
+      }
+      console.warn("[PokeRun] Could not load standard abilities dataset (browse modal disabled for standard dex)");
     })();
   }, []);
 
@@ -3703,7 +4082,7 @@ export default function Home() {
       const gqlVariants = [
         {
           url: "https://beta.pokeapi.co/graphql/v1beta",
-          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemon_v2_pokemonabilities { is_hidden pokemon_v2_ability { name } } } }`,
+          query: `{ pokemon_v2_pokemon(where: { pokemon_v2_pokemonspecy: { generation_id: { _lte: 9 } } }, limit: 2000) { id name is_default pokemon_v2_pokemontypes { pokemon_v2_type { name } } pokemon_v2_pokemonstats { base_stat pokemon_v2_stat { name } } pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemon_v2_pokemonabilities { is_hidden pokemon_v2_ability { name } } pokemon_v2_pokemonmoves(distinct_on: move_id) { pokemon_v2_move { name } } } }`,
           rowsKey: "pokemon_v2_pokemon",
           typesKey: "pokemon_v2_pokemontypes",
           typeNameKey: "pokemon_v2_type",
@@ -3711,10 +4090,12 @@ export default function Home() {
           statNameKey: "pokemon_v2_stat",
           abilitiesKey: "pokemon_v2_pokemonabilities",
           abilityNameKey: "pokemon_v2_ability",
+          movesKey: "pokemon_v2_pokemonmoves",
+          moveNameKey: "pokemon_v2_move",
         },
         {
           url: "https://graphql.pokeapi.co/v1beta2",
-          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } species: pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemonabilities: pokemon_v2_pokemonabilities { is_hidden ability: pokemon_v2_ability { name } } } }`,
+          query: `{ pokemon(limit: 2000) { id name is_default pokemontypes: pokemon_v2_pokemontypes { type: pokemon_v2_type { name } } pokemonstats: pokemon_v2_pokemonstats { base_stat stat: pokemon_v2_stat { name } } species: pokemon_v2_pokemonspecy { evolves_from_species_id id } pokemonabilities: pokemon_v2_pokemonabilities { is_hidden ability: pokemon_v2_ability { name } } pokemonmoves: pokemon_v2_pokemonmoves(distinct_on: move_id) { move: pokemon_v2_move { name } } } }`,
           rowsKey: "pokemon",
           typesKey: "pokemontypes",
           typeNameKey: "type",
@@ -3722,6 +4103,8 @@ export default function Home() {
           statNameKey: "stat",
           abilitiesKey: "pokemonabilities",
           abilityNameKey: "ability",
+          movesKey: "pokemonmoves",
+          moveNameKey: "move",
         },
       ];
 
@@ -3735,9 +4118,12 @@ export default function Home() {
       // trayendo del fetch pero se filtra reactivamente más abajo según el
       // switch "Mostrar Megas" (recFilterShowMega), para que el usuario
       // pueda decidir si aparecen o no sin necesitar un nuevo fetch.
-      const EXCLUDED_FORM_PATTERN = /-(gmax|gigantamax|primal|totem|cap|starter|eternamax)\b/i;
+      // Lo mismo aplica ahora a "gmax"/"gigantamax": se sigue trayendo del
+      // fetch pero se filtra reactivamente según el switch "Mostrar Gigamax"
+      // (recFilterShowGmax).
+      const EXCLUDED_FORM_PATTERN = /-(primal|totem|cap|starter|eternamax)\b/i;
 
-      for (const { url, query, rowsKey, typesKey, typeNameKey, statsKey, statNameKey, abilitiesKey, abilityNameKey } of gqlVariants) {
+      for (const { url, query, rowsKey, typesKey, typeNameKey, statsKey, statNameKey, abilitiesKey, abilityNameKey, movesKey, moveNameKey } of gqlVariants) {
         try {
           const r = await fetch(url, {
             method: "POST",
@@ -3774,6 +4160,10 @@ export default function Home() {
                 .map((ar: any) => ar?.[abilityNameKey]?.name)
                 .filter(Boolean);
               const hiddenAbility = abilityRows.find((ar: any) => ar?.is_hidden)?.[abilityNameKey]?.name ?? null;
+              const moveRows: any[] = row[movesKey] ?? [];
+              const learnableMoveNames = Array.from(
+                new Set(moveRows.map((mr: any) => mr?.[moveNameKey]?.name).filter(Boolean))
+              );
               const sp = row.pokemon_v2_pokemonspecy ?? row.species;
               const speciesId: number | null = sp?.id ?? null;
               // Es última evolución si ningún otro Pokémon evoluciona desde su species id
@@ -3787,6 +4177,7 @@ export default function Home() {
                 isFinalEvo,
                 abilities: abilities.length > 0 ? abilities : null,
                 hiddenAbility,
+                learnableMoveNames: learnableMoveNames.length > 0 ? learnableMoveNames : null,
               };
             })
             .filter(Boolean) as AvailablePokemon[];
@@ -3808,7 +4199,7 @@ export default function Home() {
       const maxId = 1025;
 
       // Recopilamos datos crudos de pokemon y species juntos
-      type RawRest = { slug: string; id: number; types: string[]; stats: BaseStats | null; speciesId: number | null; evolvesFromSpeciesId: number | null; abilities: string[]; hiddenAbility: string | null };
+      type RawRest = { slug: string; id: number; types: string[]; stats: BaseStats | null; speciesId: number | null; evolvesFromSpeciesId: number | null; abilities: string[]; hiddenAbility: string | null; learnableMoveNames: string[] };
       const rawList: RawRest[] = [];
 
       for (let start = 1; start <= maxId; start += chunkSize) {
@@ -3831,6 +4222,9 @@ export default function Home() {
                 .map((ar: any) => ar?.ability?.name)
                 .filter(Boolean);
               const hiddenAbility = abilityRows.find((ar: any) => ar?.is_hidden)?.ability?.name ?? null;
+              const learnableMoveNames = Array.isArray(d.moves)
+                ? Array.from(new Set(d.moves.map((mv: any) => mv?.move?.name).filter(Boolean)))
+                : [];
               let evolvesFromSpeciesId: number | null = null;
               let speciesId: number | null = null;
               if (rSpec.ok) {
@@ -3840,7 +4234,7 @@ export default function Home() {
                   ? parseInt(sp.evolves_from_species.url.split("/").filter(Boolean).pop() ?? "0", 10) || null
                   : null;
               }
-              rawList.push({ slug: d.name, id: d.id, types, stats, speciesId, evolvesFromSpeciesId, abilities, hiddenAbility });
+              rawList.push({ slug: d.name, id: d.id, types, stats, speciesId, evolvesFromSpeciesId, abilities, hiddenAbility, learnableMoveNames });
             } catch { /* skip */ }
           })
         );
@@ -3860,6 +4254,7 @@ export default function Home() {
         isFinalEvo: p.speciesId === null || !speciesIdsThatEvolveFrom.has(p.speciesId),
         abilities: p.abilities.length > 0 ? p.abilities : null,
         hiddenAbility: p.hiddenAbility,
+        learnableMoveNames: p.learnableMoveNames.length > 0 ? p.learnableMoveNames : null,
       }));
 
       console.log(`[PokeRun] Fallback REST: ${parsed.length} Pokémon cargados para recomendaciones`);
@@ -4298,6 +4693,14 @@ export default function Home() {
     setMoveSelectedIdx((prev) => prev.map((row, i) => (i === slotIdx ? resetRow4(-1) : row)));
   };
 
+  // Fija (o borra, con null) el rol elegido a mano para un Pokémon puntual
+  // del equipo, que reemplaza al rol calculado automáticamente por stats en
+  // TODOS los cálculos del equipo (resumen de roles, redundancia, rol que
+  // le falta al equipo, recomendaciones), no solo en su propia tarjeta.
+  const setSlotManualRole = (slotIdx: number, roleEn: string | null) => {
+    setTeam((t) => t.map((s, i) => (i === slotIdx ? { ...s, manualRoleEn: roleEn } : s)));
+  };
+
   const swapSlots = (fromIdx: number, toIdx: number) => {
     if (fromIdx === toIdx) return;
     setTeam((t) => {
@@ -4399,6 +4802,9 @@ export default function Home() {
         return next;
       })
     );
+  };
+  const toggleMoveFilterOnlyZ = () => {
+    setMoveFilterOnlyZ((v) => !v);
   };
   const clearMoveFilters = () => {
     const slotIdx = moveFilterTarget?.slotIdx;
@@ -4705,6 +5111,79 @@ export default function Home() {
     return { weaknesses: weaknessesCount, strengths: strengthsCount, weakMemberIdx, resistMemberIdx };
   }, [team, typeRelations]);
 
+  // ─── Tipos recomendados para agregar (sección "Tipos") ────────────────────
+  // Sugiere qué tipo(s) le convendría tener al PRÓXIMO Pokémon del equipo,
+  // basado únicamente en el panorama de tipos actual (no en stats ni rol):
+  //   1. Se EXCLUYEN tipos que sean débiles a una debilidad ya compartida por
+  //      el equipo (≥2 miembros débiles a ese tipo), para no empeorarla.
+  //      Ej.: si Fuego y Eléctrico ya dejan al equipo con 2 miembros débiles
+  //      a Tierra, no se sugiere Veneno (débil a Tierra), porque subiría esa
+  //      debilidad a 3.
+  //   2. Se premia que el tipo candidato RESISTA tipos donde el equipo tiene
+  //      poca o ninguna resistencia (0 o 1 miembro resistente), y más aún si
+  //      resiste una debilidad compartida existente del equipo.
+  const typeAddSuggestions = useMemo(() => {
+    const attackingTypes = Object.keys(typeRelations);
+    if (!attackingTypes.length) return [];
+    const hasTeam = team.some((s) => s.types.filter(Boolean).length > 0);
+    if (!hasTeam) return [];
+
+    const currentWeak = analysis.weaknesses;
+    const currentResist = analysis.strengths;
+
+    const scored = attackingTypes
+      .map((candidateType) => {
+        const rel = typeRelations[candidateType];
+        if (!rel) return null;
+        const candidateWeakTo = new Set((rel.double_damage_from ?? []).map((x: any) => x.name));
+        const candidateResists = new Set([
+          ...(rel.half_damage_from ?? []).map((x: any) => x.name),
+          ...(rel.no_damage_from ?? []).map((x: any) => x.name),
+        ]);
+
+        // (1) Filtro duro: ¿este tipo es débil a alguna debilidad compartida
+        // (≥2 miembros) que ya tiene el equipo? Si sí, queda descartado.
+        const worsensTypes = Object.entries(currentWeak)
+          .filter(([t, count]) => count >= 2 && candidateWeakTo.has(t))
+          .map(([t]) => t);
+        if (worsensTypes.length > 0) return null;
+
+        // (2) Bonus: resiste tipos donde el equipo tiene poca/ninguna resistencia.
+        const addsResistTypes: string[] = [];
+        let resistBonus = 0;
+        attackingTypes.forEach((t) => {
+          if (!candidateResists.has(t)) return;
+          const existingResistCount = currentResist[t] ?? 0;
+          if (existingResistCount <= 1) {
+            addsResistTypes.push(t);
+            resistBonus += existingResistCount === 0 ? 3 : 1.5;
+          }
+        });
+
+        // (3) Bonus extra: resiste una debilidad compartida actual del equipo
+        // (soluciona un problema real, no solo "cubre un hueco menor").
+        const coversWeaknessTypes: string[] = [];
+        let coversBonus = 0;
+        Object.entries(currentWeak).forEach(([t, count]) => {
+          if (candidateResists.has(t)) {
+            coversWeaknessTypes.push(t);
+            coversBonus += count * 2;
+          }
+        });
+
+        // (4) Penalización leve por fragilidad general (cuántos tipos lo debilitan).
+        const fragilityPenalty = candidateWeakTo.size * 0.5;
+
+        const score = resistBonus + coversBonus - fragilityPenalty;
+        if (score <= 0) return null;
+
+        return { type: candidateType, score, addsResistTypes, coversWeaknessTypes };
+      })
+      .filter((x): x is { type: string; score: number; addsResistTypes: string[]; coversWeaknessTypes: string[] } => x !== null);
+
+    return scored.sort((a, b) => b.score - a.score).slice(0, 5);
+  }, [team, analysis, typeRelations]);
+
   // Offense coverage
   const coverage = useMemo(() => {
     const canHitSupereffective: Record<string, number> = {};
@@ -4975,6 +5454,16 @@ export default function Home() {
           formLabel: p.formLabel ?? null,
           abilities: Array.isArray(p.abilities) && p.abilities.length > 0 ? p.abilities : null,
           hiddenAbility: p.hiddenAbility ?? null,
+          // Learnset completo (nivel + MT + tutor + huevo), como internalNames,
+          // igual que el que se calcula al elegir un Pokémon para el equipo
+          // (ver fetchPokemon), pero acá se precalcula para TODOS los
+          // candidatos para poder filtrar recomendaciones por movimiento.
+          learnableMoveNames: Array.from(new Set([
+            ...(Array.isArray(p.moves) ? p.moves.map((mv: any) => mv?.move).filter(Boolean) : []),
+            ...(Array.isArray(p.tutorMoves) ? p.tutorMoves : []),
+            ...(Array.isArray(p.eggMoves) ? p.eggMoves : []),
+            ...(Array.isArray(p.tmMoves) ? p.tmMoves : []),
+          ])),
         };
       });
     }
@@ -4993,6 +5482,50 @@ export default function Home() {
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [activeCandidates, activePokedex]);
+
+  // Lista para el modal "estilo movimientos": nombre + descripción de cada
+  // habilidad de Pokémon Z. Solo tiene sentido en esa pokédex porque es la
+  // única con descripciones locales precargadas.
+  const abilitiesStandardBySlug = useMemo(() => {
+    const map = new Map<string, { nameEs: string; nameEn: string; descriptionEs: string; descriptionEn: string }>();
+    abilitiesStandardData.forEach((a) => map.set(a.slug, a));
+    return map;
+  }, [abilitiesStandardData]);
+
+  // Etiqueta a mostrar para una habilidad de la dex estándar: nombre en
+  // español si ya cargó el dataset (y el idioma activo es ES), si no cae al
+  // nombre formateado desde el slug en inglés (ej. "Water Absorb").
+  const getStdAbilityLabel = (slug: string): string => {
+    const entry = abilitiesStandardBySlug.get(slug);
+    if (entry) return lang === "es" ? entry.nameEs : entry.nameEn;
+    return formatForDisplay(slug);
+  };
+  const getStdAbilityDescription = (slug: string): string => {
+    const entry = abilitiesStandardBySlug.get(slug);
+    if (!entry) return "";
+    return (lang === "es" ? entry.descriptionEs : entry.descriptionEn) || (lang === "es" ? entry.descriptionEn : entry.descriptionEs) || "";
+  };
+
+  const abilityModalEntries = useMemo(() => {
+    if (activePokedex === "pokemon-z") {
+      return Object.entries(abilitiesZDescData).map(([esName, data]) => ({
+        // Guardamos el nombre en español (esName) como valor real seleccionable,
+        // ya que recFilterAbility/el resto del filtro trabaja con ese formato;
+        // solo la etiqueta visible cambia según el idioma.
+        value: esName,
+        name: lang === "es" ? esName : getAbilityDisplayName(esName),
+        description: (lang === "es" ? data.description : (data.descriptionEn ?? data.description)) ?? "",
+        isOriginal: !!data.customAbility,
+      }));
+    }
+    // Dex estándar: el valor seleccionable es el slug en inglés de PokéAPI
+    // (ej. "chlorophyll"), igual formato que usa el resto del filtro.
+    return abilitiesStandardData.map((a) => ({
+      value: a.slug,
+      name: lang === "es" ? a.nameEs : a.nameEn,
+      description: (lang === "es" ? a.descriptionEs : a.descriptionEn) || (lang === "es" ? a.descriptionEn : a.descriptionEs) || "",
+    }));
+  }, [abilitiesZDescData, abilitiesStandardData, activePokedex, lang]);
 
   const recFilterAbilitySuggestions = useMemo(() => {
     const q = normalizeApostrophe(recFilterAbility.trim().toLowerCase());
@@ -5032,7 +5565,7 @@ export default function Home() {
       });
       const existingRoleCounts: Record<string, number> = {};
       slotsWithStats.forEach((s) => {
-        const r = getRole(s.stats!, lang);
+        const r = getEffectiveRole(s, lang);
         if (r) existingRoleCounts[r.label] = (existingRoleCounts[r.label] ?? 0) + 1;
       });
       const best = scoreAllRoles(avgStats)
@@ -5048,6 +5581,12 @@ export default function Home() {
     const genRange = recFilterGen !== null
       ? GEN_RANGES.find((g) => g.gen === recFilterGen) ?? null
       : null;
+
+    // Mapa slug (inglés) → nombre en español, para que el filtro de habilidad
+    // funcione escribiendo en español aunque los datos de la dex estándar
+    // solo traigan el slug en inglés (ej. "clorofila" → "chlorophyll").
+    const abilityEsNameBySlug = new Map<string, string>();
+    abilitiesStandardData.forEach((a) => abilityEsNameBySlug.set(a.slug, a.nameEs));
 
     // Score todos los candidatos, aplicando filtros previos al scoring para eficiencia.
     // El rol real de cada candidato se calcula una sola vez aquí (reutilizando el
@@ -5102,35 +5641,76 @@ export default function Home() {
           const hasMatch = candidateAbilityNames.some((ab) => {
             const raw = ab.toLowerCase();
             const display = formatForDisplay(ab).toLowerCase();
-            return raw.includes(q) || display.includes(q);
+            const esName = abilityEsNameBySlug.get(ab)?.toLowerCase() ?? "";
+            return raw.includes(q) || display.includes(q) || (esName.length > 0 && esName.includes(q));
           });
           if (!hasMatch) return false;
+        }
+        // Filtro por movimiento (solo Pokémon Z): el candidato debe poder
+        // aprender TODOS los movimientos seleccionados (AND), no solo uno.
+        if (recFilterMoves.length > 0) {
+          const learnable = c.learnableMoveNames;
+          if (!learnable || !recFilterMoves.every((mv) => learnable.includes(mv))) return false;
         }
         // Filtro: solo últimas evoluciones
         if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
-        // Filtro: solo originales de Pokémon Z. Los rangos curados de
-        // Gigamax (90009-90025) y el bloque nuevo de Megas/Primigenias
-        // (91000-91118, fuente única de verdad) ya se controlan aparte con
-        // los switches "Mostrar Megas"/"Mostrar Gigamax" (ver más abajo), así
-        // que se los exime de este chequeo por nombre. Si no, nunca podían
-        // pasar: sus nombres llevan prefijo "Mega "/"Gigamax " y hay casos
-        // cuya especie base ni siquiera está en la lista de originales,
-        // aunque el Mega/Gigamax en sí sea contenido exclusivo de Pokémon Z.
-        // (Los rangos viejos 90001-90008 y 90059-90078 ya no existen en el
-        // JSON — fueron migrados a 91000+ — así que se sacaron de acá.)
+        // Filtro: solo originales de Pokémon Z. Las Megas/Gigamax (rangos
+        // curados 90009-90025 y 91000-91118) también deben pasar este
+        // chequeo, pero con dos matices adicionales sobre la comparación
+        // simple de especie base:
+        //  1) Entei, Volcarona, Florges y Grimmsnarl (Z_MEGA_ONLY_SPECIES)
+        //     tienen su entrada BASE 1:1 igual a la oficial (por eso no
+        //     están en POKEMON_Z_ORIGINALS), pero su MEGA sí es contenido
+        //     exclusivo de Pokémon Z — así que su Mega cuenta como original
+        //     aunque la base no lo sea.
+        //  2) Mega Chesnaught, Mega Delphox y Mega Greninja son al revés:
+        //     su especie base SÍ es original de Z (están en
+        //     POKEMON_Z_ORIGINALS por sus stats/habilidad alterados), pero
+        //     esas 3 Megas puntuales son réplicas de la Mega oficial de
+        //     PokéAPI (no contenido exclusivo), así que no deben contar
+        //     como originales aunque su base sí lo sea.
+        // El switch "Mostrar Megas"/"Mostrar Gigamax" de más abajo sigue
+        // controlando aparte si se muestran o no las Megas/Gigamax en general.
         if (recFilterOnlyOriginals) {
-          const isCuratedMegaOrGmax =
-            activePokedex === "pokemon-z" &&
-            ((c.id >= 90009 && c.id <= 90025) || (c.id >= 91000 && c.id <= 91118));
-          if (!isCuratedMegaOrGmax && !POKEMON_Z_ORIGINALS.has(stripZFormPrefixSuffix(normalizeApostrophe(c.name)))) return false;
+          const isCuratedMega = activePokedex === "pokemon-z" && c.formLabel === "Mega" && c.id >= 90000;
+          const rawName = normalizeApostrophe(c.name);
+          const baseSpeciesName = stripZFormPrefixSuffix(rawName);
+          const baseKey = baseSpeciesName.toLowerCase();
+          // Para Chesnaught/Delphox/Greninja el JSON trae DOS Megas por
+          // especie con el mismo nombre base: la exclusiva del hackrom
+          // lleva el sufijo " Z" ("Mega Chesnaught Z", id 91021) y la
+          // réplica de la oficial no lo lleva ("Mega Chesnaught", id
+          // 91022). Sin distinguir por ese sufijo, ambas quedaban marcadas
+          // como duplicado oficial por igual (mismo baseKey "chesnaught"
+          // tras sacarle el sufijo), así que el filtro las excluía a las
+          // dos en vez de solo a la réplica.
+          const hasZSuffix = /\s+Z$/.test(rawName);
+          const isOfficialDuplicateMega =
+            isCuratedMega && Z_MEGA_OFFICIAL_DUPLICATE_SPECIES.has(baseKey) && !hasZSuffix;
+          const isExclusiveMegaOnlySpecies = isCuratedMega && Z_MEGA_ONLY_SPECIES.has(baseKey);
+          const isOriginal =
+            (POKEMON_Z_ORIGINALS.has(baseSpeciesName) && !isOfficialDuplicateMega) || isExclusiveMegaOnlySpecies;
+          if (!isOriginal) return false;
+        }
+        // Filtro: excluir entradas de datos inválidas conocidas. Ditto no
+        // puede Megaevolucionar (su gimmick es Transform, incompatible con
+        // Mega Evolución), así que si el JSON curado trae por error una
+        // "Mega Ditto" nunca debe aparecer como candidato, sin importar el
+        // switch "Mostrar Megas".
+        if (activePokedex === "pokemon-z" && c.formLabel === "Mega" && c.id >= 90000) {
+          const baseKey = stripZFormPrefixSuffix(normalizeApostrophe(c.name)).toLowerCase();
+          if (baseKey === "ditto") return false;
         }
         // Filtro: Megas (dex normal, PokéAPI). Se detecta por el slug oficial
         // (ej. "venusaur-mega", "charizard-mega-x") — EXCLUDED_FORM_PATTERN ya
         // no las saca del fetch, así que sin este filtro seguirían apareciendo
         // siempre; acá se controla con el switch.
         if (activePokedex !== "pokemon-z" && !recFilterShowMega && /-mega(-[xy])?\b/i.test(c.slug)) return false;
+        // Filtro: Gigamax (dex normal, PokéAPI). Se detecta por el slug
+        // oficial (ej. "venusaur-gmax") — igual mecánica que el de Megas.
+        if (activePokedex !== "pokemon-z" && !recFilterShowGmax && /-gmax\b/i.test(c.slug)) return false;
         // Filtro: Megas y Gigamax (dex Pokémon Z). Se usa el campo formLabel
         // del JSON, que es el más confiable para esto — no se puede usar un
         // substring del nombre (ej. "Meganium"/"Yanmega" contienen "mega"
@@ -5332,7 +5912,7 @@ export default function Home() {
       };
     });
     return result;
-  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterAbility, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual, activePokedex, recFilterShowMega, recFilterZShowMega, recFilterZShowGmax, recFilterSortStat, recFilterMinStats]);
+  }, [team, analysis, typeRelations, activeCandidates, lang, recDiscarded, recFilterTypes, recFilterType2, recFilterAbility, recFilterGen, recFilterFinalEvo, recFilterLegendary, recFilterOnlyOriginals, recFilterNoDupTypes, recFilterMatchRole, recFilterPrioritizeCoverage, recFilterRoleManual, activePokedex, recFilterShowMega, recFilterShowGmax, recFilterZShowMega, recFilterZShowGmax, recFilterSortStat, recFilterMinStats, recFilterMoves, abilitiesStandardData]);
 
   // Priorizar la carga de sprites de los candidatos visibles actualmente
   useEffect(() => {
@@ -5385,7 +5965,7 @@ export default function Home() {
     // Pre-compute which roles the team already has and how many
     const existingRoleCounts: Record<string, number> = {};
     slotsWithStats.forEach((s) => {
-      const r = getRole(s.stats!, lang);
+      const r = getEffectiveRole(s, lang);
       if (!r) return;
       existingRoleCounts[r.label] = (existingRoleCounts[r.label] ?? 0) + 1;
     });
@@ -5430,7 +6010,7 @@ export default function Home() {
     const roleCounts: Record<string, { role: { label: string; color: string }; count: number; pokemon: string[] }> = {};
     slotsWithStats.forEach((s) => {
       if (!s.name) return;
-      const r = getRole(s.stats!, lang);
+      const r = getEffectiveRole(s, lang);
       if (!r) return;
       if (!roleCounts[r.label]) roleCounts[r.label] = { role: r, count: 0, pokemon: [] };
       roleCounts[r.label].count++;
@@ -5452,7 +6032,7 @@ export default function Home() {
     team.forEach((slot) => {
       if (!slot.name) return;
       if (!slot.stats) return;
-      const role = getRole(slot.stats, lang);
+      const role = getEffectiveRole(slot, lang);
       if (!role) return;
       if (!counts[role.label]) counts[role.label] = { ...role, count: 0, pokemon: [] };
       counts[role.label].count++;
@@ -6026,6 +6606,8 @@ export default function Home() {
                     onClick={() => {
                       setActivePokedex("standard");
                       setPokedexDropdownOpen(false);
+                      setRecFilterMoves([]);
+                      setRecFilterAbility("");
                     }}
                     className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
                       activePokedex === "standard"
@@ -6050,6 +6632,8 @@ export default function Home() {
                     onClick={() => {
                       setActivePokedex("pokemon-z");
                       setPokedexDropdownOpen(false);
+                      setRecFilterMoves([]);
+                      setRecFilterAbility("");
                     }}
                     className={`mt-1.5 flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
                       activePokedex === "pokemon-z"
@@ -6515,8 +7099,66 @@ export default function Home() {
                           </div>
                         ) : null}
                         {slot.stats && isAdvanced && (() => {
-                          const role = getRole(slot.stats, lang);
-                          return role ? <span className="shrink-0"><RoleBadge label={role.label} color={role.color} /></span> : null;
+                          const role = getEffectiveRole(slot, lang);
+                          const isManual = !!slot.manualRoleEn;
+                          const isOpen = roleSelectOpenIdx === idx;
+                          return (
+                            <span className="relative shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setRoleSelectOpenIdx(isOpen ? null : idx)}
+                                title={
+                                  isManual
+                                    ? (lang === "es" ? "Rol elegido manualmente. Clic para cambiar." : "Manually chosen role. Click to change.")
+                                    : (lang === "es" ? "Rol automático por stats. Clic para elegir uno manual." : "Automatic role from stats. Click to set one manually.")
+                                }
+                                className="flex items-center gap-1"
+                              >
+                                {role ? <RoleBadge label={role.label} color={role.color} /> : (
+                                  <span className="rounded-full border border-dashed border-slate-600 px-2 py-0.5 text-[10px] text-slate-500">
+                                    {lang === "es" ? "Elegir rol" : "Pick role"}
+                                  </span>
+                                )}
+                                {isManual && (
+                                  <span title={lang === "es" ? "Manual" : "Manual"} className="text-[10px] text-amber-400">✏️</span>
+                                )}
+                              </button>
+                              {isOpen && (
+                                <div
+                                  className="absolute right-0 top-full z-20 mt-1 w-56 max-h-64 overflow-y-auto rounded-xl border border-slate-700 bg-slate-950/95 p-1.5 shadow-xl shadow-black/60"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => { setSlotManualRole(idx, null); setRoleSelectOpenIdx(null); }}
+                                    className={`flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-slate-800 ${
+                                      !isManual ? "text-emerald-300" : "text-slate-300"
+                                    }`}
+                                  >
+                                    <span>{lang === "es" ? "Automático (por stats)" : "Automatic (by stats)"}</span>
+                                    {!isManual && <span>✓</span>}
+                                  </button>
+                                  <div className="my-1 border-t border-slate-800" />
+                                  {[...ROLES, BALANCED_ROLE].map((r) => (
+                                    <button
+                                      key={r.en}
+                                      type="button"
+                                      onClick={() => { setSlotManualRole(idx, r.en); setRoleSelectOpenIdx(null); }}
+                                      className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-slate-800 ${
+                                        slot.manualRoleEn === r.en ? "text-emerald-300" : "text-slate-300"
+                                      }`}
+                                    >
+                                      <span className="flex items-center gap-1.5">
+                                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: r.color }} />
+                                        {r[lang]}
+                                      </span>
+                                      {slot.manualRoleEn === r.en && <span>✓</span>}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </span>
+                          );
                         })()}
                       </div>
                       {!isAdvanced && (
@@ -7164,7 +7806,7 @@ const enSlug =
                           <span className="inline-flex items-center rounded-full bg-red-950/60 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold text-red-300 uppercase tracking-wider">⚠ ×4</span>
                         )}
                       </div>
-                    <div className="flex flex-wrap gap-2 flex-1">
+                    <div className="flex flex-wrap content-start gap-2 flex-1">
                         {Object.entries(analysis.weaknesses).length ? (
                           Object.entries(analysis.weaknesses)
                             .sort(([, a], [, b]) => b - a)
@@ -7245,7 +7887,7 @@ const enSlug =
                         <span className="text-base leading-none">🛡️</span>
                         <span className="font-semibold text-slate-100">{t.strengths} (≤×0.5)</span>
                       </div>
-                      <div className="flex flex-wrap gap-2 flex-1">
+                      <div className="flex flex-wrap content-start gap-2 flex-1">
                         {Object.entries(analysis.strengths).length ? (
                           Object.entries(analysis.strengths)
                             .sort(([, a], [, b]) => b - a)
@@ -7316,6 +7958,39 @@ const enSlug =
                       </div>
                     </div>
                   </div>
+                  {typeAddSuggestions.length > 0 && (
+                    <div className="rounded-lg border border-emerald-800/40 bg-emerald-950/10 px-3 py-2.5">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-base leading-none">🧩</span>
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-emerald-400 font-medium">
+                          {lang === "es" ? "Tipos recomendados para agregar" : "Recommended types to add"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {typeAddSuggestions.map(({ type, addsResistTypes, coversWeaknessTypes }) => (
+                          <div key={type} className="flex flex-wrap items-center gap-1.5 text-xs rounded-lg bg-slate-950/60 border border-emerald-900/30 px-2.5 py-1.5">
+                            <span className={`${badgeClass(type)} text-[13px] px-2 py-0.5`}>{tn(type)}</span>
+                            {coversWeaknessTypes.length > 0 && (
+                              <span className="flex flex-wrap items-center gap-1">
+                                <span className="text-slate-600">{lang === "es" ? "cubre:" : "covers:"}</span>
+                                {coversWeaknessTypes.map((ty) => (
+                                  <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5 opacity-90`}>{tn(ty)}</span>
+                                ))}
+                              </span>
+                            )}
+                            {addsResistTypes.length > 0 && (
+                              <span className="flex flex-wrap items-center gap-1">
+                                <span className="text-slate-600">{lang === "es" ? "resiste:" : "resists:"}</span>
+                                {addsResistTypes.map((ty) => (
+                                  <span key={ty} className={`${badgeClass(ty)} text-[11px] px-1.5 py-0.5 opacity-70`}>{tn(ty)}</span>
+                                ))}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CollapsibleSection>
@@ -7939,25 +8614,17 @@ const enSlug =
       <div className="pokedex-panel p-3 sm:p-4 rounded-lg">
             {/* ── Pokémon recomendados ── */}
             <div className="space-y-3">
-              {/* Header */}
+              {/* Header: título a la izquierda, botones de filtro a la derecha, todo en la misma fila */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-200 text-sm">⭐</span>
                   <h2 className="text-base font-semibold tracking-tight text-slate-100">{t.recommendedPokemon}</h2>
                 </div>
-              </div>
-              {!isAdvanced && (
-                <div className="flex items-start gap-3 rounded-xl border border-sky-700/50 bg-sky-950/40 px-4 py-3 text-[14px] sm:text-[15px] leading-relaxed text-sky-200">
-                  <span className="shrink-0 text-xl leading-none">💡</span>
-                  <span>{t.guideRecommendedSection}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
+                  {(recDiscarded.size > 0 || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || (isAdvanced && recFilterRoleManual !== null) || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") || recFilterMoves.length > 0) && (
                     <button
                       type="button"
-                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterAbility(""); setRecFilterGen(null); setRecFilterRoleManual(null); setRecFilterSortStat(null); setRecFilterMinStats(EMPTY_STAT_INPUT); }}
+                      onClick={() => { setRecDiscarded(new Set()); setRecFilterTypes([]); setRecFilterType2(""); setRecFilterAbility(""); setRecFilterGen(null); setRecFilterRoleManual(null); setRecFilterSortStat(null); setRecFilterMinStats(EMPTY_STAT_INPUT); setRecFilterMoves([]); }}
                       className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-500 transition"
                     >
                       {t.recFilterReset}
@@ -7967,17 +8634,23 @@ const enSlug =
                   <button
                     type="button"
                     onClick={() => setRecShowFilters((v) => !v)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${recShowFilters || recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") || recFilterMoves.length > 0 ? "border-sky-600 bg-sky-900/40 text-sky-300" : "border-slate-700 bg-slate-900/60 text-slate-400 hover:text-slate-200"}`}
                   >
                     🔍 {t.recFilterTitle}
-                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "")) && (
+                    {(recFilterTypes.length > 0 || recFilterType2 || recFilterAbility.trim() !== "" || recFilterGen !== null || recFilterSortStat !== null || Object.values(recFilterMinStats).some((v) => v.trim() !== "") || recFilterMoves.length > 0) && (
                       <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-sky-500 text-[9px] text-white font-bold">
-                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterAbility.trim() !== "" ? 1 : 0) + (recFilterGen !== null ? 1 : 0) + (recFilterSortStat !== null ? 1 : 0) + Object.values(recFilterMinStats).filter((v) => v.trim() !== "").length}
+                        {recFilterTypes.length + (recFilterType2 ? 1 : 0) + (recFilterAbility.trim() !== "" ? 1 : 0) + (recFilterGen !== null ? 1 : 0) + (recFilterSortStat !== null ? 1 : 0) + Object.values(recFilterMinStats).filter((v) => v.trim() !== "").length + recFilterMoves.length}
                       </span>
                     )}
                   </button>
                 </div>
               </div>
+              {!isAdvanced && (
+                <div className="flex items-start gap-3 rounded-xl border border-sky-700/50 bg-sky-950/40 px-4 py-3 text-[14px] sm:text-[15px] leading-relaxed text-sky-200">
+                  <span className="shrink-0 text-xl leading-none">💡</span>
+                  <span>{t.guideRecommendedSection}</span>
+                </div>
+              )}
 
               {/* Panel de filtros desplegable */}
               {recShowFilters && (
@@ -7988,19 +8661,19 @@ const enSlug =
                       {/* Switches rápidos */}
                       <div className="flex flex-wrap gap-x-3 gap-y-1.5 pb-2 border-b border-slate-800/80">
                         {[
-                          { key: "finalEvo", emoji: "🌟", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
-                          { key: "legendary", emoji: "👑", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
                           ...(activePokedex === "pokemon-z" ? [{ key: "onlyOriginals", emoji: "📘", label: lang === "es" ? `${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex} ${t.recFilterOnlyOriginals}` : `Original ${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
+                          { key: "finalEvo", emoji: "🌟", label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
+                          { key: "prioritizeCoverage", emoji: "🛡️", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
+                          { key: "noDup", emoji: "🚫", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
+                          { key: "legendary", emoji: "👑", label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
                           ...(activePokedex === "pokemon-z"
                             ? [
                                 { key: "zMega", emoji: "💠", label: lang === "es" ? "Mostrar Megas" : "Show Megas", value: recFilterZShowMega, setter: setRecFilterZShowMega },
-                                { key: "zGmax", emoji: "🌀", label: lang === "es" ? "Mostrar Gigamax" : "Show Gigantamax", value: recFilterZShowGmax, setter: setRecFilterZShowGmax },
                               ]
                             : [
                                 { key: "stdMega", emoji: "💠", label: lang === "es" ? "Mostrar Megas" : "Show Megas", value: recFilterShowMega, setter: setRecFilterShowMega },
+                                { key: "stdGmax", emoji: "🌀", label: lang === "es" ? "Mostrar Gigamax" : "Show Gigantamax", value: recFilterShowGmax, setter: setRecFilterShowGmax },
                               ]),
-                          { key: "noDup", emoji: "🚫", label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
-                          { key: "prioritizeCoverage", emoji: "🛡️", label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
                         ]
                           .filter((sw) => isAdvanced || (sw.key !== "noDup" && sw.key !== "prioritizeCoverage"))
                           .map(({ key, emoji, label, value, setter }) => (
@@ -8083,46 +8756,56 @@ const enSlug =
                       {/* Filtro por habilidad — con autocompletado (modo avanzado, columna izquierda) */}
                       {isAdvanced && (
                       <div className="relative">
-                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                        <div className="mb-1.5 text-[13px] uppercase tracking-[0.15em] text-slate-500">
                           {lang === "es" ? "Buscar por habilidad" : "Search by ability"}
                         </div>
-                        <input
-                          type="text"
-                          value={recFilterAbility}
-                          maxLength={50}
-                          onChange={(e) => {
-                            setRecFilterAbility(e.target.value);
-                            setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
-                            setRecFilterAbilitySelectedIdx(-1);
-                          }}
-                          onFocus={() => {
-                            if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
-                          }}
-                          onBlur={() => {
-                            // Delay para permitir que el click en una sugerencia registre antes de cerrar
-                            setTimeout(() => setRecFilterAbilityOpen(false), 150);
-                          }}
-                          onKeyDown={(e) => {
-                            if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
-                            if (e.key === "ArrowDown") {
-                              e.preventDefault();
-                              setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
-                            } else if (e.key === "ArrowUp") {
-                              e.preventDefault();
-                              setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
-                            } else if (e.key === "Enter") {
-                              e.preventDefault();
-                              if (recFilterAbilitySelectedIdx >= 0) {
-                                setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={recFilterAbility}
+                            maxLength={50}
+                            onChange={(e) => {
+                              setRecFilterAbility(e.target.value);
+                              setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
+                              setRecFilterAbilitySelectedIdx(-1);
+                            }}
+                            onFocus={() => {
+                              if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
+                            }}
+                            onBlur={() => {
+                              // Delay para permitir que el click en una sugerencia registre antes de cerrar
+                              setTimeout(() => setRecFilterAbilityOpen(false), 150);
+                            }}
+                            onKeyDown={(e) => {
+                              if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
+                              if (e.key === "ArrowDown") {
+                                e.preventDefault();
+                                setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
+                              } else if (e.key === "ArrowUp") {
+                                e.preventDefault();
+                                setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
+                              } else if (e.key === "Enter") {
+                                e.preventDefault();
+                                if (recFilterAbilitySelectedIdx >= 0) {
+                                  setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                                  setRecFilterAbilityOpen(false);
+                                }
+                              } else if (e.key === "Escape") {
                                 setRecFilterAbilityOpen(false);
                               }
-                            } else if (e.key === "Escape") {
-                              setRecFilterAbilityOpen(false);
-                            }
-                          }}
-                          placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
-                          className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
-                        />
+                            }}
+                            placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
+                            className="w-full rounded-lg border border-slate-700 bg-slate-900/70 pl-3 pr-9 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => { setRecAbilityModalSearch(""); setRecAbilityModalDescSearch(""); setRecAbilityModalOpen(true); }}
+                            title={lang === "es" ? "Explorar habilidades" : "Browse abilities"}
+                            className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800/80 hover:text-sky-300"
+                          >
+                            🔎
+                          </button>
+                        </div>
                         {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
                           <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl" onMouseDown={(e) => e.preventDefault()}>
                             {recFilterAbilitySuggestions.map((ab, i) => (
@@ -8147,7 +8830,53 @@ const enSlug =
                       </div>
                       )}
 
-                      {/* Filtro por generación (modo avanzado, columna izquierda) */}
+                      {/* Filtro por movimiento — hasta 4 a la vez, el candidato debe
+                          aprenderlos TODOS (modo avanzado, ambas pokédex) */}
+                      {isAdvanced && (activePokedex === "pokemon-z" ? movesZData.length > 0 : movesStandardData.length > 0) && (
+                      <div>
+                        <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                          {lang === "es" ? "Buscar por movimiento" : "Search by move"}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {recFilterMoves.map((mvName) => {
+                            const mv = (activePokedex === "pokemon-z" ? movesZData : movesStandardData).find((m: any) => m.internalName === mvName);
+                            const label = mv ? (lang === "es" ? mv.name : mv.nameEn) : mvName;
+                            return (
+                              <span
+                                key={mvName}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-sky-700/50 bg-sky-900/30 px-2.5 py-1.5 text-[14px] leading-none text-sky-200"
+                              >
+                                {label}
+                                <button
+                                  type="button"
+                                  onClick={() => setRecFilterMoves((prev) => prev.filter((m) => m !== mvName))}
+                                  className="text-sky-400 hover:text-sky-100"
+                                  aria-label={lang === "es" ? "Quitar" : "Remove"}
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            );
+                          })}
+                          {recFilterMoves.length < 4 && (
+                            <button
+                              type="button"
+                              onClick={() => setRecFilterMoveModalOpen(true)}
+                              className="rounded-full border border-dashed border-slate-600 px-2.5 py-1.5 text-[14px] leading-none text-slate-400 transition hover:border-sky-500 hover:text-sky-300"
+                            >
+                              + {lang === "es" ? "Añadir movimiento" : "Add move"}
+                            </button>
+                          )}
+                        </div>
+                        {recFilterMoves.length > 0 && (
+                          <div className="mt-1.5 text-[12px] text-slate-500">
+                            {lang === "es" ? "Debe poder aprender todos los movimientos seleccionados." : "Must be able to learn all selected moves."}
+                          </div>
+                        )}
+                      </div>
+                      )}
+
+                      {/* Filtro por generación (modo avanzado, columna izquierda) — al final de la columna */}
                       {isAdvanced && (
                       <div>
                         <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">{t.recFilterGen}</div>
@@ -8282,45 +9011,55 @@ const enSlug =
                       {!isAdvanced && (
                         <>
                           <div className="relative">
-                            <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+                            <div className="mb-1.5 text-[13px] uppercase tracking-[0.15em] text-slate-500">
                               {lang === "es" ? "Buscar por habilidad" : "Search by ability"}
                             </div>
-                            <input
-                              type="text"
-                              value={recFilterAbility}
-                              maxLength={50}
-                              onChange={(e) => {
-                                setRecFilterAbility(e.target.value);
-                                setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
-                                setRecFilterAbilitySelectedIdx(-1);
-                              }}
-                              onFocus={() => {
-                                if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
-                              }}
-                              onBlur={() => {
-                                setTimeout(() => setRecFilterAbilityOpen(false), 150);
-                              }}
-                              onKeyDown={(e) => {
-                                if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
-                                if (e.key === "ArrowDown") {
-                                  e.preventDefault();
-                                  setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
-                                } else if (e.key === "ArrowUp") {
-                                  e.preventDefault();
-                                  setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
-                                } else if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  if (recFilterAbilitySelectedIdx >= 0) {
-                                    setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={recFilterAbility}
+                                maxLength={50}
+                                onChange={(e) => {
+                                  setRecFilterAbility(e.target.value);
+                                  setRecFilterAbilityOpen(e.target.value.trim().length >= 2);
+                                  setRecFilterAbilitySelectedIdx(-1);
+                                }}
+                                onFocus={() => {
+                                  if (recFilterAbility.trim().length >= 2) setRecFilterAbilityOpen(true);
+                                }}
+                                onBlur={() => {
+                                  setTimeout(() => setRecFilterAbilityOpen(false), 150);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (!recFilterAbilityOpen || recFilterAbilitySuggestions.length === 0) return;
+                                  if (e.key === "ArrowDown") {
+                                    e.preventDefault();
+                                    setRecFilterAbilitySelectedIdx((prev) => Math.min(prev + 1, recFilterAbilitySuggestions.length - 1));
+                                  } else if (e.key === "ArrowUp") {
+                                    e.preventDefault();
+                                    setRecFilterAbilitySelectedIdx((prev) => Math.max(prev - 1, -1));
+                                  } else if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    if (recFilterAbilitySelectedIdx >= 0) {
+                                      setRecFilterAbility(recFilterAbilitySuggestions[recFilterAbilitySelectedIdx]);
+                                      setRecFilterAbilityOpen(false);
+                                    }
+                                  } else if (e.key === "Escape") {
                                     setRecFilterAbilityOpen(false);
                                   }
-                                } else if (e.key === "Escape") {
-                                  setRecFilterAbilityOpen(false);
-                                }
-                              }}
-                              placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
-                              className="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
-                            />
+                                }}
+                                placeholder={lang === "es" ? "Ej. Adaptable, Intimidación…" : "E.g. Adaptability, Intimidate…"}
+                                className="w-full rounded-lg border border-slate-700 bg-slate-900/70 pl-3 pr-9 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => { setRecAbilityModalSearch(""); setRecAbilityModalDescSearch(""); setRecAbilityModalOpen(true); }}
+                                title={lang === "es" ? "Explorar habilidades" : "Browse abilities"}
+                                className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-800/80 hover:text-sky-300"
+                              >
+                                🔎
+                              </button>
+                            </div>
                             {recFilterAbilityOpen && recFilterAbilitySuggestions.length > 0 && (
                               <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/95 text-sm shadow-xl" onMouseDown={(e) => e.preventDefault()}>
                                 {recFilterAbilitySuggestions.map((ab, i) => (
@@ -8405,7 +9144,7 @@ const enSlug =
 
               {/* Lista de recomendaciones — grid compacto */}
               {pokemonRecommendations.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-stretch">
                   {pokemonRecommendations.map(({ candidate, name, reasons, noNewCritical, addsResistances, immunities, newResistances, reduces, neededRole, realRole, candidateFitsRole }) => {
                     const allCandidateWeaknesses = getCandidateWeaknesses(candidate.types as string[], typeRelations);
                     const reasonWeakTypes = new Set(reasons.filter((r) => !r.positive).map((r) => r.weakType));
@@ -8451,10 +9190,10 @@ const enSlug =
                     const allResistances = newResistances.filter((ty) => !immunities.includes(ty));
 
                     return (
-                      <div key={candidate.slug} className="rounded-xl border border-blue-800/20 bg-slate-900/75 overflow-hidden min-w-0">
+                      <div key={candidate.slug} className="h-full flex flex-col rounded-xl border border-blue-800/20 bg-slate-900/75 overflow-hidden min-w-0">
 
                         {/* ── CUERPO PRINCIPAL: sprite izq + info der ── */}
-                        <div className="flex">
+                        <div className="flex flex-1 min-h-0">
 
                           {/* Columna izquierda: sprite cuadrado fijo con fondo de color del tipo primario */}
                           <div className="shrink-0 w-44 self-stretch bg-[#031421] flex items-center justify-center rounded-tl-xl overflow-hidden relative">
@@ -8647,18 +9386,18 @@ const enSlug =
                                     content={
                                       <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
                                         <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
-                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : formatForDisplay(ab)}
+                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
                                         </div>
                                         <div>
                                           {activePokedex === "pokemon-z"
                                             ? (lang === "es" ? abilitiesZDescData[ab]?.description : (abilitiesZDescData[ab]?.descriptionEn ?? abilitiesZDescData[ab]?.description)) ?? ""
-                                            : ""}
+                                            : getStdAbilityDescription(ab)}
                                         </div>
                                       </div>
                                     }
                                   >
                                     <span className="rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] font-medium text-slate-300 cursor-default">
-                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : formatForDisplay(ab)}
+                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
                                     </span>
                                   </FloatingTooltip>
                                 ))}
@@ -8668,13 +9407,13 @@ const enSlug =
                                     content={
                                       <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
                                         <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
-                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : formatForDisplay(candidate.hiddenAbility)}
+                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
                                           {" "}({lang === "es" ? "oculta" : "hidden"})
                                         </div>
                                         <div>
                                           {activePokedex === "pokemon-z"
                                             ? (lang === "es" ? abilitiesZDescData[candidate.hiddenAbility]?.description : (abilitiesZDescData[candidate.hiddenAbility]?.descriptionEn ?? abilitiesZDescData[candidate.hiddenAbility]?.description)) ?? ""
-                                            : ""}
+                                            : getStdAbilityDescription(candidate.hiddenAbility)}
                                         </div>
                                       </div>
                                     }
@@ -8682,7 +9421,7 @@ const enSlug =
                                     <span
                                       className="rounded-full border border-dashed border-slate-600 bg-slate-800/30 px-2 py-0.5 text-[10px] font-medium text-slate-400 cursor-default"
                                     >
-                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : formatForDisplay(candidate.hiddenAbility)}
+                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
                                     </span>
                                   </FloatingTooltip>
                                 )}
@@ -8761,7 +9500,7 @@ const enSlug =
                               <button
                                 type="button"
                                 onClick={toggleExpanded}
-                                className={`self-start mt-1 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition ${isExpanded ? "border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700" : "border-sky-700/60 bg-sky-900/30 text-sky-300 hover:bg-sky-900/60 hover:border-sky-600"}`}
+                                className={`self-start mt-auto pt-1 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium transition ${isExpanded ? "border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700" : "border-sky-700/60 bg-sky-900/30 text-sky-300 hover:bg-sky-900/60 hover:border-sky-600"}`}
                               >
                                 <span className="text-[10px]">{isExpanded ? "▲" : "▼"}</span>
                                 <span>{isExpanded ? (lang === "es" ? "Ocultar detalle" : "Hide detail") : (lang === "es" ? "Ver resistencias y debilidades" : "See resistances & weaknesses")}</span>
@@ -9223,6 +9962,9 @@ const enSlug =
           onToggleCategory={toggleMoveFilterCategory}
           types={moveFilterTypes[moveFilterTarget.slotIdx] ?? new Set<string>()}
           onToggleType={toggleMoveFilterType}
+          onlyZOriginals={moveFilterOnlyZ}
+          onToggleOnlyZOriginals={toggleMoveFilterOnlyZ}
+          showOnlyZFilter={activePokedex === "pokemon-z"}
           onClearFilters={clearMoveFilters}
           sortPower={moveFilterSortPower[moveFilterTarget.slotIdx] ?? null}
           onSortPowerChange={(v) => {
@@ -9240,6 +9982,80 @@ const enSlug =
           tn={tn}
           onSelect={selectMoveFromFilter}
           onClose={closeMoveFilter}
+        />
+      )}
+
+      {/* ── Modal de filtros de movimientos — filtro "por movimiento" de
+          Pokémon recomendado (modo avanzado, ambas pokédex). A diferencia
+          del modal de arriba, acá "onlyLearnable" siempre es false: se
+          muestran TODOS los movimientos, no solo los de un Pokémon puntual,
+          ya que este filtro busca entre todos los candidatos. ── */}
+      {recFilterMoveModalOpen && (
+        <MoveFilterModal
+          moves={(activePokedex === "pokemon-z" ? movesZData : movesStandardData) as MoveFilterEntry[]}
+          lang={lang}
+          search={recFilterMoveSearch}
+          onSearchChange={setRecFilterMoveSearch}
+          categories={recFilterMoveCategories}
+          onToggleCategory={(c) =>
+            setRecFilterMoveCategories((prev) => {
+              const next = new Set(prev);
+              if (next.has(c)) next.delete(c); else next.add(c);
+              return next;
+            })
+          }
+          types={recFilterMoveTypes}
+          onToggleType={(ty) =>
+            setRecFilterMoveTypes((prev) => {
+              const next = new Set(prev);
+              if (next.has(ty)) next.delete(ty); else next.add(ty);
+              return next;
+            })
+          }
+          onlyZOriginals={recFilterMoveOnlyZ}
+          onToggleOnlyZOriginals={() => setRecFilterMoveOnlyZ((v) => !v)}
+          showOnlyZFilter={activePokedex === "pokemon-z"}
+          onClearFilters={() => {
+            setRecFilterMoveSearch("");
+            setRecFilterMoveCategories(new Set());
+            setRecFilterMoveTypes(new Set());
+          }}
+          sortPower={recFilterMoveSortPower}
+          onSortPowerChange={setRecFilterMoveSortPower}
+          learnMethods={null}
+          onlyLearnable={false}
+          learnableSet={null}
+          badgeClass={badgeClass}
+          tn={tn}
+          onSelect={(move) => {
+            setRecFilterMoves((prev) => {
+              if (prev.includes(move.internalName) || prev.length >= 4) return prev;
+              return [...prev, move.internalName];
+            });
+          }}
+          onClose={() => setRecFilterMoveModalOpen(false)}
+        />
+      )}
+
+      {/* ── Modal de exploración de habilidades — filtro "por habilidad" de
+          Pokémon recomendado. Solo Pokémon Z, ya que es la única pokédex con
+          descripciones locales precargadas. Al elegir una, se rellena el
+          mismo campo de texto (recFilterAbility) que ya usa el filtro. ── */}
+      {recAbilityModalOpen && (
+        <AbilityFilterModal
+          abilities={abilityModalEntries}
+          lang={lang}
+          search={recAbilityModalSearch}
+          onSearchChange={setRecAbilityModalSearch}
+          descSearch={recAbilityModalDescSearch}
+          onDescSearchChange={setRecAbilityModalDescSearch}
+          onlyZOriginals={recAbilityModalOnlyZ}
+          onToggleOnlyZOriginals={() => setRecAbilityModalOnlyZ((v) => !v)}
+          onSelect={(value) => {
+            setRecFilterAbility(value);
+            setRecAbilityModalOpen(false);
+          }}
+          onClose={() => setRecAbilityModalOpen(false)}
         />
       )}
     </div>
