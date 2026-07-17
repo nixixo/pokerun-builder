@@ -148,6 +148,29 @@ const PokeballIcon = ({ className = "h-5 w-5" }: { className?: string }) => (
   </svg>
 );
 
+// ─── Banderas de idioma (SVG inline, sin depender de emoji del sistema) ─────
+const FlagES = ({ className = "h-3.5 w-5" }: { className?: string }) => (
+  <svg viewBox="0 0 3 2" className={className} aria-hidden="true">
+    <rect width="3" height="2" y="0" fill="#AA151B" />
+    <rect width="3" height="1" y="0.5" fill="#F1BF00" />
+  </svg>
+);
+
+const FlagGB = ({ className = "h-3.5 w-5" }: { className?: string }) => (
+  <svg viewBox="0 0 60 30" className={className} aria-hidden="true">
+    <clipPath id="flag-gb-clip">
+      <rect width="60" height="30" />
+    </clipPath>
+    <g clipPath="url(#flag-gb-clip)">
+      <rect width="60" height="30" fill="#00247d" />
+      <path d="M0,0 60,30 M60,0 0,30" stroke="#fff" strokeWidth="6" />
+      <path d="M0,0 60,30 M60,0 0,30" stroke="#cf142b" strokeWidth="2" />
+      <path d="M30,0 30,30 M0,15 60,15" stroke="#fff" strokeWidth="10" />
+      <path d="M30,0 30,30 M0,15 60,15" stroke="#cf142b" strokeWidth="6" />
+    </g>
+  </svg>
+);
+
 const EMPTY_SLOT = (): Slot => ({
   name: "",
   isFake: false,
@@ -180,6 +203,8 @@ const ONLY_LEARNABLE_MOVES_KEY = "pokerun-builder-only-learnable-moves";
 const MOVE_FILTER_ONLY_Z_KEY = "pokerun-builder-move-filter-only-z";
 const REC_FILTER_MOVE_ONLY_Z_KEY = "pokerun-builder-rec-move-filter-only-z";
 const REC_ABILITY_MODAL_ONLY_Z_KEY = "pokerun-builder-rec-ability-modal-only-z";
+const ITEMS_ONLY_Z_KEY = "pokerun-builder-items-only-z";
+const ITEMS_ONLY_COMBAT_KEY = "pokerun-builder-items-only-combat";
 const MAX_PLANTILLAS = 5;
 
 // ─── Pokedex selector ────────────────────────────────────────────────────────
@@ -3055,6 +3080,186 @@ function AbilityFilterModal({
   );
 }
 
+// Modal de búsqueda de objetos de Pokémon Z: busca por nombre o por
+// descripción y permite filtrar solo los objetos originales del hackrom
+// (hackrom: true en items_pokemon_z.json). Es de solo consulta (no asigna
+// nada a ningún Pokémon), por eso no recibe onSelect.
+function ItemsBrowserModal({
+  items,
+  combatUseful,
+  lang,
+  search,
+  onSearchChange,
+  onlyZOriginals,
+  onToggleOnlyZOriginals,
+  onlyCombat,
+  onToggleOnlyCombat,
+  onClose,
+}: {
+  items: { id: number; internalName: string; name: string; namePlural: string; description: string; hackrom: boolean; sprite?: string | null }[];
+  combatUseful: Record<string, boolean>;
+  lang: Lang;
+  search: string;
+  onSearchChange: (v: string) => void;
+  onlyZOriginals: boolean;
+  onToggleOnlyZOriginals: () => void;
+  onlyCombat: boolean;
+  onToggleOnlyCombat: () => void;
+  onClose: () => void;
+}) {
+  const normalized = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const SearchIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+      <circle cx="9" cy="9" r="6.2" stroke="currentColor" strokeWidth="2" />
+      <path d="M13.6 13.6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+
+  const filtered = useMemo(() => {
+    const q = normalized(search.trim());
+    return items
+      .filter((it) => !onlyZOriginals || it.hackrom)
+      .filter((it) => !onlyCombat || combatUseful[String(it.id)])
+      .filter((it) => q.length === 0 || normalized(it.name).includes(q) || normalized(it.description ?? "").includes(q))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [items, search, onlyZOriginals, onlyCombat, combatUseful]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[70] flex items-start sm:items-center justify-center bg-black/70 p-3 sm:p-4 overflow-y-auto"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-950/95 p-4 sm:p-6 text-slate-100 shadow-2xl shadow-black/60 my-auto max-h-[90vh] flex flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-slate-100">
+              {lang === "es" ? "Objetos" : "Items"}
+            </h3>
+            <p className="mt-1 text-xs sm:text-sm text-slate-400">
+              {lang === "es"
+                ? "Busca por nombre o por descripción."
+                : "Search by name or description."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="self-start rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+          >
+            {lang === "es" ? "Cerrar" : "Close"}
+          </button>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <span className="text-xs text-slate-500 whitespace-nowrap">
+            {filtered.length} {lang === "es" ? "resultados" : "results"}
+          </span>
+          <div className="relative w-full max-w-[300px]">
+            <SearchIcon />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder={lang === "es" ? "Buscar por nombre o descripción…" : "Search by name or description…"}
+              className="w-full rounded-lg border border-blue-800/40 bg-slate-900/70 pl-8 pr-3 py-1.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-sky-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-2 flex flex-wrap justify-end gap-2">
+          <label
+            className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+              onlyCombat
+                ? "border-emerald-500 bg-emerald-950/40 text-emerald-300"
+                : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={onlyCombat}
+              onChange={onToggleOnlyCombat}
+              className="h-3.5 w-3.5 rounded accent-emerald-500"
+            />
+            {lang === "es" ? "⚔ Solo objetos de combate" : "⚔ Only battle items"}
+          </label>
+          <label
+            className={`inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+              onlyZOriginals
+                ? "border-amber-500 bg-amber-950/40 text-amber-300"
+                : "border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={onlyZOriginals}
+              onChange={onToggleOnlyZOriginals}
+              className="h-3.5 w-3.5 rounded accent-amber-500"
+            />
+            {lang === "es" ? "Solo originales Z" : "Only Z originals"}
+          </label>
+        </div>
+
+        <div className="mt-3 flex-1 min-h-0 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60">
+          {items.length === 0 ? (
+            <div className="p-4 text-center text-sm text-slate-500">
+              {lang === "es" ? "Cargando objetos…" : "Loading items…"}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="p-4 text-center text-sm text-slate-500">
+              {lang === "es" ? "Sin resultados." : "No results."}
+            </div>
+          ) : (
+            filtered.map((it) => (
+              <div
+                key={it.id}
+                className="flex w-full items-start gap-3 border-b border-slate-800/60 px-3 py-2.5 text-left text-sm last:border-b-0"
+              >
+                <div className="w-9 h-9 shrink-0 bg-[#031421] rounded-lg overflow-hidden flex items-center justify-center">
+                  <SpriteImg
+                    src={it.sprite ?? null}
+                    alt={it.name}
+                    className="w-7 h-7 object-contain"
+                    placeholderClassName="h-5 w-5 opacity-40"
+                  />
+                </div>
+                <div className="flex flex-1 min-w-0 flex-col gap-1">
+                  <span className="flex items-center gap-2">
+                    <span className="font-medium text-slate-100">{it.name}</span>
+                    {it.hackrom && (
+                      <span
+                        title={lang === "es" ? "Objeto exclusivo de Pokémon Z" : "Pokémon Z exclusive item"}
+                        className="shrink-0 rounded-full border border-amber-500/50 bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300"
+                      >
+                        {lang === "es" ? "Original Z" : "Z Original"}
+                      </span>
+                    )}
+                    {combatUseful[String(it.id)] && (
+                      <span
+                        title={lang === "es" ? "Útil en combate" : "Useful in battle"}
+                        className="shrink-0 rounded-full border border-emerald-500/50 bg-emerald-950/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-300"
+                      >
+                        {lang === "es" ? "⚔ Combate" : "⚔ Battle"}
+                      </span>
+                    )}
+                  </span>
+                  {it.description && (
+                    <span className="text-[11px] text-slate-500">{it.description}</span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [lang, setLang] = useState<Lang>("es");
@@ -3063,6 +3268,56 @@ export default function Home() {
   const pokedexDropdownRef = useRef<HTMLDivElement>(null);
   const [pokemonZData, setPokemonZData] = useState<any[]>([]);
   const [movesZData, setMovesZData] = useState<any[]>([]);
+  // Catálogo de objetos de Pokémon Z (items_pokemon_z.json), para el
+  // buscador de objetos del header. Se carga una sola vez al montar,
+  // independiente de la pokédex activa.
+  const [itemsData, setItemsData] = useState<
+    { id: number; internalName: string; name: string; namePlural: string; description: string; hackrom: boolean; sprite?: string | null }[]
+  >([]);
+  const [itemsModalOpen, setItemsModalOpen] = useState(false);
+  const [itemsSearch, setItemsSearch] = useState("");
+  const [itemsOnlyZ, setItemsOnlyZ] = useState(false);
+  const [itemsOnlyCombat, setItemsOnlyCombat] = useState(false);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(ITEMS_ONLY_Z_KEY);
+      if (saved === "1" || saved === "0") setItemsOnlyZ(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ITEMS_ONLY_Z_KEY, itemsOnlyZ ? "1" : "0");
+    } catch {}
+  }, [itemsOnlyZ]);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(ITEMS_ONLY_COMBAT_KEY);
+      if (saved === "1" || saved === "0") setItemsOnlyCombat(saved === "1");
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ITEMS_ONLY_COMBAT_KEY, itemsOnlyCombat ? "1" : "0");
+    } catch {}
+  }, [itemsOnlyCombat]);
+  useEffect(() => {
+    if (itemsData.length > 0) return;
+    fetch("/items_pokemon_z.json")
+      .then((r) => r.json())
+      .then((data) => setItemsData(data))
+      .catch((err) => console.error("[PokeRun] Error loading items_pokemon_z.json:", err));
+  }, [itemsData.length]);
+  // Objetos con efecto real en combate (choice items, potenciadores de tipo,
+  // objetos defensivos, gemas, tablas, etc). Mapa id -> true. Cargado desde
+  // un archivo aparte para no tener que tocar items_pokemon_z.json.
+  const [itemsCombatUseful, setItemsCombatUseful] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (Object.keys(itemsCombatUseful).length > 0) return;
+    fetch("/items_combat_useful.json")
+      .then((r) => r.json())
+      .then((data) => setItemsCombatUseful(data))
+      .catch((err) => console.error("[PokeRun] Error loading items_combat_useful.json:", err));
+  }, [itemsCombatUseful]);
   const [movesStandardData, setMovesStandardData] = useState<any[]>([]);
   const [abilitiesStandardData, setAbilitiesStandardData] = useState<{ slug: string; nameEs: string; nameEn: string; descriptionEs: string; descriptionEn: string }[]>([]);
   const [abilitiesZDescData, setAbilitiesZDescData] = useState<Record<string, { nameEn: string | null; nameEnDisplay?: string; description: string; descriptionEn?: string; customAbility?: boolean }>>({});
@@ -6698,9 +6953,10 @@ export default function Home() {
                   key={l}
                   type="button"
                   onClick={() => setLang(l)}
-                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition ${lang === l ? "bg-blue-700 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition ${lang === l ? "bg-blue-700 text-white shadow" : "text-slate-400 hover:text-slate-200"}`}
                 >
-                  {l === "es" ? "🇪🇸 ES" : "🇬🇧 EN"}
+                  {l === "es" ? <FlagES /> : <FlagGB />}
+                  {l === "es" ? "ES" : "EN"}
                 </button>
               ))}
             </div>
@@ -6739,20 +6995,38 @@ export default function Home() {
           <div className="pointer-events-none absolute -right-2 -top-2 h-32 w-32 rounded-full border border-blue-600/10 opacity-40" />
           <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 32px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 32px)" }} />
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            {/* Title + subtitle */}
-            <div className="min-w-0 sm:flex-1">
-              <div className="flex flex-wrap items-baseline gap-1.5 mb-0.5">
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokeRun</h1>
-                <span className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
-                <span className="text-base">✨</span>
+          <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            {/* Fila 1 en mobile: título + botón Objetos. En sm:+ el wrapper
+                desaparece (sm:contents) y el título pasa a ser el item
+                izquierdo del header; el botón Objetos de esta fila se oculta
+                y reaparece agrupado junto a las stats (ver más abajo). */}
+            <div className="flex items-start justify-between gap-3 sm:contents">
+              {/* Title + subtitle */}
+              <div className="min-w-0 sm:flex-1">
+                <div className="flex flex-wrap items-baseline gap-1.5 mb-0.5">
+                  <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white leading-none">🎴 PokeRun</h1>
+                  <span className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent leading-none">Builder</span>
+                  <span className="text-base">✨</span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-snug hidden sm:block">{t.appSubtitle}</p>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-400 max-w-md leading-snug hidden sm:block">{t.appSubtitle}</p>
+
+              {/* Botón Objetos — versión mobile (1ra fila, junto al título) */}
+              <button
+                type="button"
+                onClick={() => setItemsModalOpen(true)}
+                className="flex sm:hidden items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-3 py-1.5 shrink-0 text-slate-200 transition hover:border-amber-500/60 hover:text-amber-300"
+              >
+                <span className="text-sm">🎒</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  {lang === "es" ? "Objetos" : "Items"}
+                </span>
+              </button>
             </div>
 
             {/* Team score — destacado, centro del hero */}
             {team.some((s) => s.name.trim() !== "") && (
-              <div className="flex justify-center shrink-0 order-first sm:order-none">
+              <div className="flex justify-center shrink-0 order-first sm:order-none sm:flex-1">
                 {!teamScore ? (
                   <div className="flex flex-col items-center gap-1 cursor-default">
                     <div className="relative h-[88px] w-[88px] sm:h-[104px] sm:w-[104px] flex items-center justify-center">
@@ -6834,26 +7108,47 @@ export default function Home() {
               </div>
             )}
 
-            {/* Live team stats */}
-            <div className="flex gap-2 shrink-0 overflow-x-auto pb-0.5 sm:pb-0 sm:flex-col sm:flex-1 sm:items-end">
-              {(() => {
-                const filled = team.filter(s => s.name).length;
-                const typesInTeam = Array.from(new Set(team.flatMap(s => s.types.filter(Boolean))));
-                const withStats = team.filter(s => s.stats).length;
-                return ([
-                  ["🏆", lang === "es" ? "Equipo" : "Team", `${filled}/6`],
-                  ["🔷", lang === "es" ? "Tipos" : "Types", `${typesInTeam.length}`],
-                  ["📊", lang === "es" ? "Con stats" : "With stats", `${withStats}`],
-                ] as [string, string, string][]).map(([icon, label, value]) => (
-                  <div key={label} className="flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 py-1.5 shrink-0 w-full sm:max-w-[160px] sm:justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <span className="text-sm shrink-0">{icon}</span>
-                      <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500 leading-none">{label}</span>
-                    </span>
-                    <span className="text-[11px] font-semibold text-slate-200">{value}</span>
-                  </div>
-                ));
-              })()}
+            {/* Botón Objetos (versión desktop) + resumen Equipo/Tipos/Con
+                stats, agrupados a la derecha del header. sm:flex-1 +
+                sm:justify-end equilibra este bloque con el título (que
+                también es sm:flex-1), dejando el team score realmente
+                centrado entre ambos. */}
+            <div className="flex flex-col sm:flex-row sm:flex-1 sm:items-end sm:justify-end gap-2 shrink-0">
+              {/* Botón Objetos: abre el buscador de objetos (nombre/descripción
+                  + filtro de originales Z). Oculto en mobile porque ahí se
+                  muestra en la 1ra fila, junto al título. */}
+              <button
+                type="button"
+                onClick={() => setItemsModalOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-3 py-1.5 shrink-0 text-slate-200 transition hover:border-amber-500/60 hover:text-amber-300"
+              >
+                <span className="text-sm">🎒</span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  {lang === "es" ? "Objetos" : "Items"}
+                </span>
+              </button>
+
+              {/* Live team stats */}
+              <div className="flex gap-2 shrink-0 overflow-x-auto pb-0.5 sm:pb-0 sm:flex-col sm:items-end">
+                {(() => {
+                  const filled = team.filter(s => s.name).length;
+                  const typesInTeam = Array.from(new Set(team.flatMap(s => s.types.filter(Boolean))));
+                  const withStats = team.filter(s => s.stats).length;
+                  return ([
+                    ["🏆", lang === "es" ? "Equipo" : "Team", `${filled}/6`],
+                    ["🔷", lang === "es" ? "Tipos" : "Types", `${typesInTeam.length}`],
+                    ["📊", lang === "es" ? "Con stats" : "With stats", `${withStats}`],
+                  ] as [string, string, string][]).map(([icon, label, value]) => (
+                    <div key={label} className="flex items-center gap-1.5 rounded-xl border border-slate-700/40 bg-slate-900/60 px-2.5 py-1.5 shrink-0 w-full sm:max-w-[160px] sm:justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-sm shrink-0">{icon}</span>
+                        <span className="text-[9px] uppercase tracking-[0.18em] text-slate-500 leading-none">{label}</span>
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-200">{value}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
             </div>
           </div>
         </div>
@@ -10056,6 +10351,22 @@ const enSlug =
             setRecAbilityModalOpen(false);
           }}
           onClose={() => setRecAbilityModalOpen(false)}
+        />
+      )}
+
+      {/* ── Modal de búsqueda de objetos (botón "Objetos" del header). ── */}
+      {itemsModalOpen && (
+        <ItemsBrowserModal
+          items={itemsData}
+          combatUseful={itemsCombatUseful}
+          lang={lang}
+          search={itemsSearch}
+          onSearchChange={setItemsSearch}
+          onlyZOriginals={itemsOnlyZ}
+          onToggleOnlyZOriginals={() => setItemsOnlyZ((v) => !v)}
+          onlyCombat={itemsOnlyCombat}
+          onToggleOnlyCombat={() => setItemsOnlyCombat((v) => !v)}
+          onClose={() => setItemsModalOpen(false)}
         />
       )}
     </div>
