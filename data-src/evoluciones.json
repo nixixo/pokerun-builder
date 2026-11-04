@@ -1,0 +1,3104 @@
+{
+  "fuente": "PokéAPI — data/v2/csv (pokemon_evolution.csv)",
+  "advertencia": "Niveles del juego oficial. Pokémon Z es un romhack: si alguno no coincide, corregirlo en ANULACIONES de scripts/generate-evoluciones.mjs y regenerar.",
+  "evoluciones": [
+    {
+      "de": "Abra",
+      "a": "Kadabra",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Aipom",
+      "a": "Ambipom",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Doble Golpe"
+    },
+    {
+      "de": "Amaura",
+      "a": "Aurorus",
+      "nivel": 39,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Anorith",
+      "a": "Armaldo",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Applin",
+      "a": "Appletun",
+      "nivel": null,
+      "metodo": "Manzana Dulce",
+      "objeto": "Manzana Dulce"
+    },
+    {
+      "de": "Applin",
+      "a": "Dipplin",
+      "nivel": null,
+      "metodo": "Manzana Melosa",
+      "objeto": "Manzana Melosa"
+    },
+    {
+      "de": "Applin",
+      "a": "Flapple",
+      "nivel": null,
+      "metodo": "Manzana Ácida",
+      "objeto": "Manzana Ácida"
+    },
+    {
+      "de": "Archen",
+      "a": "Archeops",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Arctibax",
+      "a": "Baxcalibur",
+      "nivel": 54,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Aron",
+      "a": "Lairon",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Arrokuda",
+      "a": "Barraskewda",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Axew",
+      "a": "Fraxure",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Azurill",
+      "a": "Marill",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Bagon",
+      "a": "Shelgon",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Baltoy",
+      "a": "Claydol",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Barboach",
+      "a": "Whiscash",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Basculin",
+      "a": "Basculegion",
+      "nivel": null,
+      "metodo": "acumulando daño de retroceso"
+    },
+    {
+      "de": "Bayleef",
+      "a": "Meganium",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Beldum",
+      "a": "Metang",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bellsprout",
+      "a": "Weepinbell",
+      "nivel": 21,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bergmite",
+      "a": "Avalugg",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bidoof",
+      "a": "Bibarel",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Binacle",
+      "a": "Barbaracle",
+      "nivel": 39,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bisharp",
+      "a": "Kingambit",
+      "nivel": null,
+      "metodo": "tras derrotar a 3 Bisharp que lleven Insignia Jefe"
+    },
+    {
+      "de": "Blipbug",
+      "a": "Dottler",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Blitzle",
+      "a": "Zebstrika",
+      "nivel": 27,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Boldore",
+      "a": "Gigalith",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Bonsly",
+      "a": "Sudowoodo",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Mimético"
+    },
+    {
+      "de": "Bounsweet",
+      "a": "Steenee",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Braixen",
+      "a": "Delphox",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bramblin",
+      "a": "Brambleghast",
+      "nivel": null,
+      "metodo": "subir de nivel"
+    },
+    {
+      "de": "Brionne",
+      "a": "Primarina",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bronzor",
+      "a": "Bronzong",
+      "nivel": 33,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Budew",
+      "a": "Roselia",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de día"
+    },
+    {
+      "de": "Buizel",
+      "a": "Floatzel",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Bulbasaur",
+      "a": "Ivysaur",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Buneary",
+      "a": "Lopunny",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Bunnelby",
+      "a": "Diggersby",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Burmy",
+      "a": "Mothim",
+      "nivel": 20,
+      "metodo": "nivel, macho"
+    },
+    {
+      "de": "Burmy",
+      "a": "Wormadam",
+      "nivel": 20,
+      "metodo": "nivel, hembra"
+    },
+    {
+      "de": "Cacnea",
+      "a": "Cacturne",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Capsakid",
+      "a": "Scovillain",
+      "nivel": null,
+      "metodo": "Piedra Fuego",
+      "objeto": "Piedra Fuego"
+    },
+    {
+      "de": "Carkol",
+      "a": "Coalossal",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Carvanha",
+      "a": "Sharpedo",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cascoon",
+      "a": "Dustox",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Caterpie",
+      "a": "Metapod",
+      "nivel": 7,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cetoddle",
+      "a": "Cetitan",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Chansey",
+      "a": "Blissey",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Charcadet",
+      "a": "Armarouge",
+      "nivel": null,
+      "metodo": "Armadura Auspiciosa",
+      "objeto": "Armadura Auspiciosa"
+    },
+    {
+      "de": "Charcadet",
+      "a": "Ceruledge",
+      "nivel": null,
+      "metodo": "Armadura Maldita",
+      "objeto": "Armadura Maldita"
+    },
+    {
+      "de": "Charjabug",
+      "a": "Vikavolt",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Charjabug",
+      "a": "Vikavolt",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Charmander",
+      "a": "Charmeleon",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Charmeleon",
+      "a": "Charizard",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cherubi",
+      "a": "Cherrim",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chespin",
+      "a": "Quilladin",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chewtle",
+      "a": "Drednaw",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chikorita",
+      "a": "Bayleef",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chimchar",
+      "a": "Monferno",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chinchou",
+      "a": "Lanturn",
+      "nivel": 27,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Chingling",
+      "a": "Chimecho",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de noche"
+    },
+    {
+      "de": "Clamperl",
+      "a": "Gorebyss",
+      "nivel": null,
+      "metodo": "intercambio con Escama Marina",
+      "objeto": "Escama Marina"
+    },
+    {
+      "de": "Clamperl",
+      "a": "Huntail",
+      "nivel": null,
+      "metodo": "intercambio con Diente Marino",
+      "objeto": "Diente Marino"
+    },
+    {
+      "de": "Clauncher",
+      "a": "Clawitzer",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Clefairy",
+      "a": "Clefable",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Cleffa",
+      "a": "Clefairy",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Clobbopus",
+      "a": "Grapploct",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Mofa"
+    },
+    {
+      "de": "Código Cero",
+      "a": "Silvally",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Combee",
+      "a": "Vespiquen",
+      "nivel": 21,
+      "metodo": "nivel, hembra"
+    },
+    {
+      "de": "Combusken",
+      "a": "Blaziken",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Corphish",
+      "a": "Crawdaunt",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Corsola",
+      "a": "Cursola",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Corvisquire",
+      "a": "Corviknight",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cosmoem",
+      "a": "Lunala",
+      "nivel": 53,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cosmoem",
+      "a": "Solgaleo",
+      "nivel": 53,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cosmog",
+      "a": "Cosmoem",
+      "nivel": 43,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cottonee",
+      "a": "Whimsicott",
+      "nivel": null,
+      "metodo": "Piedra Solar",
+      "objeto": "Piedra Solar"
+    },
+    {
+      "de": "Crabrawler",
+      "a": "Crabominable",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Crabrawler",
+      "a": "Crabominable",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Cranidos",
+      "a": "Rampardos",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Croagunk",
+      "a": "Toxicroak",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Crocalor",
+      "a": "Skeledirge",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Croconaw",
+      "a": "Feraligatr",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cubchoo",
+      "a": "Beartic",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cubone",
+      "a": "Marowak",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cubone",
+      "a": "Marowak",
+      "nivel": 28,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Cufant",
+      "a": "Copperajah",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cutiefly",
+      "a": "Ribombee",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Cyndaquil",
+      "a": "Quilava",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dartrix",
+      "a": "Decidueye",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Darumaka",
+      "a": "Darmanitan",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Darumaka",
+      "a": "Darmanitan",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Deerling",
+      "a": "Sawsbuck",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Deino",
+      "a": "Zweilous",
+      "nivel": 50,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dewott",
+      "a": "Samurott",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dewpider",
+      "a": "Araquanid",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Diglett",
+      "a": "Dugtrio",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dipplin",
+      "a": "Hydrapple",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Dragon Cheer"
+    },
+    {
+      "de": "Doduo",
+      "a": "Dodrio",
+      "nivel": 31,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dolliv",
+      "a": "Arboliva",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dottler",
+      "a": "Orbeetle",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Doublade",
+      "a": "Aegislash",
+      "nivel": null,
+      "metodo": "Piedra Noche",
+      "objeto": "Piedra Noche"
+    },
+    {
+      "de": "Dragonair",
+      "a": "Dragonite",
+      "nivel": 55,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Drakloak",
+      "a": "Dragapult",
+      "nivel": 60,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dratini",
+      "a": "Dragonair",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dreepy",
+      "a": "Drakloak",
+      "nivel": 50,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Drifloon",
+      "a": "Drifblim",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Drilbur",
+      "a": "Excadrill",
+      "nivel": 31,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Drizzile",
+      "a": "Inteleon",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Drowzee",
+      "a": "Hypno",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Ducklett",
+      "a": "Swanna",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dunsparce",
+      "a": "Dudunsparce",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Hyper Drill"
+    },
+    {
+      "de": "Duosion",
+      "a": "Reuniclus",
+      "nivel": 41,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Duraludon",
+      "a": "Archaludon",
+      "nivel": null,
+      "metodo": "Aleación Metálica",
+      "objeto": "Aleación Metálica"
+    },
+    {
+      "de": "Dusclops",
+      "a": "Dusknoir",
+      "nivel": null,
+      "metodo": "intercambio con Tela Terrible",
+      "objeto": "Tela Terrible"
+    },
+    {
+      "de": "Duskull",
+      "a": "Dusclops",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Dwebble",
+      "a": "Crustle",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Eelektrik",
+      "a": "Eelektross",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Eevee",
+      "a": "Espeon",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de día"
+    },
+    {
+      "de": "Eevee",
+      "a": "Flareon",
+      "nivel": null,
+      "metodo": "Piedra Fuego",
+      "objeto": "Piedra Fuego"
+    },
+    {
+      "de": "Eevee",
+      "a": "Glaceon",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Eevee",
+      "a": "Glaceon",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Eevee",
+      "a": "Jolteon",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Eevee",
+      "a": "Leafeon",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Eevee",
+      "a": "Leafeon",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Eevee",
+      "a": "Sylveon",
+      "nivel": null,
+      "metodo": "subir de nivel afecto alto"
+    },
+    {
+      "de": "Eevee",
+      "a": "Sylveon",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Eevee",
+      "a": "Umbreon",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de noche"
+    },
+    {
+      "de": "Eevee",
+      "a": "Vaporeon",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Ekans",
+      "a": "Arbok",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Electabuzz",
+      "a": "Electivire",
+      "nivel": null,
+      "metodo": "intercambio con Electrizador",
+      "objeto": "Electrizador"
+    },
+    {
+      "de": "Electrike",
+      "a": "Manectric",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Elekid",
+      "a": "Electabuzz",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Elgyem",
+      "a": "Beheeyem",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Espurr",
+      "a": "Meowstic",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Exeggcute",
+      "a": "Exeggutor",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Farfetch'd",
+      "a": "Sirfetch'd",
+      "nivel": null,
+      "metodo": "tras 3 golpes críticos en un combate"
+    },
+    {
+      "de": "Feebas",
+      "a": "Milotic",
+      "nivel": null,
+      "metodo": "subir de nivel belleza alta"
+    },
+    {
+      "de": "Feebas",
+      "a": "Milotic",
+      "nivel": null,
+      "metodo": "intercambio con Escama Bella",
+      "objeto": "Escama Bella"
+    },
+    {
+      "de": "Fennekin",
+      "a": "Braixen",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Ferroseed",
+      "a": "Ferrothorn",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fidough",
+      "a": "Dachsbun",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Finizen",
+      "a": "Palafin",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Finneon",
+      "a": "Lumineon",
+      "nivel": 31,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Flaaffy",
+      "a": "Ampharos",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Flabebe",
+      "a": "Floette",
+      "nivel": 19,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fletchinder",
+      "a": "Talonflame",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fletchling",
+      "a": "Fletchinder",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Flittle",
+      "a": "Espathra",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Floette",
+      "a": "Florges",
+      "nivel": null,
+      "metodo": "Piedra Día",
+      "objeto": "Piedra Día"
+    },
+    {
+      "de": "Floragato",
+      "a": "Meowscarada",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fomantis",
+      "a": "Lurantis",
+      "nivel": 34,
+      "metodo": "nivel, de día"
+    },
+    {
+      "de": "Foongus",
+      "a": "Amoonguss",
+      "nivel": 39,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fraxure",
+      "a": "Haxorus",
+      "nivel": 48,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Frigibax",
+      "a": "Arctibax",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Frillish",
+      "a": "Jellicent",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Froakie",
+      "a": "Frogadier",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Frogadier",
+      "a": "Greninja",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Fuecoco",
+      "a": "Crocalor",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gabite",
+      "a": "Garchomp",
+      "nivel": 48,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gastly",
+      "a": "Haunter",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Geodude",
+      "a": "Graveler",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gible",
+      "a": "Gabite",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gimmighoul",
+      "a": "Gholdengo",
+      "nivel": null,
+      "metodo": "con 999 Monedas Gimmighoul"
+    },
+    {
+      "de": "Girafarig",
+      "a": "Farigiraf",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Twin Beam"
+    },
+    {
+      "de": "Glameow",
+      "a": "Purugly",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gligar",
+      "a": "Gliscor",
+      "nivel": null,
+      "metodo": "subir de nivel de noche y llevando Colmillo Agudo",
+      "objeto": "Colmillo Agudo"
+    },
+    {
+      "de": "Glimmet",
+      "a": "Glimmora",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gloom",
+      "a": "Bellossom",
+      "nivel": null,
+      "metodo": "Piedra Solar",
+      "objeto": "Piedra Solar"
+    },
+    {
+      "de": "Gloom",
+      "a": "Vileplume",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Golbat",
+      "a": "Crobat",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Goldeen",
+      "a": "Seaking",
+      "nivel": 33,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Golett",
+      "a": "Golurk",
+      "nivel": 43,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Goomy",
+      "a": "Sliggoo",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gossifleur",
+      "a": "Eldegoss",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gothita",
+      "a": "Gothorita",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gothorita",
+      "a": "Gothitelle",
+      "nivel": 41,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Graveler",
+      "a": "Golem",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Greavard",
+      "a": "Houndstone",
+      "nivel": 30,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Grimer",
+      "a": "Muk",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Grookey",
+      "a": "Thwackey",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Grotle",
+      "a": "Torterra",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Grovyle",
+      "a": "Sceptile",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Growlithe",
+      "a": "Arcanine",
+      "nivel": null,
+      "metodo": "Piedra Fuego",
+      "objeto": "Piedra Fuego"
+    },
+    {
+      "de": "Grubbin",
+      "a": "Charjabug",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gulpin",
+      "a": "Swalot",
+      "nivel": 26,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Gurdurr",
+      "a": "Conkeldurr",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Hakamo-o",
+      "a": "Kommo-o",
+      "nivel": 45,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Happiny",
+      "a": "Chansey",
+      "nivel": null,
+      "metodo": "subir de nivel de día y llevando Piedra Oval",
+      "objeto": "Piedra Oval"
+    },
+    {
+      "de": "Hatenna",
+      "a": "Hattrem",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Hattrem",
+      "a": "Hatterene",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Haunter",
+      "a": "Gengar",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Helioptile",
+      "a": "Heliolisk",
+      "nivel": null,
+      "metodo": "Piedra Solar",
+      "objeto": "Piedra Solar"
+    },
+    {
+      "de": "Herdier",
+      "a": "Stoutland",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Hippopotas",
+      "a": "Hippowdon",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Honedge",
+      "a": "Doublade",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Hoothoot",
+      "a": "Noctowl",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Hoppip",
+      "a": "Skiploom",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Horsea",
+      "a": "Seadra",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Houndour",
+      "a": "Houndoom",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Igglybuff",
+      "a": "Jigglypuff",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Impidimp",
+      "a": "Morgrem",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Inkay",
+      "a": "Malamar",
+      "nivel": 30,
+      "metodo": "nivel, con la consola del revés"
+    },
+    {
+      "de": "Ivysaur",
+      "a": "Venusaur",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Jangmo-o",
+      "a": "Hakamo-o",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Jigglypuff",
+      "a": "Wigglytuff",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Joltik",
+      "a": "Galvantula",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Kabuto",
+      "a": "Kabutops",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Kadabra",
+      "a": "Alakazam",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Kakuna",
+      "a": "Beedrill",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Karrablast",
+      "a": "Escavalier",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Kirlia",
+      "a": "Gallade",
+      "nivel": null,
+      "metodo": "Piedra Alba",
+      "objeto": "Piedra Alba"
+    },
+    {
+      "de": "Kirlia",
+      "a": "Gardevoir",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Klang",
+      "a": "Klinklang",
+      "nivel": 49,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Klink",
+      "a": "Klang",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Koffing",
+      "a": "Weezing",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Krabby",
+      "a": "Kingler",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Kricketot",
+      "a": "Kricketune",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Krokorok",
+      "a": "Krookodile",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Kubfu",
+      "a": "Urshifu",
+      "nivel": null,
+      "metodo": "en la Torre Tinieblas"
+    },
+    {
+      "de": "Kubfu",
+      "a": "Urshifu",
+      "nivel": null,
+      "metodo": "en la Torre Aguas"
+    },
+    {
+      "de": "Kubfu",
+      "a": "Urshifu",
+      "nivel": null,
+      "metodo": "Pergamino Tinieblas",
+      "objeto": "Pergamino Tinieblas"
+    },
+    {
+      "de": "Kubfu",
+      "a": "Urshifu",
+      "nivel": null,
+      "metodo": "Pergamino Aguas",
+      "objeto": "Pergamino Aguas"
+    },
+    {
+      "de": "Lairon",
+      "a": "Aggron",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Lampent",
+      "a": "Chandelure",
+      "nivel": null,
+      "metodo": "Piedra Noche",
+      "objeto": "Piedra Noche"
+    },
+    {
+      "de": "Larvesta",
+      "a": "Volcarona",
+      "nivel": 59,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Larvitar",
+      "a": "Pupitar",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Lechonk",
+      "a": "Oinkologne",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Ledyba",
+      "a": "Ledian",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Lickitung",
+      "a": "Lickilicky",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Rodar"
+    },
+    {
+      "de": "Lileep",
+      "a": "Cradily",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Lillipup",
+      "a": "Herdier",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Linoone",
+      "a": "Obstagoon",
+      "nivel": 35,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Litleo",
+      "a": "Pyroar",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Litten",
+      "a": "Torracat",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Litwick",
+      "a": "Lampent",
+      "nivel": 41,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Lombre",
+      "a": "Ludicolo",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Lotad",
+      "a": "Lombre",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Loudred",
+      "a": "Exploud",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Luxio",
+      "a": "Luxray",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Machoke",
+      "a": "Machamp",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Machop",
+      "a": "Machoke",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Magby",
+      "a": "Magmar",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Magikarp",
+      "a": "Gyarados",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Magmar",
+      "a": "Magmortar",
+      "nivel": null,
+      "metodo": "intercambio con Magmarizador",
+      "objeto": "Magmarizador"
+    },
+    {
+      "de": "Magnemite",
+      "a": "Magneton",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Magneton",
+      "a": "Magnezone",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Magneton",
+      "a": "Magnezone",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Makuhita",
+      "a": "Hariyama",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mankey",
+      "a": "Primeape",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mantyke",
+      "a": "Mantine",
+      "nivel": null,
+      "metodo": "subir de nivel"
+    },
+    {
+      "de": "Mareanie",
+      "a": "Toxapex",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mareep",
+      "a": "Flaaffy",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Marill",
+      "a": "Azumarill",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Marshtomp",
+      "a": "Swampert",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Maschiff",
+      "a": "Mabosstiff",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Meditite",
+      "a": "Medicham",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Meowth",
+      "a": "Perrserker",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Meowth",
+      "a": "Persian",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Meowth",
+      "a": "Persian",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Metang",
+      "a": "Metagross",
+      "nivel": 45,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Metapod",
+      "a": "Butterfree",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mienfoo",
+      "a": "Mienshao",
+      "nivel": 50,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Milcery",
+      "a": "Alcremie",
+      "nivel": null,
+      "metodo": "girando con el traje puesto"
+    },
+    {
+      "de": "Mime Jr.",
+      "a": "Mr. Mime",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Mimético"
+    },
+    {
+      "de": "Minccino",
+      "a": "Cinccino",
+      "nivel": null,
+      "metodo": "Piedra Día",
+      "objeto": "Piedra Día"
+    },
+    {
+      "de": "Misdreavus",
+      "a": "Mismagius",
+      "nivel": null,
+      "metodo": "Piedra Noche",
+      "objeto": "Piedra Noche"
+    },
+    {
+      "de": "Monferno",
+      "a": "Infernape",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Morelull",
+      "a": "Shiinotic",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Morgrem",
+      "a": "Grimmsnarl",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mr. Mime",
+      "a": "Mr. Rime",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mudbray",
+      "a": "Mudsdale",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Mudkip",
+      "a": "Marshtomp",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Munchlax",
+      "a": "Snorlax",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Munna",
+      "a": "Musharna",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Murkrow",
+      "a": "Honchkrow",
+      "nivel": null,
+      "metodo": "Piedra Noche",
+      "objeto": "Piedra Noche"
+    },
+    {
+      "de": "Nacli",
+      "a": "Naclstack",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Naclstack",
+      "a": "Garganacl",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Natu",
+      "a": "Xatu",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Nickit",
+      "a": "Thievul",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Nidorina",
+      "a": "Nidoqueen",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Nidorino",
+      "a": "Nidoking",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Nincada",
+      "a": "Ninjask",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Nincada",
+      "a": "Shedinja",
+      "nivel": null,
+      "metodo": "hueco en el equipo y una Poké Ball"
+    },
+    {
+      "de": "Noibat",
+      "a": "Noivern",
+      "nivel": 48,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Nosepass",
+      "a": "Probopass",
+      "nivel": null,
+      "metodo": "subir de nivel en el sitio especial del mapa"
+    },
+    {
+      "de": "Nosepass",
+      "a": "Probopass",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Numel",
+      "a": "Camerupt",
+      "nivel": 33,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Nuzleaf",
+      "a": "Shiftry",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Nymble",
+      "a": "Lokix",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Oddish",
+      "a": "Gloom",
+      "nivel": 21,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Omanyte",
+      "a": "Omastar",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Onix",
+      "a": "Steelix",
+      "nivel": null,
+      "metodo": "intercambio con Revestimiento Metálico",
+      "objeto": "Revestimiento Metálico"
+    },
+    {
+      "de": "Oshawott",
+      "a": "Dewott",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Palpitoad",
+      "a": "Seismitoad",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pancham",
+      "a": "Pangoro",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Panpour",
+      "a": "Simipour",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Pansage",
+      "a": "Simisage",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Pansear",
+      "a": "Simisear",
+      "nivel": null,
+      "metodo": "Piedra Fuego",
+      "objeto": "Piedra Fuego"
+    },
+    {
+      "de": "Paras",
+      "a": "Parasect",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Patrat",
+      "a": "Watchog",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pawmi",
+      "a": "Pawmo",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pawmo",
+      "a": "Pawmot",
+      "nivel": null,
+      "metodo": "subir de nivel"
+    },
+    {
+      "de": "Pawniard",
+      "a": "Bisharp",
+      "nivel": 52,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Petilil",
+      "a": "Lilligant",
+      "nivel": null,
+      "metodo": "Piedra Solar",
+      "objeto": "Piedra Solar"
+    },
+    {
+      "de": "Phanpy",
+      "a": "Donphan",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Phantump",
+      "a": "Trevenant",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Pichu",
+      "a": "Pikachu",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Pidgeotto",
+      "a": "Pidgeot",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pidgey",
+      "a": "Pidgeotto",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pidove",
+      "a": "Tranquill",
+      "nivel": 21,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pignite",
+      "a": "Emboar",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pikachu",
+      "a": "Raichu",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Pikipek",
+      "a": "Trumbeak",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Piloswine",
+      "a": "Mamoswine",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Poder Pasado"
+    },
+    {
+      "de": "Pineco",
+      "a": "Forretress",
+      "nivel": 31,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Piplup",
+      "a": "Prinplup",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Poipole",
+      "a": "Naganadel",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Pulso Dragón"
+    },
+    {
+      "de": "Poliwag",
+      "a": "Poliwhirl",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Poliwhirl",
+      "a": "Politoed",
+      "nivel": null,
+      "metodo": "intercambio con Roca del Rey",
+      "objeto": "Roca del Rey"
+    },
+    {
+      "de": "Poliwhirl",
+      "a": "Poliwrath",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Ponyta",
+      "a": "Rapidash",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Poochyena",
+      "a": "Mightyena",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Popplio",
+      "a": "Brionne",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Porygon",
+      "a": "Porygon2",
+      "nivel": null,
+      "metodo": "intercambio con Mejora",
+      "objeto": "Mejora"
+    },
+    {
+      "de": "Porygon2",
+      "a": "Porygon-Z",
+      "nivel": null,
+      "metodo": "intercambio con Disco Extraño",
+      "objeto": "Disco Extraño"
+    },
+    {
+      "de": "Primeape",
+      "a": "Annihilape",
+      "nivel": null,
+      "metodo": "usando un movimiento concreto"
+    },
+    {
+      "de": "Prinplup",
+      "a": "Empoleon",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Psyduck",
+      "a": "Golduck",
+      "nivel": 33,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Pumpkaboo",
+      "a": "Gourgeist",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Pupitar",
+      "a": "Tyranitar",
+      "nivel": 55,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Purrloin",
+      "a": "Liepard",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Quaxly",
+      "a": "Quaxwell",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Quaxwell",
+      "a": "Quaquaval",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Quilava",
+      "a": "Typhlosion",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Quilladin",
+      "a": "Chesnaught",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Qwilfish",
+      "a": "Overqwil",
+      "nivel": null,
+      "metodo": "usando su movimiento en estilo fuerte"
+    },
+    {
+      "de": "Qwilfish",
+      "a": "Overqwil",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Mil Púas Tóxicas"
+    },
+    {
+      "de": "Qwilfish",
+      "a": "Overqwil",
+      "nivel": null,
+      "metodo": "usando un movimiento concreto"
+    },
+    {
+      "de": "Raboot",
+      "a": "Cinderace",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Ralts",
+      "a": "Kirlia",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rattata",
+      "a": "Raticate",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rattata",
+      "a": "Raticate",
+      "nivel": 20,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Rellor",
+      "a": "Rabsca",
+      "nivel": null,
+      "metodo": "subir de nivel"
+    },
+    {
+      "de": "Remoraid",
+      "a": "Octillery",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rhydon",
+      "a": "Rhyperior",
+      "nivel": null,
+      "metodo": "intercambio con Protector",
+      "objeto": "Protector"
+    },
+    {
+      "de": "Rhyhorn",
+      "a": "Rhydon",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Riolu",
+      "a": "Lucario",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de día"
+    },
+    {
+      "de": "Rockruff",
+      "a": "Lycanroc",
+      "nivel": 25,
+      "metodo": "nivel, de día"
+    },
+    {
+      "de": "Rockruff",
+      "a": "Lycanroc",
+      "nivel": 25,
+      "metodo": "nivel, de noche"
+    },
+    {
+      "de": "Roggenrola",
+      "a": "Boldore",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rolycoly",
+      "a": "Carkol",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rookidee",
+      "a": "Corvisquire",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Roselia",
+      "a": "Roserade",
+      "nivel": null,
+      "metodo": "Piedra Día",
+      "objeto": "Piedra Día"
+    },
+    {
+      "de": "Rowlet",
+      "a": "Dartrix",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Rufflet",
+      "a": "Braviary",
+      "nivel": 54,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Salandit",
+      "a": "Salazzle",
+      "nivel": 33,
+      "metodo": "nivel, hembra"
+    },
+    {
+      "de": "Sandile",
+      "a": "Krokorok",
+      "nivel": 29,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sandshrew",
+      "a": "Sandslash",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sandshrew",
+      "a": "Sandslash",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Sandygast",
+      "a": "Palossand",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Scatterbug",
+      "a": "Spewpa",
+      "nivel": 9,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Scorbunny",
+      "a": "Raboot",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Scraggy",
+      "a": "Scrafty",
+      "nivel": 39,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Scyther",
+      "a": "Kleavor",
+      "nivel": null,
+      "metodo": "Mineral Negro",
+      "objeto": "Mineral Negro"
+    },
+    {
+      "de": "Scyther",
+      "a": "Scizor",
+      "nivel": null,
+      "metodo": "intercambio con Revestimiento Metálico",
+      "objeto": "Revestimiento Metálico"
+    },
+    {
+      "de": "Seadra",
+      "a": "Kingdra",
+      "nivel": null,
+      "metodo": "intercambio con Escama Dragón",
+      "objeto": "Escama Dragón"
+    },
+    {
+      "de": "Sealeo",
+      "a": "Walrein",
+      "nivel": 44,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Seedot",
+      "a": "Nuzleaf",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Seel",
+      "a": "Dewgong",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sentret",
+      "a": "Furret",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Servine",
+      "a": "Serperior",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sewaddle",
+      "a": "Swadloon",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shelgon",
+      "a": "Salamence",
+      "nivel": 50,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shellder",
+      "a": "Cloyster",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Shellos",
+      "a": "Gastrodon",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shelmet",
+      "a": "Accelgor",
+      "nivel": null,
+      "metodo": "intercambio"
+    },
+    {
+      "de": "Shieldon",
+      "a": "Bastiodon",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shinx",
+      "a": "Luxio",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shroodle",
+      "a": "Grafaiai",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shroomish",
+      "a": "Breloom",
+      "nivel": 23,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Shuppet",
+      "a": "Banette",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Silcoon",
+      "a": "Beautifly",
+      "nivel": 10,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Silicobra",
+      "a": "Sandaconda",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sinistea",
+      "a": "Polteageist",
+      "nivel": null,
+      "metodo": "Tetera Agrietada",
+      "objeto": "Tetera Agrietada"
+    },
+    {
+      "de": "Sinistea",
+      "a": "Polteageist",
+      "nivel": null,
+      "metodo": "Tetera Rajada",
+      "objeto": "Tetera Rajada"
+    },
+    {
+      "de": "Sizzlipede",
+      "a": "Centiskorch",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Skiddo",
+      "a": "Gogoat",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Skiploom",
+      "a": "Jumpluff",
+      "nivel": 27,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Skitty",
+      "a": "Delcatty",
+      "nivel": null,
+      "metodo": "Piedra Lunar",
+      "objeto": "Piedra Lunar"
+    },
+    {
+      "de": "Skorupi",
+      "a": "Drapion",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Skrelp",
+      "a": "Dragalge",
+      "nivel": 48,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Skwovet",
+      "a": "Greedent",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Slakoth",
+      "a": "Vigoroth",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sliggoo",
+      "a": "Goodra",
+      "nivel": 50,
+      "metodo": "nivel, bajo lluvia"
+    },
+    {
+      "de": "Slowpoke",
+      "a": "Slowbro",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Slowpoke",
+      "a": "Slowbro",
+      "nivel": null,
+      "metodo": "Brazal Galanuez",
+      "objeto": "Brazal Galanuez"
+    },
+    {
+      "de": "Slowpoke",
+      "a": "Slowking",
+      "nivel": null,
+      "metodo": "intercambio con Roca del Rey",
+      "objeto": "Roca del Rey"
+    },
+    {
+      "de": "Slowpoke",
+      "a": "Slowking",
+      "nivel": null,
+      "metodo": "Corona Galanuez",
+      "objeto": "Corona Galanuez"
+    },
+    {
+      "de": "Slugma",
+      "a": "Magcargo",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Smoliv",
+      "a": "Dolliv",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Smoochum",
+      "a": "Jynx",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sneasel",
+      "a": "Sneasler",
+      "nivel": null,
+      "metodo": "subir de nivel de día y llevando Garra Afilada",
+      "objeto": "Garra Afilada"
+    },
+    {
+      "de": "Sneasel",
+      "a": "Weavile",
+      "nivel": null,
+      "metodo": "subir de nivel de noche y llevando Garra Afilada",
+      "objeto": "Garra Afilada"
+    },
+    {
+      "de": "Snivy",
+      "a": "Servine",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Snom",
+      "a": "Frosmoth",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta y de noche"
+    },
+    {
+      "de": "Snorunt",
+      "a": "Froslass",
+      "nivel": null,
+      "metodo": "Piedra Alba",
+      "objeto": "Piedra Alba"
+    },
+    {
+      "de": "Snorunt",
+      "a": "Glalie",
+      "nivel": 42,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Snover",
+      "a": "Abomasnow",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Snubbull",
+      "a": "Granbull",
+      "nivel": 23,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sobble",
+      "a": "Drizzile",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Solosis",
+      "a": "Duosion",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spearow",
+      "a": "Fearow",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spewpa",
+      "a": "Vivillon",
+      "nivel": 12,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spheal",
+      "a": "Sealeo",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spinarak",
+      "a": "Ariados",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spoink",
+      "a": "Grumpig",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sprigatito",
+      "a": "Floragato",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Spritzee",
+      "a": "Aromatisse",
+      "nivel": null,
+      "metodo": "intercambio con Saquito Fragante",
+      "objeto": "Saquito Fragante"
+    },
+    {
+      "de": "Squirtle",
+      "a": "Wartortle",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Stantler",
+      "a": "Wyrdeer",
+      "nivel": null,
+      "metodo": "usando su movimiento en estilo ágil"
+    },
+    {
+      "de": "Staravia",
+      "a": "Staraptor",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Starly",
+      "a": "Staravia",
+      "nivel": 14,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Staryu",
+      "a": "Starmie",
+      "nivel": null,
+      "metodo": "Piedra Agua",
+      "objeto": "Piedra Agua"
+    },
+    {
+      "de": "Steenee",
+      "a": "Tsareena",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Pisotón"
+    },
+    {
+      "de": "Stufful",
+      "a": "Bewear",
+      "nivel": 27,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Stunky",
+      "a": "Skuntank",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Sunkern",
+      "a": "Sunflora",
+      "nivel": null,
+      "metodo": "Piedra Solar",
+      "objeto": "Piedra Solar"
+    },
+    {
+      "de": "Surskit",
+      "a": "Masquerain",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Swablu",
+      "a": "Altaria",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Swadloon",
+      "a": "Leavanny",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Swinub",
+      "a": "Piloswine",
+      "nivel": 33,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Swirlix",
+      "a": "Slurpuff",
+      "nivel": null,
+      "metodo": "intercambio con Dulce de Nata",
+      "objeto": "Dulce de Nata"
+    },
+    {
+      "de": "Tadbulb",
+      "a": "Bellibolt",
+      "nivel": null,
+      "metodo": "Piedra Trueno",
+      "objeto": "Piedra Trueno"
+    },
+    {
+      "de": "Taillow",
+      "a": "Swellow",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tandemaus",
+      "a": "Maushold",
+      "nivel": 25,
+      "metodo": "método especial"
+    },
+    {
+      "de": "Tangela",
+      "a": "Tangrowth",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Poder Pasado"
+    },
+    {
+      "de": "Tarountula",
+      "a": "Spidops",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Teddiursa",
+      "a": "Ursaring",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tentacool",
+      "a": "Tentacruel",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tepig",
+      "a": "Pignite",
+      "nivel": 17,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Thwackey",
+      "a": "Rillaboom",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Timburr",
+      "a": "Gurdurr",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tinkatink",
+      "a": "Tinkatuff",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tinkatuff",
+      "a": "Tinkaton",
+      "nivel": 38,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tirtouga",
+      "a": "Carracosta",
+      "nivel": 37,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Togepi",
+      "a": "Togetic",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Togetic",
+      "a": "Togekiss",
+      "nivel": null,
+      "metodo": "Piedra Día",
+      "objeto": "Piedra Día"
+    },
+    {
+      "de": "Torchic",
+      "a": "Combusken",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Torracat",
+      "a": "Incineroar",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Totodile",
+      "a": "Croconaw",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Toxel",
+      "a": "Toxtricity",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tranquill",
+      "a": "Unfezant",
+      "nivel": 32,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Trapinch",
+      "a": "Vibrava",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Treecko",
+      "a": "Grovyle",
+      "nivel": 16,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Trubbish",
+      "a": "Garbodor",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Trumbeak",
+      "a": "Toucannon",
+      "nivel": 28,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Turtwig",
+      "a": "Grotle",
+      "nivel": 18,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tympole",
+      "a": "Palpitoad",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tynamo",
+      "a": "Eelektrik",
+      "nivel": 39,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Tyrogue",
+      "a": "Hitmonchan",
+      "nivel": 20,
+      "metodo": "nivel, según Ataque y Defensa"
+    },
+    {
+      "de": "Tyrogue",
+      "a": "Hitmonlee",
+      "nivel": 20,
+      "metodo": "nivel, según Ataque y Defensa"
+    },
+    {
+      "de": "Tyrogue",
+      "a": "Hitmontop",
+      "nivel": 20,
+      "metodo": "nivel, según Ataque y Defensa"
+    },
+    {
+      "de": "Tyrunt",
+      "a": "Tyrantrum",
+      "nivel": 39,
+      "metodo": "nivel, de día"
+    },
+    {
+      "de": "Ursaring",
+      "a": "Ursaluna",
+      "nivel": null,
+      "metodo": "Bloque de Turba",
+      "objeto": "Bloque de Turba"
+    },
+    {
+      "de": "Vanillish",
+      "a": "Vanilluxe",
+      "nivel": 47,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Vanillite",
+      "a": "Vanillish",
+      "nivel": 35,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Varoom",
+      "a": "Revavroom",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Venipede",
+      "a": "Whirlipede",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Venonat",
+      "a": "Venomoth",
+      "nivel": 31,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Vibrava",
+      "a": "Flygon",
+      "nivel": 45,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Vigoroth",
+      "a": "Slaking",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Voltorb",
+      "a": "Electrode",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Voltorb",
+      "a": "Electrode",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Vullaby",
+      "a": "Mandibuzz",
+      "nivel": 54,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Vulpix",
+      "a": "Ninetales",
+      "nivel": null,
+      "metodo": "Piedra Fuego",
+      "objeto": "Piedra Fuego"
+    },
+    {
+      "de": "Vulpix",
+      "a": "Ninetales",
+      "nivel": null,
+      "metodo": "Piedra Hielo",
+      "objeto": "Piedra Hielo"
+    },
+    {
+      "de": "Wailmer",
+      "a": "Wailord",
+      "nivel": 40,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wartortle",
+      "a": "Blastoise",
+      "nivel": 36,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wattrel",
+      "a": "Kilowattrel",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Weedle",
+      "a": "Kakuna",
+      "nivel": 7,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Weepinbell",
+      "a": "Victreebel",
+      "nivel": null,
+      "metodo": "Piedra Hoja",
+      "objeto": "Piedra Hoja"
+    },
+    {
+      "de": "Whirlipede",
+      "a": "Scolipede",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Whismur",
+      "a": "Loudred",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wimpod",
+      "a": "Golisopod",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wingull",
+      "a": "Pelipper",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Woobat",
+      "a": "Swoobat",
+      "nivel": null,
+      "metodo": "subir de nivel felicidad alta"
+    },
+    {
+      "de": "Wooloo",
+      "a": "Dubwool",
+      "nivel": 24,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wooper",
+      "a": "Clodsire",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wooper",
+      "a": "Quagsire",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wurmple",
+      "a": "Cascoon",
+      "nivel": 7,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wurmple",
+      "a": "Silcoon",
+      "nivel": 7,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Wynaut",
+      "a": "Wobbuffet",
+      "nivel": 15,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Yamask",
+      "a": "Cofagrigus",
+      "nivel": 34,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Yamask",
+      "a": "Runerigus",
+      "nivel": null,
+      "metodo": "tras recibir 49 PS de daño y pasar por un sitio concreto"
+    },
+    {
+      "de": "Yamper",
+      "a": "Boltund",
+      "nivel": 25,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Yanma",
+      "a": "Yanmega",
+      "nivel": null,
+      "metodo": "subir de nivel sabiendo Poder Pasado"
+    },
+    {
+      "de": "Yungoos",
+      "a": "Gumshoos",
+      "nivel": 20,
+      "metodo": "nivel, de día"
+    },
+    {
+      "de": "Zigzagoon",
+      "a": "Linoone",
+      "nivel": 20,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Zorua",
+      "a": "Zoroark",
+      "nivel": 30,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Zubat",
+      "a": "Golbat",
+      "nivel": 22,
+      "metodo": "nivel"
+    },
+    {
+      "de": "Zweilous",
+      "a": "Hydreigon",
+      "nivel": 64,
+      "metodo": "nivel"
+    }
+  ]
+}

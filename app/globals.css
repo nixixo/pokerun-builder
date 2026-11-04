@@ -5,10 +5,22 @@
   --foreground: #171717;
 }
 
+/*
+ * Escala tipográfica: TODA subida +2px respecto de la de Tailwind, porque la
+ * de fábrica se leía chica en esta aplicación (text-xs eran 12px reales).
+ *
+ * De aquí sale una regla: usa las clases con NOMBRE (text-xs, text-sm...).
+ * Un `text-[11px]` se salta este bloque, así que no se entera de la subida —
+ * fue justo lo que pasó con la Guía, que acabó con 86 declaraciones de 9, 10
+ * y 11px sueltos mientras el resto de la aplicación iba dos puntos por encima.
+ *
+ * Los píxeles sueltos quedan para los huecos que la escala no cubre (11, 12,
+ * 13 y 15px) y SOLO para etiquetas cortas: chips, contadores, rótulos en
+ * mayúsculas. Una frase que se lee seguida va en text-xs o más.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --text-xs: 0.875rem;
   --text-xs--line-height: calc(1.25 / 0.875);
@@ -33,10 +45,89 @@
   }
 }
 
+/*
+ * Base de móvil y de tema oscuro. Faltaba entera: la aplicación es oscura de
+ * principio a fin, pero el navegador no lo sabía.
+ *
+ * - `color-scheme: dark` es lo que hace que las barras de scroll, los <select>
+ *   nativos y los controles de fecha salgan oscuros. Sin esto aparecen en
+ *   blanco sobre un fondo casi negro.
+ * - `touch-action: manipulation` quita el retardo de ~300ms que el navegador
+ *   deja en cada toque por si viene un doble toque para hacer zoom. Se aplica
+ *   solo a lo pulsable, NO a todo: en un contenedor con scroll se cargaría el
+ *   gesto de desplazar. La excepción es .touch-drag-handle, que ya declara su
+ *   propio touch-action para reordenar slots arrastrando.
+ * - `-webkit-tap-highlight-color` por defecto pinta un rectángulo azul claro
+ *   sobre lo que tocas; con este diseño oscuro canta muchísimo. Se apaga y el
+ *   propio :active de cada control da la respuesta visual.
+ * - `overflow-x: hidden` es una red de seguridad, no la solución: si algo se
+ *   pasa de ancho hay que arreglar ese algo. Pero evita que un solo elemento
+ *   mal medido deje toda la página desplazable de lado en un teléfono.
+ */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+button,
+a,
+[role="button"],
+label,
+summary,
+input[type="checkbox"],
+input[type="radio"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/*
+ * Quien pide menos movimiento, recibe menos movimiento. No había nada: todas
+ * las transiciones y animaciones corrían igual. Se dejan en 1ms en vez de en 0
+ * para que los eventos `transitionend`/`animationend` sigan disparándose y no
+ * se quede a medias ningún componente que los espere.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Márgenes seguros del teléfono: la muesca, la barra de gestos y las esquinas
+ * redondeadas se comen los bordes de la pantalla. `env(safe-area-inset-*)` vale
+ * 0 en un ordenador, así que el `max()` deja el margen normal ahí y solo crece
+ * donde de verdad hace falta.
+ *
+ * Se aplica a la raíz de las dos páginas. Solo laterales e inferior: arriba lo
+ * pone cada página con su propio `pt-*`, que varía.
+ */
+.pantalla-segura {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .pantalla-segura {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
 }
 
 /* Pokedex-style panels and cards */
@@ -112,4 +203,149 @@ body {
 /* Responsive tweaks for panels */
 @media (max-width: 768px) {
   .pokedex-panel { padding: 0.75rem; }
+}
+
+/* ── PokeRun custom scrollbars ──
+   Movido acá desde el <style> inline de TeamBuilder.tsx: como
+   globals.css se carga en toda la app, esto ahora aplica también en
+   la Guía (y cualquier página futura) sin duplicar el bloque. */
+/* NOTA: el <style> de TeamBuilder.tsx quedó vacío tras esta mudanza y ya
+   no existe. Todo lo que traía vive de acá para abajo. */
+:root {
+  --sb-track: #0a1628;
+  --sb-thumb: #1e3a5f;
+  --sb-thumb-hover: #2563eb;
+  --sb-size: 6px;
+}
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar { width: var(--sb-size); height: var(--sb-size); }
+::-webkit-scrollbar-track { background: var(--sb-track); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: var(--sb-thumb); border-radius: 99px; border: 1px solid var(--sb-track); }
+::-webkit-scrollbar-thumb:hover { background: var(--sb-thumb-hover); }
+::-webkit-scrollbar-corner { background: var(--sb-track); }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--sb-thumb) var(--sb-track); }
+
+/* ── Animaciones de entrada ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+  to   { opacity: 1; transform: translateY(0); max-height: 200px; }
+}
+
+/* Arrastre táctil para reordenar slots del equipo */
+.touch-drag-handle { touch-action: none; }
+
+/* ── Switch custom "Fakemon" ── */
+.fm-switch {
+  --fm-w: 40px;
+  --fm-h: 22px;
+  --fm-pad: 2px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: var(--fm-w);
+  height: var(--fm-h);
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: linear-gradient(180deg, #0a1628 0%, #0d1f38 100%);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+.fm-switch:hover { border-color: rgba(56, 189, 248, 0.45); }
+.fm-switch:focus-visible {
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(56, 189, 248, 0.5);
+}
+.fm-switch[data-on="true"] {
+  background: linear-gradient(180deg, #0369a1 0%, #075985 100%);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+.fm-switch-thumb {
+  position: absolute;
+  top: var(--fm-pad);
+  left: var(--fm-pad);
+  width: calc(var(--fm-h) - 2 * var(--fm-pad));
+  height: calc(var(--fm-h) - 2 * var(--fm-pad));
+  border-radius: 50%;
+  background: #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.fm-switch[data-on="true"] .fm-switch-thumb {
+  transform: translateX(calc(var(--fm-w) - var(--fm-h)));
+  background: #f0f9ff;
+}
+.fm-switch-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Checkbox custom (Fakemon / Movimiento inventado) ── */
+.pr-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.pr-checkbox input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.pr-checkbox-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  border: 1.5px solid #3b5578;
+  background: #0a1628;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.pr-checkbox-box::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 5px;
+  height: 9px;
+  border: solid #0a1628;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  transition: transform 0.12s ease;
+}
+.pr-checkbox input:checked ~ .pr-checkbox-box {
+  background: #38bdf8;
+  border-color: #38bdf8;
+}
+.pr-checkbox input:checked ~ .pr-checkbox-box::after {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1);
+}
+.pr-checkbox input:hover ~ .pr-checkbox-box {
+  border-color: #60a5fa;
+}
+.pr-checkbox input:focus-visible ~ .pr-checkbox-box {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(56, 189, 248, 0.5);
+}
+
+/* ── Breakpoint xs (≥420px) ──
+   Tailwind no trae un breakpoint por debajo de sm (640px) y estas tres
+   utilidades se usan en el header y en las tarjetas del equipo. Los
+   `\:` son el escape CSS de los dos puntos del nombre de la clase. */
+@media (min-width: 420px) {
+  .xs\:inline { display: inline !important; }
+  .xs\:hidden { display: none !important; }
+  .xs\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }

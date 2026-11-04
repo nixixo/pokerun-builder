@@ -1,0 +1,1018 @@
+{
+  "zones": {
+    "0": "zone-d418ecfbc8a4453c8507927745bf8c25",
+    "1": "zone-19136a22de5d4933b254bb86a5baa1e2",
+    "2": "zone-5fd8c74a2c4b4461862c6807bd547b95",
+    "3": "zone-00c43a703cb94756bae3facd42486209",
+    "4": "zone-6d676659ec804e809620aab18edec031",
+    "5": "zone-225474bb299041a0855d55cdf576d413",
+    "6": "zone-07c9f0abc6ec4aabaa35b58f02f0d531",
+    "7": "zone-d093cd12c7f649b0bef5849aed2fc0a6",
+    "8": "zone-65e302ef1dda40af81116dcd6a0594e4",
+    "9": "zone-09b5fdeffd4644b99b00e288e5794fec",
+    "10": "zone-395242f79bb34e5fa95cfa4942040a63",
+    "11": "zone-54d0933b093649458c6038a8d6deb0cc",
+    "12": "zone-3cc907b36d004015996fd0f351d4d3c1",
+    "13": "zone-474a1b8715e747e6905011c1df1a1ee2",
+    "14": "zone-74ea94719f374f30b86384c5e29018fd",
+    "15": "zone-f0f56c6e773a4323a4fcdcb0920b28a7",
+    "16": "zone-d4793998e91b41f9af4e29a7e2fffc2c",
+    "17": "zone-182f0e5584ad48a3beb06f78dfe7d45f",
+    "18": "zone-764e459cf4644514bc5a31fbcccac2b5",
+    "19": "zone-f8b67d69fca54e778840fd8aa9bbb7bb",
+    "20": "zone-bd5e185422ac470593d1a8d4018ba11e",
+    "21": "zone-01ad84700aeb450fa9efe6e174a11e7b",
+    "22": "zone-e72c6eee249248cbbf8a8ac67245c78d",
+    "23": "zone-60d639ee847c402080a69d2d854c1606",
+    "24": "zone-a022ad653f4c40b8ab4e23414728d000",
+    "25": "zone-df4b2f595e9749eaa5ee4d7c7bebd0a6",
+    "26": "zone-508e2970d1aa4cf7a1cd9e56ed313682",
+    "27": "zone-1d593568592d438a988572da7d1c1a65",
+    "28": "zone-49bf4bfded8941309144ecc504962dfe",
+    "29": "zone-27d79e141fd54c7c82440ef5c1ff4b88",
+    "30": "zone-cbd9c8eb95114a99939fc0e8e77aa9d3",
+    "31": "zone-ef75247b5ce54ea292aa2ec711f36e9a",
+    "32": "zone-0ed5c480f3a54eda89786707c90eff0f",
+    "33": "zone-34e4ecf76e78438381eee0e27e4d56c1",
+    "34": "zone-cf8627f28ae34cc295517e10d9d824e0",
+    "35": "zone-b914b0f4b06149b09c9a52f9c1a5f3bd",
+    "36": "zone-1eec0ff3448b413ab33715cc6a537b5c",
+    "37": "zone-d97eccd984014ae4a1520931f04ca6c9",
+    "38": "zone-9ab7194c5fa44617878ffd1f4f262569",
+    "39": "zone-61084b8ac1974d4cb21f5fa2034f718c",
+    "40": "zone-6d63c6005a684739b7addb6672d538c7",
+    "41": "zone-c1b17c35eec34300b6fe9b390cc2e235",
+    "42": "zone-9b0eae7154ce4c33b1d04f6f068402aa",
+    "43": "zone-687d1aa3a95348bdbcf27e156d4d27e8",
+    "44": "zone-29f5141d9e13419595dc0e4f55cc6051",
+    "45": "zone-acadfd308be7416b9cc617dff9e84d2e",
+    "46": "zone-d0d658a31436475b961c576214fffdba",
+    "47": "zone-ba29aafe336040abb17ac51ef0093780",
+    "48": "zone-91f4dd4885514043a097bcdb8f522d24",
+    "49": "zone-f92421a31ca147f0a36f4be9b8b9b605",
+    "50": "zone-5668c0179d4447cf9c10600f1fb92831",
+    "51": "zone-144c11f2259146d8a79b1d0043a275ef",
+    "52": "zone-391dc49056a646e4ac91cdab401a7190",
+    "53": "zone-99bf782555034a649f4d2d8e6355aefb",
+    "54": "zone-8451ade6bb85439484c3a481fd1a0ead",
+    "55": "zone-bc5b93b32e994d96bbb287385d269906",
+    "56": "zone-75fcbc838277443ea3aa692dad507de0",
+    "57": "zone-b8156fa2ff64417386e86ca41d26228e",
+    "58": "zone-8d449c574b534fcda8e7e3562ea6ad68",
+    "59": "zone-b45fa94767ac4718bb44dcd32328374e",
+    "60": "zone-2ece8bf0727e4ce7bb4b30f0cb84c177",
+    "61": "zone-303a9fb2744d4de98cde7d79cb2fb68f",
+    "62": "zone-bf7edf801a0d41d3b9348ee0432ce918",
+    "63": "zone-7b753ab5573b4d7bbae6ceab0b3beec3",
+    "64": "zone-bcf09d49a4334bbdb5389eaf20c73f7b",
+    "65": "zone-9093212adbd849868743b4cc90cdc21b",
+    "66": "zone-ce511dda7eb34af8829fb7715e4790d5",
+    "67": "zone-9952f8e068c94d14bba9d0acc9c87062",
+    "68": "zone-088677a9066e47f09bc0ee55cf427035",
+    "69": "zone-e40136996b4b46d595d3706c73c08a2c",
+    "70": "zone-1899747d92c847fab5cb2ca9a0cc4039",
+    "71": "zone-aeb3c382c9bb43b68eb08eba4d7fd143",
+    "72": "zone-5ca9838e8c0748cb8f6a7ce73588ac3c",
+    "73": "zone-abb120c43de9460b921f71151a712830",
+    "74": "zone-ca46a470b2734d989ded1d52ca1d9005",
+    "75": "zone-8d048300f30c4258b08f14f38ac02e65",
+    "76": "zone-d609ae56ad614388b96186fc2c094a24",
+    "77": "zone-e279b335d11e4ae79a879eb933f76009",
+    "78": "zone-2deabdec362e4c43aa7f9a267e87b01f",
+    "79": "zone-dbac483131e94a4abf5db6eb8c05b789",
+    "80": "zone-b521d45ba9584f2b91855f14b72d1446",
+    "81": "zone-54677fd140654c19ad0df3514243b0b7",
+    "82": "zone-74bc053ad829419c8992c9f98c80d501",
+    "83": "zone-99207cab2703435b872e664d428504b2",
+    "84": "zone-d52fd65773be4d7faab3aa9f9355eb3c",
+    "85": "zone-aa6f59de1c154bce878423929f8bff05",
+    "86": "zone-2ccdd700f4214810a31c60ac1c686a4f",
+    "87": "zone-7880667c372a4e04b2705f0d29e413b6",
+    "88": "zone-82828b8752f84e40a1381b23971e7193",
+    "89": "zone-1c9b6942152e4af6aea7a6596a8ac5f6",
+    "90": "zone-5af509518600483d8f9dbe73fcb2d196",
+    "91": "zone-7f3100dd07d84549832b1716c73dc829",
+    "92": "zone-5ff314840d1d4dc089f7970a9cc61718",
+    "93": "zone-1381095fa2ae4f6b963a6ed6a4cc6c66",
+    "94": "zone-e8cc0f872bf947ad836ffca1e2e67ae6",
+    "95": "zone-12f81fe8cb7c47829c11e2df46e7b0d8",
+    "96": "zone-356046f0c7994a48bca51225894da449",
+    "97": "zone-6ca99114a958427aa96f3aa6fb5347d6",
+    "98": "zone-407408e835904847ba5eb50eb68344a5",
+    "99": "zone-995f33d06d41427f9f7b180b9091a37f",
+    "100": "zone-c5ba61e9ad934d5888a8a4a75413296f",
+    "101": "zone-28656595f9484d7a903938eb5ba145ff",
+    "102": "zone-e5383731c54a407b9f611ac8ab1d7f2b",
+    "103": "zone-1030d3571f2d48e091eeb6adc7550a4b",
+    "104": "zone-58aed21b705347dda40a775165689792",
+    "105": "zone-ba0d134c979246d69d063fedd82f89f7",
+    "106": "zone-3149e064056e4574b99d0aee96cf9236",
+    "107": "zone-28530cb3788c4e2e9604dc883928783f",
+    "108": "zone-314b8dd38b2a4d13913fa52a76b95c9b",
+    "109": "zone-b503f3261eed4819847a8bd467b24e4e",
+    "110": "zone-a1f321ff64624d639d9d80b15c6a1c1d",
+    "111": "zone-abb8e5358fb24e60b205a9a745b5f2e9",
+    "112": "zone-10529b9119df4168995a7bb98a6ecf86",
+    "113": "zone-99d2b1122dd849ffa159294569c5bec8",
+    "114": "zone-80b3847baa6b49908d89be7e73c75a25",
+    "115": "zone-d8319464782b4c2eb4c6ed11f44e4545",
+    "116": "zone-c8b22571883a4f78a441b83772b52947",
+    "117": "zone-27a8ad400f23458a9b3d060a13ccff78",
+    "118": "zone-c70082b841574907ad27f81337dbedcb",
+    "119": "zone-8becad8a9aa0483388d0633e91716733",
+    "120": "zone-383be9961f954a1a91e71e4fcffc0b63",
+    "121": "zone-2adcc6784e68406fa0dc4adc54dff717",
+    "122": "zone-7e05dece9922452b97bd5a22d17a9a4a",
+    "123": "zone-702ba1cbcf94467c8c496b16b48fc791",
+    "124": "zone-77376aaeb4ed4b5db7f137fb02bba088",
+    "125": "zone-0e088d1a3bc142349c72f7e211a2f10d",
+    "126": "zone-91ba27b7ccce48a1bc424566042e0afc",
+    "127": "zone-339769264a51497da4b568c492fd609b",
+    "128": "zone-9e936c39a8024464a8da7002013dbdf3",
+    "129": "zone-b0cdb9b5ce3a49b89c1218aa75c72a39",
+    "130": "zone-d29e7dd4c5b643769aafee10b8ccf26f",
+    "131": "zone-2ffb60c0b57341389f0b940cd7b10105",
+    "132": "zone-b4d672bd33a64da591a8c893653ccddb",
+    "133": "zone-c1fbbccad7f74327a87e710229364a68",
+    "134": "zone-3123f70d42f64a9c8a333a979b8ce3aa",
+    "135": "zone-a48de285fdb045f8acdfcbb16c99b03c",
+    "136": "zone-a7e29fb62b6646f2915561e8dbbdc739",
+    "137": "zone-237643a560b74835b4f74273acc681f8",
+    "138": "zone-214436a0cf714f10b3fb99e22413dd2b",
+    "139": "zone-1dfa1c1d3a3849ebbf622fd81c3246df",
+    "140": "zone-1ea5637fecad40b38802d8309a726064",
+    "141": "zone-677b74c2617f426590567913ee25016b",
+    "142": "zone-fda2fe952ef44f4798d879eae291ad7f",
+    "143": "zone-2e1d428e6b9e4ffdb1f2630093a67f3a",
+    "144": "zone-fec134e03f2e4dd4b38450ba7cbc0870",
+    "145": "zone-a09d7a4d0d8a42ddac07d6b04a745eec",
+    "146": "zone-a18f31567ea8489c97291154ae8afeaf",
+    "147": "zone-67c4fa19ce7f4b5690dd808dc31ad095",
+    "148": "zone-eebee83d044248d28d479012dd7b3e54",
+    "149": "zone-de2e8f2fb29549668c7318a7b9fed314",
+    "150": "zone-0effcbba2a024b4ab71dc2ac112d23bb",
+    "151": "zone-6010270538774bbebc91aafea89a4d00",
+    "152": "zone-4827f2d242c44c24a7939494871155f6",
+    "153": "zone-da187d5b9c5941139607740f564ee175",
+    "154": "zone-595934a0547d48399a93b8f16cef1bc8",
+    "155": "zone-69a2ce59e48f44f99ed44424a617d11a",
+    "156": "zone-04f2edb6e7554eed8a8cd6da00f4fdad",
+    "157": "zone-494d391f89a2475da0c2c7195c4d64d2",
+    "158": "zone-a8263a87a86b4a2691a5c9956e3fe4f6",
+    "159": "zone-0d25c2f743d44486ac9c395281f38e9d",
+    "160": "zone-3e7f4891451a402a940e970d4ac9fbb4",
+    "161": "zone-2942b50a88714748bcb5f5f3c44373fd",
+    "162": "zone-6303c5a2e24c4d18bd3d53324204b28a",
+    "163": "zone-8e7f892bcc93407c82317bf1f1750a28",
+    "164": "zone-d7e3e369108e4f8f8a4dff493214ab1f",
+    "165": "zone-90509e5a4d7a4c31b2296e4747bab9b6",
+    "166": "zone-016b6ca153de45dba14a2bc10a35d442",
+    "167": "zone-02996f4a32e149a7b2fe6a28d08db2f8",
+    "168": "zone-818b31cd395c46508148cc841985fd64",
+    "169": "zone-4ec3e0cace4648269a8bd6ca55f5835a",
+    "170": "zone-a7f8cd3b039040899af7adecfa9c902f",
+    "171": "zone-dda94d8ebe3b4d5c89c28b1ad12bcc35",
+    "172": "zone-3cc18f1b5e6641adb7c5d0a906328b2a",
+    "173": "zone-8ed2b9348f1d4dfdab5dbd4f78055f7d",
+    "174": "zone-47b977a739074194b44af2788f2d21e8",
+    "175": "zone-9e5a8b7a8a674b3788640935b18c27f3",
+    "176": "zone-31b45b98480e4806a7af4548e9a51af4",
+    "177": "zone-3f390ebdf95748439faffe5c95f9bdda",
+    "178": "zone-9e4981c404db479fad7febab6b006d22",
+    "179": "zone-ffbc843670cf49e8b3ba0a2b231580a2",
+    "180": "zone-a16a757b7f9642a18f1196ecf1cd4491",
+    "181": "zone-94567847726b4e5185b38ffb307066a9",
+    "182": "zone-2b419447cb70473b9ffb2dadcff25c2d",
+    "183": "zone-077b258df2a44ef5b5a454d99e45bab3",
+    "184": "zone-01bf285384d243eba57fa8ce231f383a",
+    "185": "zone-90b4361f1f7146158dae2768f779ca55",
+    "186": "zone-5cb02f88b2f141919686eeed0b41abc4",
+    "187": "zone-0530937a836d440985c2b457b5bbf180",
+    "188": "zone-d6000f6905a243a0a84a6fbc24c583c0",
+    "189": "zone-3086263c23c04016a38dd6bf1547b7cd",
+    "190": "zone-beb5bfdae2344a7881b75a1c2db5e091",
+    "191": "zone-3da5d3287cc64013972d66d7425a3e9d",
+    "192": "zone-15d0aa5409354d5c9dd59f35df88bd72",
+    "193": "zone-e6f48871a8ab4eb2a52448f3b854fc50",
+    "194": "zone-4acfc49b2548400a8f568753e0bd395e",
+    "195": "zone-d5b004850e8a4ec5a55a46ca01023815",
+    "196": "zone-9c8cd9b283e54b66875b18672bd8a3dc",
+    "197": "zone-70cfee81548b4d048c7b7ef945260666",
+    "198": "zone-bc73b772e1084ebdb3e651d43ab3b3b4",
+    "199": "zone-2dff3aba687140b28084b45a167d6c06",
+    "200": "zone-d4b3498c02bf49fd8aa76574f5c7ed7a",
+    "201": "zone-3098d9484cc548bd897bc02662d94f1f",
+    "202": "zone-46a138e93ae645b2839983aaaf620339",
+    "203": "zone-e3f4cf5afecc4d0a80fa8e81c6b04eb2"
+  },
+  "visits": {
+    "PUEBLO LIENZO": [
+      "zone-d418ecfbc8a4453c8507927745bf8c25"
+    ],
+    "Ruta 1": [
+      "zone-19136a22de5d4933b254bb86a5baa1e2"
+    ],
+    "PUEBLO VINILO": [
+      "zone-5fd8c74a2c4b4461862c6807bd547b95"
+    ],
+    "Catacumbas Meridionales (Opcional)": [
+      "zone-00c43a703cb94756bae3facd42486209",
+      "zone-d97eccd984014ae4a1520931f04ca6c9"
+    ],
+    "Ruta 2": [
+      "zone-6d676659ec804e809620aab18edec031"
+    ],
+    "Cueva Grisalla": [
+      "zone-225474bb299041a0855d55cdf576d413"
+    ],
+    "CIUDAD GRISALLA": [
+      "zone-07c9f0abc6ec4aabaa35b58f02f0d531"
+    ],
+    "Ruta 3": [
+      "zone-d093cd12c7f649b0bef5849aed2fc0a6"
+    ],
+    "PUEBLO ACRÍLICO": [
+      "zone-65e302ef1dda40af81116dcd6a0594e4"
+    ],
+    "CIUDAD GRISALLA (2º VISITA)": [
+      "zone-09b5fdeffd4644b99b00e288e5794fec"
+    ],
+    "BASTIÓN DE LA REGENTE CANOLA (1º MEDALLA)": [
+      "zone-395242f79bb34e5fa95cfa4942040a63"
+    ],
+    "Ruta 4": [
+      "zone-54d0933b093649458c6038a8d6deb0cc"
+    ],
+    "BOSQUE LADERA ZONA 1": [
+      "zone-3cc907b36d004015996fd0f351d4d3c1"
+    ],
+    "Ruta 4 Parte 2": [
+      "zone-474a1b8715e747e6905011c1df1a1ee2"
+    ],
+    "BOSQUE LADERA PARTE 2": [
+      "zone-74ea94719f374f30b86384c5e29018fd"
+    ],
+    "PUEBLO COLLAGE": [
+      "zone-f0f56c6e773a4323a4fcdcb0920b28a7"
+    ],
+    "Ruta 5": [
+      "zone-d4793998e91b41f9af4e29a7e2fffc2c"
+    ],
+    "SANTUARIO DE LOS REYES": [
+      "zone-182f0e5584ad48a3beb06f78dfe7d45f"
+    ],
+    "CIUDAD ÓLEO": [
+      "zone-764e459cf4644514bc5a31fbcccac2b5"
+    ],
+    "BASTIÓN DEL REGENTE HISOPO (2º MEDALLA)": [
+      "zone-f8b67d69fca54e778840fd8aa9bbb7bb"
+    ],
+    "CHATEAU ROSILLON": [
+      "zone-bd5e185422ac470593d1a8d4018ba11e"
+    ],
+    "ANTIGUA BIBLIOTECA": [
+      "zone-01ad84700aeb450fa9efe6e174a11e7b"
+    ],
+    "Regresar a la Granja Gogoat para la Montura (Opcional)": [
+      "zone-e72c6eee249248cbbf8a8ac67245c78d"
+    ],
+    "Torre de Guardia Sur (Opcional)": [
+      "zone-60d639ee847c402080a69d2d854c1606"
+    ],
+    "Ruta 6": [
+      "zone-a022ad653f4c40b8ab4e23414728d000"
+    ],
+    "Cueva Lóbrega (Opcional)": [
+      "zone-df4b2f595e9749eaa5ee4d7c7bebd0a6"
+    ],
+    "PUEBLO PROFANO": [
+      "zone-508e2970d1aa4cf7a1cd9e56ed313682"
+    ],
+    "PANTANO PROFANO": [
+      "zone-1d593568592d438a988572da7d1c1a65"
+    ],
+    "Madriguera Profunda": [
+      "zone-49bf4bfded8941309144ecc504962dfe"
+    ],
+    "PUEBLO PROFANO (2º VISITA)": [
+      "zone-27d79e141fd54c7c82440ef5c1ff4b88"
+    ],
+    "Ruta 7": [
+      "zone-cbd9c8eb95114a99939fc0e8e77aa9d3"
+    ],
+    "Cueva Refulgente": [
+      "zone-ef75247b5ce54ea292aa2ec711f36e9a"
+    ],
+    "Ruta 7 Parte 2": [
+      "zone-0ed5c480f3a54eda89786707c90eff0f"
+    ],
+    "Cueva Refulgente Parte 2": [
+      "zone-34e4ecf76e78438381eee0e27e4d56c1"
+    ],
+    "CIUDAD NOVARTE": [
+      "zone-cf8627f28ae34cc295517e10d9d824e0"
+    ],
+    "COLINA DE TORMENTA": [
+      "zone-b914b0f4b06149b09c9a52f9c1a5f3bd"
+    ],
+    "TALLER QUEMADO": [
+      "zone-1eec0ff3448b413ab33715cc6a537b5c"
+    ],
+    "CIUDAD NOVARTE (2º VISITA)": [
+      "zone-9ab7194c5fa44617878ffd1f4f262569"
+    ],
+    "BASTIÓN DEL REGENTE F3 (3º MEDALLA)": [
+      "zone-61084b8ac1974d4cb21f5fa2034f718c"
+    ],
+    "Ruta 8": [
+      "zone-6d63c6005a684739b7addb6672d538c7"
+    ],
+    "Ruta 8 Parte 2": [
+      "zone-c1b17c35eec34300b6fe9b390cc2e235"
+    ],
+    "Ruta 8 Parte 3": [
+      "zone-9b0eae7154ce4c33b1d04f6f068402aa"
+    ],
+    "CHATEAU LANTO": [
+      "zone-687d1aa3a95348bdbcf27e156d4d27e8"
+    ],
+    "Regresar a la Ruta 8 a entregar el Pañuelo (Opcional)": [
+      "zone-29f5141d9e13419595dc0e4f55cc6051"
+    ],
+    "Acceder a las Catacumbas Septentrionales (Opcional)": [
+      "zone-acadfd308be7416b9cc617dff9e84d2e",
+      "zone-82828b8752f84e40a1381b23971e7193"
+    ],
+    "PUEBLO BODEGÓN": [
+      "zone-d0d658a31436475b961c576214fffdba"
+    ],
+    "1º SUBTRAMA DE PUEBLO BODEGÓN": [
+      "zone-ba29aafe336040abb17ac51ef0093780"
+    ],
+    "SANTUARIO PROSPERIDAD (EXTERIOR)": [
+      "zone-91f4dd4885514043a097bcdb8f522d24"
+    ],
+    "SANTUARIO PROSPERIDAD (INTERIOR)": [
+      "zone-f92421a31ca147f0a36f4be9b8b9b605"
+    ],
+    "2º SUBTRAMA DE PUEBLO BODEGÓN BASTIÓN DE LA REGENTE ZAFRA (4º MEDALLA)": [
+      "zone-5668c0179d4447cf9c10600f1fb92831"
+    ],
+    "Ayudar a Zafra en el Restaurante Le Chonk (Opcional)": [
+      "zone-144c11f2259146d8a79b1d0043a275ef"
+    ],
+    "Ruta 9": [
+      "zone-391dc49056a646e4ac91cdab401a7190"
+    ],
+    "Ruta 9 Parte 2": [
+      "zone-99bf782555034a649f4d2d8e6355aefb"
+    ],
+    "Ruta 10": [
+      "zone-8451ade6bb85439484c3a481fd1a0ead"
+    ],
+    "Estación de servicio (opcional)": [
+      "zone-bc5b93b32e994d96bbb287385d269906"
+    ],
+    "PUEBLO PETROGLIFO": [
+      "zone-75fcbc838277443ea3aa692dad507de0"
+    ],
+    "Regresar a bajar el nivel del agua de la Ruta 9 (Opcional)": [
+      "zone-b8156fa2ff64417386e86ca41d26228e"
+    ],
+    "Completar la Isla Certijo (Opcional)": [
+      "zone-8d449c574b534fcda8e7e3562ea6ad68"
+    ],
+    "PETROCUEVA (Opcional)": [
+      "zone-b45fa94767ac4718bb44dcd32328374e"
+    ],
+    "FORT LEVIATÁN": [
+      "zone-2ece8bf0727e4ce7bb4b30f0cb84c177"
+    ],
+    "Ruta 11": [
+      "zone-303a9fb2744d4de98cde7d79cb2fb68f"
+    ],
+    "Ruta 11 Parte 2": [
+      "zone-bf7edf801a0d41d3b9348ee0432ce918"
+    ],
+    "CIUDAD RELIEVE": [
+      "zone-7b753ab5573b4d7bbae6ceab0b3beec3"
+    ],
+    "CONOCER A LA BRUJITA MALDITA DE PUEBLO PROFANO (OPCIONAL)": [
+      "zone-bcf09d49a4334bbdb5389eaf20c73f7b"
+    ],
+    "BASTIÓN DE LA REGENTE CLAVELINA (5º MEDALLA)": [
+      "zone-9093212adbd849868743b4cc90cdc21b"
+    ],
+    "CATACUMBAS OCCIDENTALES": [
+      "zone-ce511dda7eb34af8829fb7715e4790d5",
+      "zone-5cb02f88b2f141919686eeed0b41abc4"
+    ],
+    "BARCO DEL CAPITÁN LOTO (5º MEDALLA )": [
+      "zone-9952f8e068c94d14bba9d0acc9c87062"
+    ],
+    "Regresar a hacer cosas con el poder de Surf (Opcional)": [
+      "zone-088677a9066e47f09bc0ee55cf427035"
+    ],
+    "Atrapar a Raikou (Opcional)": [
+      "zone-e40136996b4b46d595d3706c73c08a2c"
+    ],
+    "Atrapar a Entei (Opcional)": [
+      "zone-1899747d92c847fab5cb2ca9a0cc4039"
+    ],
+    "Atrapar a Suicune (Opcional)": [
+      "zone-aeb3c382c9bb43b68eb08eba4d7fd143"
+    ],
+    "Gruta Tierraunida": [
+      "zone-5ca9838e8c0748cb8f6a7ce73588ac3c"
+    ],
+    "Ruta 12": [
+      "zone-abb120c43de9460b921f71151a712830"
+    ],
+    "VIEJO VÁNITAS": [
+      "zone-ca46a470b2734d989ded1d52ca1d9005"
+    ],
+    "HOSPICIO CADUCO": [
+      "zone-8d048300f30c4258b08f14f38ac02e65"
+    ],
+    "PUEBLO VÁNITAS": [
+      "zone-d609ae56ad614388b96186fc2c094a24"
+    ],
+    "HUERTO VÁNITAS (Opcional)": [
+      "zone-e279b335d11e4ae79a879eb933f76009"
+    ],
+    "BASTIÓN DE LA REGENTE BELLADONA (6º MEDALLA)": [
+      "zone-2deabdec362e4c43aa7f9a267e87b01f"
+    ],
+    "Ruta 13": [
+      "zone-dbac483131e94a4abf5db6eb8c05b789"
+    ],
+    "CIUDAD LUMINALIA": [
+      "zone-b521d45ba9584f2b91855f14b72d1446"
+    ],
+    "CIUDAD LUMINALIA SUR": [
+      "zone-54677fd140654c19ad0df3514243b0b7"
+    ],
+    "CIUDAD LUMINALIA ESTE": [
+      "zone-74bc053ad829419c8992c9f98c80d501"
+    ],
+    "CATEDRAL SEÑORIAL": [
+      "zone-99207cab2703435b872e664d428504b2"
+    ],
+    "Atrapar a Cresselia (Opcional)": [
+      "zone-d52fd65773be4d7faab3aa9f9355eb3c"
+    ],
+    "CIUDAD LUMINALIA OESTE": [
+      "zone-aa6f59de1c154bce878423929f8bff05"
+    ],
+    "CRIPTAS DE LUMINALIA (Opcional)": [
+      "zone-2ccdd700f4214810a31c60ac1c686a4f"
+    ],
+    "Atrapar a Darkrai (Opcional)": [
+      "zone-7880667c372a4e04b2705f0d29e413b6"
+    ],
+    "CIUDAD LUMINALIA NORTE": [
+      "zone-1c9b6942152e4af6aea7a6596a8ac5f6"
+    ],
+    "PALACIO LUMINALIA (MAZMORRA FINAL PARTE 1)": [
+      "zone-5af509518600483d8f9dbe73fcb2d196"
+    ],
+    "CÁMARAS DE REFLEXIÓN": [
+      "zone-7f3100dd07d84549832b1716c73dc829"
+    ],
+    "CÁMARAS DE REFLEXIÓN (INTERIOR)": [
+      "zone-5ff314840d1d4dc089f7970a9cc61718"
+    ],
+    "COMIENZO DEL SEGUNDO ACTO": [
+      "zone-1381095fa2ae4f6b963a6ed6a4cc6c66"
+    ],
+    "PRISIÓN DEL OLVIDO (CELDAS)": [
+      "zone-e8cc0f872bf947ad836ffca1e2e67ae6"
+    ],
+    "PRISIÓN DEL OLVIDO (CÁRCEL EXTERIOR)": [
+      "zone-12f81fe8cb7c47829c11e2df46e7b0d8"
+    ],
+    "PRISIÓN DEL OLVIDO (MATERIALES)": [
+      "zone-356046f0c7994a48bca51225894da449"
+    ],
+    "PRISIÓN DEL OLVIDO (ISLA)": [
+      "zone-6ca99114a958427aa96f3aa6fb5347d6"
+    ],
+    "PUEBLO LIENZO (2º VISITA)": [
+      "zone-407408e835904847ba5eb50eb68344a5"
+    ],
+    "Regresar a Pueblo Profano (Opcional)": [
+      "zone-995f33d06d41427f9f7b180b9091a37f"
+    ],
+    "Regresar a Prisión del Olvido (Isla) (Opcional)": [
+      "zone-c5ba61e9ad934d5888a8a4a75413296f"
+    ],
+    "Sima Ardiente (Opcional)": [
+      "zone-28656595f9484d7a903938eb5ba145ff"
+    ],
+    "Atrapar a Registeel (Opcional)": [
+      "zone-e5383731c54a407b9f611ac8ab1d7f2b"
+    ],
+    "Catacumbas Orientales (Opcional)": [
+      "zone-1030d3571f2d48e091eeb6adc7550a4b",
+      "zone-eebee83d044248d28d479012dd7b3e54"
+    ],
+    "PIRINEOS DE KALOS": [
+      "zone-58aed21b705347dda40a775165689792"
+    ],
+    "Pirineos (Frontera con Paldea) Opcional": [
+      "zone-ba0d134c979246d69d063fedd82f89f7"
+    ],
+    "PIRINEOS DE KALOS PARTE 2": [
+      "zone-3149e064056e4574b99d0aee96cf9236"
+    ],
+    "PIRINEOS DE KALOS PARTE 3": [
+      "zone-28530cb3788c4e2e9604dc883928783f"
+    ],
+    "CIUDAD BATIK": [
+      "zone-314b8dd38b2a4d13913fa52a76b95c9b"
+    ],
+    "Tomar Teleférico para llegar a la Estación de Servicio (Opcional)": [
+      "zone-b503f3261eed4819847a8bd467b24e4e"
+    ],
+    "TORRE OSCURA (7º MEDALLA)": [
+      "zone-a1f321ff64624d639d9d80b15c6a1c1d"
+    ],
+    "Ruta 14": [
+      "zone-abb8e5358fb24e60b205a9a745b5f2e9"
+    ],
+    "CIUDAD ROMANTIS": [
+      "zone-10529b9119df4168995a7bb98a6ecf86"
+    ],
+    "Atrapar a Rotom (Opcional)": [
+      "zone-99d2b1122dd849ffa159294569c5bec8"
+    ],
+    "FÁBRICA DE POKÉBALL (EXTERIOR)": [
+      "zone-80b3847baa6b49908d89be7e73c75a25"
+    ],
+    "Visitar la Isla Montesanto (Opcional)": [
+      "zone-d8319464782b4c2eb4c6ed11f44e4545"
+    ],
+    "Cueva de Isla Montesanto (Opcional)": [
+      "zone-c8b22571883a4f78a441b83772b52947"
+    ],
+    "Atrapar a los Tapus (Opcional)": [
+      "zone-27a8ad400f23458a9b3d060a13ccff78"
+    ],
+    "FÁBRICA DE POKÉBALL (INTERIOR)": [
+      "zone-c70082b841574907ad27f81337dbedcb"
+    ],
+    "BASTIÓN ROMANTIS (8º MEDALLA)": [
+      "zone-8becad8a9aa0483388d0633e91716733"
+    ],
+    "Ruta 15": [
+      "zone-383be9961f954a1a91e71e4fcffc0b63"
+    ],
+    "Ruta 15 Parte 2": [
+      "zone-2adcc6784e68406fa0dc4adc54dff717"
+    ],
+    "PUEBLO FRESCO": [
+      "zone-7e05dece9922452b97bd5a22d17a9a4a"
+    ],
+    "Ruta 16 Norte (Opcional)": [
+      "zone-702ba1cbcf94467c8c496b16b48fc791"
+    ],
+    "Ruta 16 Sur (Opcional)": [
+      "zone-77376aaeb4ed4b5db7f137fb02bba088"
+    ],
+    "MOLINO FRESCO": [
+      "zone-0e088d1a3bc142349c72f7e211a2f10d"
+    ],
+    "Ruta 17": [
+      "zone-91ba27b7ccce48a1bc424566042e0afc"
+    ],
+    "GRUTA HELADA": [
+      "zone-339769264a51497da4b568c492fd609b"
+    ],
+    "Atrapar a Regice (Opcional)": [
+      "zone-9e936c39a8024464a8da7002013dbdf3"
+    ],
+    "Ruta 18": [
+      "zone-b0cdb9b5ce3a49b89c1218aa75c72a39"
+    ],
+    "Ruta 18 Parte 2": [
+      "zone-d29e7dd4c5b643769aafee10b8ccf26f"
+    ],
+    "CIUDAD FLUXUS": [
+      "zone-2ffb60c0b57341389f0b940cd7b10105"
+    ],
+    "Fondo Marino Pueblo Acrílico (Opcional)": [
+      "zone-b4d672bd33a64da591a8c893653ccddb"
+    ],
+    "Atrapar a Manaphy y tener a Phione (Opcional)": [
+      "zone-c1fbbccad7f74327a87e710229364a68"
+    ],
+    "Fondo Marino Pueblo Petroglifo (Opcional)": [
+      "zone-3123f70d42f64a9c8a333a979b8ce3aa"
+    ],
+    "Atrapar a Magearna (Opcional)": [
+      "zone-a48de285fdb045f8acdfcbb16c99b03c"
+    ],
+    "Fondo del Lago Ruta 16 Sur (Opcional)": [
+      "zone-a7e29fb62b6646f2915561e8dbbdc739"
+    ],
+    "Fondo del Lago Ciudad Fluxus": [
+      "zone-237643a560b74835b4f74273acc681f8"
+    ],
+    "ANTIGUA FORJA INUNDADA": [
+      "zone-214436a0cf714f10b3fb99e22413dd2b"
+    ],
+    "Minijuego de la Minería para obtener fósiles (Opcional)": [
+      "zone-1dfa1c1d3a3849ebbf622fd81c3246df"
+    ],
+    "BASTIÓN FLUXUS (9º MEDALLA)": [
+      "zone-1ea5637fecad40b38802d8309a726064"
+    ],
+    "Ruta 19": [
+      "zone-677b74c2617f426590567913ee25016b"
+    ],
+    "Cueva Desenlace (Opcional)": [
+      "zone-fda2fe952ef44f4798d879eae291ad7f"
+    ],
+    "Atrapar a Regirock (Opcional)": [
+      "zone-2e1d428e6b9e4ffdb1f2630093a67f3a"
+    ],
+    "PUEBLO MOSAICO": [
+      "zone-fec134e03f2e4dd4b38450ba7cbc0870"
+    ],
+    "Obtener a Rotom Guillotina (Opcional)": [
+      "zone-a09d7a4d0d8a42ddac07d6b04a745eec"
+    ],
+    "Atrapar a Uxie, Mesprit y Azelf (Opcional)": [
+      "zone-a18f31567ea8489c97291154ae8afeaf"
+    ],
+    "Ruta 20": [
+      "zone-67c4fa19ce7f4b5690dd808dc31ad095"
+    ],
+    "CIUDAD FRACTAL": [
+      "zone-de2e8f2fb29549668c7318a7b9fed314"
+    ],
+    "Atrapar a los Espadachines Místicos (Opcional)": [
+      "zone-0effcbba2a024b4ab71dc2ac112d23bb"
+    ],
+    "BASTIÓN FRACTAL (10º MEDALLA)": [
+      "zone-6010270538774bbebc91aafea89a4d00"
+    ],
+    "CAMPAMENTO DE CRISANTO": [
+      "zone-4827f2d242c44c24a7939494871155f6"
+    ],
+    "BATALLA DE KALOS ESTE": [
+      "zone-da187d5b9c5941139607740f564ee175"
+    ],
+    "LABORATORIO FLARE": [
+      "zone-595934a0547d48399a93b8f16cef1bc8"
+    ],
+    "COMIENZO DEL TERCER ACTO": [
+      "zone-69a2ce59e48f44f99ed44424a617d11a"
+    ],
+    "Ruta 21 (Opcional)": [
+      "zone-04f2edb6e7554eed8a8cd6da00f4fdad"
+    ],
+    "Ir al balneario (Opcional)": [
+      "zone-494d391f89a2475da0c2c7195c4d64d2"
+    ],
+    "Primer Acertijo:": [
+      "zone-a8263a87a86b4a2691a5c9956e3fe4f6"
+    ],
+    "Segundo Acertijo:": [
+      "zone-0d25c2f743d44486ac9c395281f38e9d"
+    ],
+    "Tercer Acertijo:": [
+      "zone-3e7f4891451a402a940e970d4ac9fbb4"
+    ],
+    "Cuarto Acertijo:": [
+      "zone-2942b50a88714748bcb5f5f3c44373fd"
+    ],
+    "Atrapar a Regigigas (Opcional)": [
+      "zone-6303c5a2e24c4d18bd3d53324204b28a"
+    ],
+    "Xerneas": [
+      "zone-8e7f892bcc93407c82317bf1f1750a28"
+    ],
+    "Bosque Errante": [
+      "zone-d7e3e369108e4f8f8a4dff493214ab1f"
+    ],
+    "Atrapar a Shaymin(Opcional)": [
+      "zone-90509e5a4d7a4c31b2296e4747bab9b6"
+    ],
+    "Villa Pokémon": [
+      "zone-016b6ca153de45dba14a2bc10a35d442"
+    ],
+    "Maraña Oscura": [
+      "zone-02996f4a32e149a7b2fe6a28d08db2f8"
+    ],
+    "MANANTIAL PROFUNDO": [
+      "zone-818b31cd395c46508148cc841985fd64"
+    ],
+    "Guarida Team Flare": [
+      "zone-4ec3e0cace4648269a8bd6ca55f5835a"
+    ],
+    "Yveltal": [
+      "zone-a7f8cd3b039040899af7adecfa9c902f"
+    ],
+    "Ruta 22 Parte 1:": [
+      "zone-dda94d8ebe3b4d5c89c28b1ad12bcc35"
+    ],
+    "Ruta 22 Parte 2": [
+      "zone-3cc18f1b5e6641adb7c5d0a906328b2a"
+    ],
+    "PUEBLO SANGUINO:": [
+      "zone-8ed2b9348f1d4dfdab5dbd4f78055f7d"
+    ],
+    "COSTA SANGUINA(OPCIONAL)": [
+      "zone-47b977a739074194b44af2788f2d21e8"
+    ],
+    "PESADILLA DE CIRCO": [
+      "zone-9e5a8b7a8a674b3788640935b18c27f3"
+    ],
+    "Zygarde": [
+      "zone-31b45b98480e4806a7af4548e9a51af4"
+    ],
+    "EXPANSIONES DE LUMINALIA-SUR": [
+      "zone-3f390ebdf95748439faffe5c95f9bdda"
+    ],
+    "EXPANSIONES DE LUMINALIA-CENTRO": [
+      "zone-9e4981c404db479fad7febab6b006d22"
+    ],
+    "EXPANSIONES DE LUMINALIA-ESTE": [
+      "zone-ffbc843670cf49e8b3ba0a2b231580a2"
+    ],
+    "EXPANSIONES DE LUMINALIA-OESTE": [
+      "zone-a16a757b7f9642a18f1196ecf1cd4491"
+    ],
+    "LUGAR MISTERIOSO": [
+      "zone-94567847726b4e5185b38ffb307066a9"
+    ],
+    "TORRE PRISMA": [
+      "zone-2b419447cb70473b9ffb2dadcff25c2d"
+    ],
+    "El camino a Yantra": [
+      "zone-077b258df2a44ef5b5a454d99e45bab3"
+    ],
+    "Ruta 23": [
+      "zone-01bf285384d243eba57fa8ce231f383a"
+    ],
+    "Faro Abandonado": [
+      "zone-90b4361f1f7146158dae2768f779ca55"
+    ],
+    "Atrapar a Eternatus (Opcional)": [
+      "zone-0530937a836d440985c2b457b5bbf180"
+    ],
+    "Ruta 24": [
+      "zone-d6000f6905a243a0a84a6fbc24c583c0"
+    ],
+    "Ciudad Yantra": [
+      "zone-3086263c23c04016a38dd6bf1547b7cd"
+    ],
+    "Torre Maestra": [
+      "zone-beb5bfdae2344a7881b75a1c2db5e091"
+    ],
+    "Bahía Azul (Opcional)": [
+      "zone-3da5d3287cc64013972d66d7425a3e9d"
+    ],
+    "Cueva Talasia (Opcional)": [
+      "zone-15d0aa5409354d5c9dd59f35df88bd72"
+    ],
+    "Misión del Campanero (Opcional)": [
+      "zone-e6f48871a8ab4eb2a52448f3b854fc50"
+    ],
+    "Un último intento": [
+      "zone-4acfc49b2548400a8f568753e0bd395e"
+    ],
+    "Ruta 25": [
+      "zone-d5b004850e8a4ec5a55a46ca01023815"
+    ],
+    "Cueva de los Reflejos (Opcional)": [
+      "zone-9c8cd9b283e54b66875b18672bd8a3dc"
+    ],
+    "Pueblo Crómlech (Primera visita, derruido)": [
+      "zone-70cfee81548b4d048c7b7ef945260666"
+    ],
+    "El Arma Definitiva": [
+      "zone-bc73b772e1084ebdb3e651d43ab3b3b4"
+    ],
+    "Postgame": [
+      "zone-2dff3aba687140b28084b45a167d6c06"
+    ],
+    "PUEBLO CRÓMLECH": [
+      "zone-d4b3498c02bf49fd8aa76574f5c7ed7a"
+    ],
+    "RUTA 26": [
+      "zone-3098d9484cc548bd897bc02662d94f1f"
+    ],
+    "Listado de Habitantes de Acrílico": [
+      "zone-46a138e93ae645b2839983aaaf620339"
+    ],
+    "COLUMNA LANZA (Opcional)": [
+      "zone-e3f4cf5afecc4d0a80fa8e81c6b04eb2"
+    ]
+  },
+  "mts": {
+    "2-0": "mt-e1e67f7152534214bb7cc5944d6dd2d9",
+    "3-0": "mt-54faee36299c4b6fba7d913e6231fc83",
+    "4-0": "mt-9cd11d77d06944ba91b630e37b383c6d",
+    "5-0": "mt-e203f874db9e4dfdbfcd59188dfa9a2b",
+    "7-0": "mt-888b65f3afbc4b73a26befaad775bb87",
+    "8-0": "mt-98d5035206c64abda6642aeda6a547cd",
+    "10-0": "mt-bcc1047b13f8430fb9d1f4ab58170ddb",
+    "12-0": "mt-78d2f50f41cc4f72b30cd09a6f8fa11a",
+    "13-0": "mt-216747b81a6542519bc3c33bafe7c12a",
+    "14-0": "mt-7ef0734e192149118310f4ec25e8739d",
+    "15-0": "mt-28e4d98af7df43d7b7ed6b7d3457fcf3",
+    "15-1": "mt-a8beb38dca7d4cada4d92a339afca6c1",
+    "16-0": "mt-0ad04035988d4372bdb1e7bc9dd95001",
+    "17-0": "mt-fc2df8ac707d4ff3bc9ab06d00db6c5a",
+    "18-0": "mt-429ef00d3e554b289358b1d19293d701",
+    "18-1": "mt-41224a2a66a947f3aea778a6f1dea947",
+    "19-0": "mt-2c44796088db466c9626593d9549a5e4",
+    "20-0": "mt-fe05db05125744b48755e835d9551063",
+    "20-1": "mt-12823f92e7584721af2c1f98a769b3e4",
+    "22-0": "mt-164d3ea327bf4134bf585ddccbd10bd9",
+    "24-0": "mt-fe98ffa45c194e9c9eec1ccfe0cf90ef",
+    "24-1": "mt-ddb20a584ecc4663b6624f69396a2863",
+    "25-0": "mt-42427df709884372a2dbfe787073fb85",
+    "25-1": "mt-0fa1641ce3af4bcb8a1b1464f50ef784",
+    "27-0": "mt-27c4a04b64ca4022b68ffa7e05da5d23",
+    "30-0": "mt-d890820217d54539872e89ea2323b108",
+    "32-0": "mt-cde0cd21192b4611b712b044530db696",
+    "33-0": "mt-a5bc540417fb4172827fd7a0b3353051",
+    "34-0": "mt-936b05fa0403404b83da085b6f5c8b75",
+    "34-1": "mt-162570b3da4d44ff9febe299706063bc",
+    "34-2": "mt-ff68194600ca4316bb26159d53a45632",
+    "34-3": "mt-09065e74b2eb4db2a31e2ae6be7ef4ac",
+    "35-0": "mt-68e634c435734faf93c177efad9d8181",
+    "36-0": "mt-08b15a9748bc4b8181c3e9143ad21655",
+    "37-0": "mt-ec88ebf6cd6b4169a64fd0afc22ebcd0",
+    "39-0": "mt-26f5fb32b0384a06afdaacf643ccbbdc",
+    "41-0": "mt-cc6f6fb481704e4ea380a67b088ec615",
+    "43-0": "mt-75505b1b734c4c659614e851a0c28a23",
+    "43-1": "mt-4302a4d2c440456fb4b30d466f9a575d",
+    "43-2": "mt-6631f4752ad14c3aa52ee515d39ea8a0",
+    "46-0": "mt-738285c9400c4b24a611f183f29f8c89",
+    "46-1": "mt-f80c548d90bb4f018ff01e65ae5c9608",
+    "48-0": "mt-ef2400e8de8f4376b3c7ab6a9c831b2b",
+    "50-0": "mt-75effd4f2adf46b892c9aa6a99154bb9",
+    "53-0": "mt-11c8f35776de49f09daf8293a8e2753f",
+    "54-0": "mt-b462d8be172b431b8df9ee2c570be6aa",
+    "55-0": "mt-c0e0c88075764837917a8e0a75389684",
+    "56-0": "mt-dbb3cd35ef314889b813d788c1185adc",
+    "57-0": "mt-8e98b07d1b5749b8aef4e8652a20711e",
+    "58-0": "mt-2c9c0a62f7064bb397a040f33ca3ddaf",
+    "61-0": "mt-965da2124f4c4a78b4c44ae2d78e0ce8",
+    "62-0": "mt-9e8dd3049b334c32a5937808b8b350aa",
+    "67-0": "mt-27ac5aba158842a687be96fcfe5aeb1d",
+    "67-1": "mt-bf1930606f1c4add98eaf6ff282abd46",
+    "68-0": "mt-7d6618c2649d410ea4f2c9d05c75cfd3",
+    "72-0": "mt-8072da2dfe53458b958d2a3ee93b587b",
+    "74-0": "mt-8e0fbb39a0f7460d91b88e46c72c3f0e",
+    "74-1": "mt-1acdc09398f74ce2ad0df55dc193e310",
+    "77-0": "mt-06d32dd968cb416bbc8741ba002f320d",
+    "78-0": "mt-ac87747787f8443cafcf7f03c986ded4",
+    "79-0": "mt-614d2f1b513945d999e84483822241d0",
+    "83-0": "mt-62af20d7b96d47539a3b2c1ade55f634",
+    "85-0": "mt-e006f6e761af4e91b6232c55ca18c19b",
+    "86-0": "mt-1cd8c32dc7f7415fb39273c3cc5864b2",
+    "97-0": "mt-20c5dba8b5e5487fb24f74d49ba7f0e4",
+    "101-0": "mt-ee3a2d93b40a4fc5bbf00f6906402d26",
+    "105-0": "mt-8e233f2a871340a284bcb396d824c660",
+    "107-0": "mt-012699175dd348d39c4975f5117b7750",
+    "110-0": "mt-9b4313c0c6154e429c8e9ba5806c58e1",
+    "111-0": "mt-c39e94a5a8164cdc93e3e5be2ed3b3f6",
+    "112-0": "mt-e5627bacdf4e45e980d85d91cdfebb06",
+    "112-1": "mt-0daf260523e14528b88d2aeb3baa6973",
+    "116-0": "mt-d6efa972fdbf48f28618938b0b57ecf9",
+    "118-0": "mt-27806f3b3af64e179b7066265dc7fb0f",
+    "119-0": "mt-9196905f903b4140a43a8744490c58b5",
+    "121-0": "mt-1803bc8485d54a33a27eaa86b34c1564",
+    "122-0": "mt-828ce08be5204d23b572d41f1d1f7378",
+    "124-0": "mt-3efc42ea98e740aebcf58fb3962473b6",
+    "126-0": "mt-b458c668bd114c44be04bedae758497b",
+    "127-0": "mt-2607edf5f50447e1a13b373f02d8f95c",
+    "129-0": "mt-6437de2444de46aab60ac001e605ba2f",
+    "131-0": "mt-bb9102819a994486aaebd3770499e4d8",
+    "137-0": "mt-dacba791aa0640a1a3142110b4dbf735",
+    "138-0": "mt-aa41771b72724e2f93197980f04e7fca",
+    "138-1": "mt-4baf5f08279a463786b5bb60bcd90789",
+    "140-0": "mt-8d832e822fda4c7fb5c9f6512f0ff1b7",
+    "141-0": "mt-8ee90eab551840b79b5bf8ea849b3e8a",
+    "142-0": "mt-b20a35461ec241ddbf3b0fa22563159d",
+    "144-0": "mt-fd9a42f7894e4050a2f464a7eda10988",
+    "147-0": "mt-5a078790cfbf434da2f22208fb3b2fbe",
+    "149-0": "mt-dd0457d9471e408ba463b97ab6275ad5",
+    "149-1": "mt-a765f11e00f645bb9753b2e044cacf7f",
+    "151-0": "mt-63b91ab243ed4ba0974f78ee7c16117a",
+    "151-1": "mt-c384c097b1814d08883972fd8f4cb017",
+    "156-0": "mt-201232ad649247f3a07dce1c7eb41f15",
+    "164-0": "mt-9677e29bb04245b6af9cbdaee608f331",
+    "164-1": "mt-a6a55e8a2a304a1cb15de34017e9b63c",
+    "167-0": "mt-e8388dffbe334b9486fbbdc4c2450ec8",
+    "168-0": "mt-2194263a27ca40ed91c33b58d240ae41",
+    "171-0": "mt-f9539129760842998f6832268e78348a",
+    "173-0": "mt-d091c9a4e1714a11b29154663c02ebe4",
+    "175-0": "mt-c23537129ef9467da5284cfe5bb55ab4",
+    "175-1": "mt-3a436a210171421a9ed970a81f1c4a62",
+    "177-0": "mt-885d1428b4354681a1de15e12bf675b0",
+    "180-0": "mt-ea4d9ca1fb454a62883bdfea172dfff8",
+    "181-0": "mt-41feeefed7ff4c998a7b85c9868d6e6a",
+    "182-0": "mt-ad4fd8dfa7214536b14a2a2c72fdd413",
+    "182-1": "mt-a44d89e90e84421a89437dd49bd8b7f9",
+    "184-0": "mt-70de012dfb63480187e12096a5488ca0",
+    "184-1": "mt-24562b3e77bb445fb87e84dfb4c43aa6",
+    "185-0": "mt-05ee3e4ef3874909904e627afe9980a2",
+    "195-0": "mt-af91e8c9d56545b692299501fb2d3107",
+    "196-0": "mt-8b0c3eee34be469f834cbad768238787",
+    "203-0": "mt-587374798f8b4c349842029d82f612a8"
+  },
+  "paginas-alquimia": {
+    "6": "page-803f6ab2357a4d4d9aeb68ad815e9746",
+    "7": "page-ab6278b62c3d470a81899ae5ca8f3cc9",
+    "12": "page-fd803c8456464087b9c83a2d9f883d2a",
+    "14": "page-1720aa51e2fd412a8bdc01e874f72a67",
+    "15": "page-cb14bacfacea4fbda53a4524fdac2506",
+    "16": "page-d237c76555e941c4a8e9634682b6e96d",
+    "17": "page-8006d1cee54a47dfb9c48024e3b5d524",
+    "20": "page-067b2b76d3b9480cbe910df6c3508ed0",
+    "21": "page-b96011ce3aca4759b6e53f326179bb7c",
+    "27": "page-8a0f3cfdbf454557bb698717c4e9dc41",
+    "32": "page-f795c22a4c2c405fbd13b7a736eb6b4d",
+    "34": "page-2234e5a9066c4d0fbcad41a1b2d02998",
+    "36": "page-ae08a927672d4061b9daab0b020902a3",
+    "36-1": "page-952cc7689fa44486bb5e538cf134a4fa",
+    "40": "page-3644cacb85f644fb92b6011aa683dae8",
+    "42": "page-c301841a73a245888b81833d93305c8c",
+    "43": "page-824e5e1a1d9f426783e69146d3e5e1c2",
+    "45": "page-228e25818a7147cabd3c4f4e9de61199",
+    "46": "page-7c0536102ae249beba89fc6db6c3264e",
+    "52": "page-6d2d7f8bce7e4fd9854e4be1947a6e24",
+    "54": "page-662c99ce13ae46c1b6961d216567f1a4",
+    "58": "page-d96c34d357564309a2c352a34dffbf77",
+    "61": "page-cbd4e18efc3a4b20aaf7459e40b8f3c8",
+    "62": "page-2f1414b7935a4ddca32e89085f7e91ed",
+    "74": "page-babaeafca8d742dc85500c2a104b3291",
+    "77": "page-c3c148d06e174f71b13f331b405317e3",
+    "79": "page-2ea76a2ee85c47f9ab67c198276a4fe8",
+    "81": "page-ca2b37d6177f43ccbaf4d2b13f153b6a",
+    "83": "page-d650e2b44a504456a1e1facea2e3e4df",
+    "89": "page-3541b2c911f94788916225448bbf3229",
+    "89-1": "page-8360a2a694ba49289385838f562189dc",
+    "105": "page-1be9e7d89fd344629353d7e16b9ad3b1",
+    "110": "page-a8e1a10cc06e483faf8cdd25ecc69c8a",
+    "111": "page-92df8c527be94cc2bc49757c324aeced",
+    "120": "page-760bfc38fe60487a87e0c36f64b22c89",
+    "120-1": "page-ce9a9047580b4d82b089ca69d5813aa2",
+    "126": "page-557fd838be314738bf2052255ec822fd",
+    "129": "page-eaf92703d38d4312898ba1b434f2410b",
+    "137": "page-d73c382a150d48eb9d648699174c4c63",
+    "141": "page-65b4fcc5295f41259ed630b6081172dd",
+    "147": "page-69d452f23af5468fb065b7f9690567b1",
+    "156": "page-bbd146219693438c914d03f356d7c9d2",
+    "164": "page-ef974cd6a3a94afdbc48d2af40cc2621",
+    "171": "page-0534c58df4ef488392babbfb4881db87",
+    "179": "page-276bb57682a747f4a23aa1020f1d24e7",
+    "184": "page-4f4ccd4a0e89489ebfc594d7095eb755",
+    "184-1": "page-7d0b2dc98a0c470880cc19ea1b140e46"
+  },
+  "nidos-alfa": {
+    "12": "nest-8dab0c23e56749b59a9554b285ad6c8f",
+    "16": "nest-1109db414c504bc0bd69951f9698a9a3",
+    "27": "nest-fa16de7ddc36409fbc32a54d59f7cdc1",
+    "35": "nest-c318c0f187dd41c783f1632b814fcffb",
+    "48": "nest-06231209a3884f638b4cce2d25c4cfb8",
+    "54": "nest-377e202a22a04a91899956b7386a8bb4",
+    "62": "nest-0c43ffa42ab54ab28fbbdf9f210e0f6e",
+    "73": "nest-2c2e2903d9774a9089649bfe10758378",
+    "101": "nest-455295455a5a4e668d4f57400ab77a89",
+    "108": "nest-90621349bdbf43708c38f65725428589",
+    "121": "nest-787be6bd2ef9454e965d212e9ad5dd96",
+    "126": "nest-131e473882f5410cadae80d33c66cc06",
+    "130": "nest-f6710b4e0f4944ecb627ba2d079e22da",
+    "141": "nest-c73562b572f545bc9b280ba1699e0c4b",
+    "164": "nest-bc59f63d75af41cfbe2aa5a5c32b918f",
+    "172": "nest-9348f31de75c42ee854babd7355484ee",
+    "177": "nest-139c1b1df0794c8c82ffc536a17ec64e",
+    "184": "nest-bf2e056eb4db40fd9a985a65b9b8f32e"
+  },
+  "habitantes-acrilico": {
+    "7": "person-fec554b090ea43439159bffb8abc5f65",
+    "17": "person-616550df3aef44738d60cfc3c79b0d20",
+    "24": "person-32067fe9eea646c6ad2c4739c4e643ea",
+    "44": "person-2d273f9c2fdc49b1b475c6dcac7b8a19",
+    "55": "person-b7e54e7bb3974b4d85b6cd8550dfaa06",
+    "61": "person-e06d88ea627a4093be5d7f5d72743cd9",
+    "74": "person-34de8c2f946a4c0b9e553bdaf5733734",
+    "86": "person-8aa8292b7652450084fad384b3aed130",
+    "97": "person-3d78c319f9824ae0b7862807cdc35f81",
+    "110": "person-15c6298acd81492bb8520fb73016dd5a",
+    "118": "person-a53150c4c1cf44ce857dd5adc53a614c",
+    "124": "person-39c03d2783294adcb551fa08224c88e9",
+    "142": "person-7a7d7413744d416f8d969e9b0396fff8",
+    "145": "person-b18b2a25131b4558a3882ef9360b12f0",
+    "173": "person-434eb5ef040a45709fa2b529fc6a0ae9",
+    "179": "person-867da23871b14c90a60afd13efd81970",
+    "184": "person-148df0f191404fd19e8ef8d5141d0ccd"
+  }
+}

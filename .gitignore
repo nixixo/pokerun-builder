@@ -40,4 +40,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# datos derivados de data-src/ — los regenera `npm run build` (prebuild)
+/public/generated/
+
+# Configuración local de Claude Code
+/.claude/
+
+# Resultados de pruebas de navegador
+/playwright-report/
+/test-results/

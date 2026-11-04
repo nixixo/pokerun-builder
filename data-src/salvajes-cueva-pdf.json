@@ -1,0 +1,918 @@
+{
+  "generado": "2026-08-03",
+  "fuente": "Guía Oficial de Pokémon Z.pdf",
+  "listas": [
+    {
+      "zona": "Catacumbas Meridionales (Opcional)",
+      "linea": 367,
+      "pokemon": [
+        {
+          "porcentaje": "25%",
+          "nombre": "Rattata",
+          "drop": "Dropea Pelaje Fino y raramente Baya Chilan",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Spiranak",
+          "drop": "Dropea Pokétoxina y raramente Rocío Matinal",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Woobat",
+          "drop": "Dropea Fluido Onírico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "12%",
+          "nombre": "Gastly",
+          "drop": "Dropea Ectoplasma y raramente Polvo de Hueso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Purrloin",
+          "drop": "Dropea Baya Meloc y raramente Extracto Sombrío",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva Grisalla",
+      "linea": 481,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Zubat",
+          "drop": "Dropea Poketoxina",
+          "metodo": "nubes de polvo - Planta Baja"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Onix",
+          "drop": "Dropea Mineral Extraño y raramente Grava Seca",
+          "metodo": "nubes de polvo - Planta Baja"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Clefairy",
+          "drop": "Dropea Baya Zanama, raramente Piedra Lunar y muy raramente Fragmento Cometa",
+          "metodo": "nubes de polvo - Planta Baja"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Roggenrola",
+          "drop": "Dropea Piedra Eterna y raramente Piedra Dura",
+          "metodo": "nubes de polvo - Planta Baja"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Rolycoly",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo - Planta Baja"
+        }
+      ]
+    },
+    {
+      "zona": "ANTIGUA BIBLIOTECA",
+      "linea": 1804,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Grimer",
+          "drop": "Dropea Poketoxina y raramente Pepita",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Joltik",
+          "drop": "Dropea Polvo Brillante y raramente Rocío Matinal",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Litwick",
+          "drop": "Dropea Ectoplasma y raramente Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Golett",
+          "drop": "Dropea Ectoplasma y raramente Refleluz",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Sinistea",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva Lóbrega (Opcional)",
+      "linea": 2065,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Geodude",
+          "drop": "Dropea Mineral Extraño y raramente Piedra Eterna",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Cubone Z",
+          "drop": "Dropea Grava Seca y raramente Cola Plúmbea",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Mawile",
+          "drop": "Dropea Virutas Férreas y raramente Baya Caoca",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Woobat",
+          "drop": "Dropea Fluido Onírico",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Dwebble",
+          "drop": "Dropea Piedra Dura y raramente Hueso Raro",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Carkol",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo - ZONA 1"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Swoobat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Graveler",
+          "drop": "Dropea Piedra Eterna",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Mawile",
+          "drop": "Dropea Virutas Férreas y raramente Baya Caoca",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Carkol",
+          "drop": "Dropea Brasa Candente",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Crustle",
+          "drop": "Dropea Piedra Dura y raramente Hueso Raro",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Cubone Z",
+          "drop": "Dropea Grava Seca y raramente Mineral Extraño",
+          "metodo": "nubes de polvo - ZONA 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Marowak Z",
+          "drop": "Dropea Virutas Férreas, raramente Grava Seca y muy raramente Cola Plúmbea",
+          "metodo": "nubes de polvo - ZONA 2"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva Refulgente",
+      "linea": 2445,
+      "pokemon": [
+        {
+          "porcentaje": "25%",
+          "nombre": "Tynamo",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Tadbulb",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Zubat",
+          "drop": "Dropea Pokétoxina",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Magnemite",
+          "drop": "Dropea Polvo Brillante y raramente Revestimiento Metálico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Nosepass",
+          "drop": "Dropea Mineral Extraño y raramente Piedra Dura",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva Refulgente Parte 2",
+      "linea": 2578,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Zubat",
+          "drop": "Dropea Pokétoxina",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Klink",
+          "drop": "Dropea Virutas Férreas",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Tadbulb",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "15%",
+          "nombre": "Plusle",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "15%",
+          "nombre": "Minun",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Nosepass",
+          "drop": "Dropea Mineral Extraño y raramente Piedra Dura",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "TALLER QUEMADO",
+      "linea": 2766,
+      "pokemon": [
+        {
+          "porcentaje": "40%",
+          "nombre": "Porygon Regional",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Koffing",
+          "drop": "Dropea Bola Humo",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Magby",
+          "drop": "Dropea Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Togedemaru",
+          "drop": "Dropea Baya Zidra",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Magmar",
+          "drop": "Dropea Brasa Candente",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Acceder a las Catacumbas Septentrionales (Opcional)",
+      "linea": 3704,
+      "pokemon": [
+        {
+          "porcentaje": "28%",
+          "nombre": "Noibat",
+          "drop": "Dropea Baya Aranja y raramente Baya Zidra",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Ariados",
+          "drop": "Dropea Antídoto y raramente Flecha Venenosa",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Glimmet",
+          "drop": "Dropea Mineral Extraño y raramente Poketoxina",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Misdreavus",
+          "drop": "Dropea Ectoplasma y raramente Polvo de Hueso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Glimmora",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Gruta Tierraunida",
+      "linea": 5242,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Sableye",
+          "drop": "Dropea Ectoplasma y raramente Extracto Sombrío",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Boldore",
+          "drop": "Dropea Piedra Eterna y raramente Piedra Dura",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Carbink",
+          "drop": "Dropea Mineral Extraño y raramente Azúcar Meloso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Woobat",
+          "drop": "Dropea Fluido Onírico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Chimecho",
+          "drop": "Dropea Fluido Onírico y raramente Baya Dillo",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Chingling",
+          "drop": "Dropea Baya Dillo",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Wobbuffet",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "VIEJO VÁNITAS",
+      "linea": 5468,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Parasect Z",
+          "drop": "Dropea Miniseta y raramente Seta Grande",
+          "metodo": "nubes de polvo - Alcantarillas"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Linoone Galar",
+          "drop": "Dropea Baya Aranja y raramente Baya Zidra",
+          "metodo": "nubes de polvo - Alcantarillas"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Stunky",
+          "drop": "Dropea Pokétoxina y raramente Baya Meloc",
+          "metodo": "nubes de polvo - Alcantarillas"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Garbodor",
+          "drop": "Dropea Lodo Negro y raramente Pepita",
+          "metodo": "nubes de polvo - Alcantarillas"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Solosis Z",
+          "drop": "Dropea Fluido Onírico y raramente Pokétoxina",
+          "metodo": "nubes de polvo - Alcantarillas"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Duosion Z",
+          "drop": "Dropea Fluido Onírico y raramente Pokétoxina",
+          "metodo": "nubes de polvo - Alcantarillas"
+        }
+      ]
+    },
+    {
+      "zona": "BASTIÓN DE LA REGENTE BELLADONA (6º MEDALLA)",
+      "linea": 5865,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Gengar",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo - Son atrapables"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Crobat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo - Son atrapables"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Drapion",
+          "drop": "Dropea Flecha Venenosa",
+          "metodo": "nubes de polvo - Son atrapables"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Scolipede",
+          "drop": "Dropea Baya Meloc y raramente Flecha Venenosa",
+          "metodo": "nubes de polvo - Son atrapables"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Salazzle",
+          "drop": "No tiene drop Regente Belladona Tiene disponible dos Hiperpociones como objetos curativos NIVEL OBJETO HABILIDAD NATURALEZA 52 GLOBO HELIO CAPA TÓXICA NEUTRA MOVIMIENTOS BOMBA LODO JOYA DE LUZ TIERRA VIVA CARGA- TÓXICA NIVEL OBJETO HABILIDAD NATURALEZA 52 GEMA VOL. FRANCO- NEUTRA TIRADOR MOVIMIENTOS ACRÓBATA VENENO X ONDA ÍGNEA IDA Y VUELTA NIVEL OBJETO HABILIDAD NATURALEZA 53 BANDA IMPULSO +ATK FOCUS -ATK. ESP MOVIMIENTOS TIJERA X PUYA NOCIVA TERRA- DANZA TEMBLOR ESPADA NIVEL OBJETO HABILIDAD NATURALEZA 53 VIDASFERA CUE. PURO/ NEUTRA PÚAS LODOLÍQUIDO TÓXICAS MOVIMIENTOS NIVEL 54 CARGA RAYO HIELO HIDROBOMBA TÓXICA COLMILLO VENENO OBJETO HABILIDAD NATURALEZA BAYA ZIDRA AMOR FILIAL -ATK.ESP +VEL MOVIMIENTOS GARRA TRITURAR COLMILLO DRAGÓN HIELO Consejos de batalla: Empezará con un Glimmora, no podemos dejar que active su habilidad por lo que deberemos golpearle por la parte especial, además tiene Globo Helio, no podremos aprovechar su debilidad x4. Crobat cuenta con el combo de Acróbata + Gema Voladora, deberemos prepararnos para sufrir eso con algún tanque, un Pokémon de tipo Roca frenaría en seco a Crobat. Scolipede puede ser un rodillo si combina Danza Espada con Impulso y se sube la velocidad, un Pokémon de tipo Acero le bloquearía los 2 stabs pero tiene movimiento de tipo Tierra por la cobertura. Tentacruel deberá caer por la defensa física, cuenta con un set variado y es peligroso por tener la Vidasfera, ataques físicos de Tierra, Eléctrico o Psíquico serán lo ideal. Serdupla será el mayor problema, siempre golpeará 2 veces por su habilidad, podemos usar algún Pokémon de tipo Acero para que sus 2 stabs sean neutralizados pero este combate no será nada fácil si alguno de sus Pokémon consigue meter las Púas Tóxicas Tras finalizar el combate con una victoria, Belladona nos entregará la Medalla Espina, la",
+          "metodo": "nubes de polvo - Son atrapables"
+        }
+      ]
+    },
+    {
+      "zona": "CRIPTAS DE LUMINALIA (Opcional)",
+      "linea": 6197,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Houndour",
+          "drop": "Dropea Brasa Candente y raramente Extracto Sombrío",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Garbodor",
+          "drop": "Dropea Lodo Negro y raramente Pepita",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Lampent",
+          "drop": "Dropea Ectoplasma y raramente Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Klefki",
+          "drop": "Dropea Virutas Férreas y raramente Azúcar Meloso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Hypno",
+          "drop": "Dropea Fluido Onírico y raramente Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Spiritomb",
+          "drop": "Dropea Ectoplasma y raramente Extracto Sombrío",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Acceder a las Catacumbas Septentrionales (Opcional)",
+      "linea": 6290,
+      "pokemon": [
+        {
+          "porcentaje": "28%",
+          "nombre": "Noibat",
+          "drop": "Dropea Baya Aranja y raramente Baya Zidra",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Ariados",
+          "drop": "Dropea Antídoto y raramente Flecha Venenosa",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "25%",
+          "nombre": "Glimmet",
+          "drop": "Dropea Mineral Extraño y raramente Poketoxina",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Misdreavus",
+          "drop": "Dropea Ectoplasma y raramente Polvo de Hueso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Glimmora",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Sima Ardiente (Opcional)",
+      "linea": 7472,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Turtonator",
+          "drop": "Dropea Brasa candente y raramente Carbón",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Carkol",
+          "drop": "Dropea Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Darumaka",
+          "drop": "Dropea Baya Safre y raramente Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Darmanitan",
+          "drop": "Dropea Baya Safre y raramente Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Magcargo",
+          "drop": "Dropea Brasa Candente",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Onix",
+          "drop": "Dropea Mineral Extraño y raramente Grava Seca",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Steelix",
+          "drop": "Dropea Rev. Metálico",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Catacumbas Orientales (Opcional)",
+      "linea": 7524,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Claydol",
+          "drop": "Dropea Fluido Onírico y raramente Grava Seca",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Sigilyph",
+          "drop": "Dropea Fluido Onírico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Dusclops",
+          "drop": "Dropea Ectoplasma",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Golurk",
+          "drop": "Dropea Ectoplasma y raramente Refleluz",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Golbat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Crobat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva de Isla Montesanto (Opcional)",
+      "linea": 8324,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Pyukumuku",
+          "drop": "Dropea Agua Vital",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Dhelmise",
+          "drop": "Dropea Ectoplasma y raramente Semilla Milagro",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Malamar",
+          "drop": "Dropea Extracto Sombrío y raramente Fluido Onírico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Corsola",
+          "drop": "Dropea Piedra Dura",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "14%",
+          "nombre": "Wimpod",
+          "drop": "Dropea Agua Vital y Rocío Matinal",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "6%",
+          "nombre": "Golisopod",
+          "drop": "Dropea Agua Vital y Rocío Matinal",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "GRUTA HELADA",
+      "linea": 9257,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Delibird",
+          "drop": "Dropea Baya Aranja y raramente Baya Zidra",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Cetitan",
+          "drop": "Dropea Esquirlas Frías",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "14%",
+          "nombre": "Cryogonal",
+          "drop": "Dropea Esquirlas Frías y raramente Antiderretir",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Bergmite",
+          "drop": "Dropea Esquirlas Frías",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Avalugg",
+          "drop": "Dropea Esquirlas Frías",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Glalie",
+          "drop": "Dropea Esquirlas Frías y raramente Baya Baribá",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Froslass",
+          "drop": "Dropea Ectoplasma y raramente Baya Baribá",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "6%",
+          "nombre": "Frigibax",
+          "drop": "Dropea Escama Dura",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "ANTIGUA FORJA INUNDADA",
+      "linea": 9840,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Solrock",
+          "drop": "Dropea Mineral Extraño y raramente Piedra Solar",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Lunatone",
+          "drop": "Dropea Mineral Extraño y raramente Piedra Lunar",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Golurk",
+          "drop": "Dropea Ectoplasma y raramente Refleluz",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Carbink",
+          "drop": "Dropea Mineral Extraño y raramente Azúcar Meloso",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "14%",
+          "nombre": "Eelektrik",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "6%",
+          "nombre": "Eelektross",
+          "drop": "Dropea Polvo Brillante",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "Cueva Desenlace (Opcional)",
+      "linea": 10203,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Marowak Z",
+          "drop": "Dropea Cola Plúmbea",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Druddigon",
+          "drop": "Dropea Escama Dura y raramente Colmillo Dragón",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Excadrill",
+          "drop": "Dropea Grava Seca y raramente Virutas Férreas",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Dugtrio",
+          "drop": "Dropea Grava Seca y raramente Arena Fina",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Gurdurr",
+          "drop": "Dropea Fibra Elástica y raramente Virutas Férreas",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Larvitar",
+          "drop": "Dropea Mineral Extraño y raramente Grava Seca",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "10%",
+          "nombre": "Pupitar",
+          "drop": "Dropea Mineral Extraño y raramente Grava Seca",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Lairon",
+          "drop": "Dropea Piedra Dura",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Shuckle",
+          "drop": "Dropea Zumo de Baya",
+          "metodo": "nubes de polvo - Planta Baja, Sótano 1 y Sótano 2"
+        }
+      ]
+    },
+    {
+      "zona": "Catacumbas Orientales (Opcional)",
+      "linea": 10632,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Claydol",
+          "drop": "Dropea Fluido Onírico y raramente Grava Seca",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Sigilyph",
+          "drop": "Dropea Fluido Onírico",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Dusclops",
+          "drop": "Dropea Ectoplasma",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Golurk",
+          "drop": "Dropea Ectoplasma y raramente Refleluz",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "18%",
+          "nombre": "Golbat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "2%",
+          "nombre": "Crobat",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    },
+    {
+      "zona": "CATACUMBAS OCCIDENTALES",
+      "linea": 12589,
+      "pokemon": [
+        {
+          "porcentaje": "20%",
+          "nombre": "Gengar",
+          "drop": "No tiene drop",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Mawile",
+          "drop": "Dropea Virutas Férreas y raramente Baya Caoca",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Swalot",
+          "drop": "Dropea Poketoxina y raramente Perla Grande",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Alakazam",
+          "drop": "Dropea Fluido Onírico y raramente Cuchara Torcida",
+          "metodo": "nubes de polvo"
+        },
+        {
+          "porcentaje": "20%",
+          "nombre": "Parasect Z",
+          "drop": "Dropea Mini Seta, raramente Seta Grande y muy raramente Seta Aroma",
+          "metodo": "nubes de polvo"
+        }
+      ]
+    }
+  ]
+}

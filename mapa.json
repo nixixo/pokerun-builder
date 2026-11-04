@@ -1,0 +1,611 @@
+[
+  {
+    "kind": "ciudad",
+    "id": "1785280658852-diew5",
+    "xPct": 61.60092807424594,
+    "yPct": 87.25455582412211,
+    "zoneId": "zone-d418ecfbc8a4453c8507927745bf8c25"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1785280705568-d6l7a",
+    "xPct": 64.73317865429235,
+    "yPct": 87.08074196789876,
+    "zoneId": "zone-60d639ee847c402080a69d2d854c1606"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1785280713504-b867o",
+    "xPct": 74.70997679814386,
+    "yPct": 92.46897151082263,
+    "zoneId": "zone-80b3847baa6b49908d89be7e73c75a25"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283722927-jzqvu",
+    "xPct": 61.49553571428571,
+    "yPct": 77.4247491638796,
+    "zoneId": "zone-19136a22de5d4933b254bb86a5baa1e2"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283741568-o4j0e",
+    "xPct": 61.38392857142857,
+    "yPct": 67.05685618729098,
+    "zoneId": "zone-5fd8c74a2c4b4461862c6807bd547b95"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283760574-2de2w",
+    "xPct": 64.73214285714286,
+    "yPct": 72.24080267558529,
+    "zoneId": "zone-00c43a703cb94756bae3facd42486209"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283771971-i428x",
+    "xPct": 69.19642857142857,
+    "yPct": 67.22408026755853,
+    "zoneId": "zone-6d676659ec804e809620aab18edec031"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283782037-zjpaf",
+    "xPct": 78.01339285714286,
+    "yPct": 67.22408026755853,
+    "zoneId": "zone-225474bb299041a0855d55cdf576d413"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283799919-i5lsq",
+    "xPct": 71.42857142857143,
+    "yPct": 62.207357859531776,
+    "zoneId": "zone-225474bb299041a0855d55cdf576d413"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283811150-7l6r8",
+    "xPct": 85.26785714285714,
+    "yPct": 67.55852842809364,
+    "zoneId": "zone-d093cd12c7f649b0bef5849aed2fc0a6"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283820191-ed09j",
+    "xPct": 91.85267857142857,
+    "yPct": 67.7257525083612,
+    "zoneId": "zone-65e302ef1dda40af81116dcd6a0594e4"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283831191-p34eq",
+    "xPct": 94.86607142857143,
+    "yPct": 62.207357859531776,
+    "zoneId": "zone-1030d3571f2d48e091eeb6adc7550a4b"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283844020-6w2dc",
+    "xPct": 78.23660714285714,
+    "yPct": 59.53177257525084,
+    "zoneId": "zone-54d0933b093649458c6038a8d6deb0cc"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283854143-pm1tm",
+    "xPct": 81.58482142857143,
+    "yPct": 57.35785953177257,
+    "zoneId": "zone-3cc907b36d004015996fd0f351d4d3c1"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283862707-6a8pb",
+    "xPct": 78.125,
+    "yPct": 52.34113712374582,
+    "zoneId": "zone-f0f56c6e773a4323a4fcdcb0920b28a7"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283880083-oa1m3",
+    "xPct": 84.70982142857143,
+    "yPct": 51.83946488294314,
+    "zoneId": "zone-d7e3e369108e4f8f8a4dff493214ab1f"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283887741-pdcpo",
+    "xPct": 91.62946428571429,
+    "yPct": 52.17391304347826,
+    "zoneId": "zone-016b6ca153de45dba14a2bc10a35d442"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283897240-hvrsx",
+    "xPct": 94.41964285714286,
+    "yPct": 44.481605351170565,
+    "zoneId": "zone-818b31cd395c46508148cc841985fd64"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283906875-oefmr",
+    "xPct": 74.88839285714286,
+    "yPct": 45.1505016722408,
+    "zoneId": "zone-d4793998e91b41f9af4e29a7e2fffc2c"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283915883-8ie3l",
+    "xPct": 71.54017857142857,
+    "yPct": 42.30769230769231,
+    "zoneId": "zone-182f0e5584ad48a3beb06f78dfe7d45f"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283926865-dk42b",
+    "xPct": 74.88839285714286,
+    "yPct": 32.274247491638796,
+    "zoneId": "zone-764e459cf4644514bc5a31fbcccac2b5"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283945097-gx6rb",
+    "xPct": 74.88839285714286,
+    "yPct": 21.906354515050168,
+    "zoneId": "zone-702ba1cbcf94467c8c496b16b48fc791"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283952004-pipq3",
+    "xPct": 75,
+    "yPct": 12.54180602006689,
+    "zoneId": "zone-7e05dece9922452b97bd5a22d17a9a4a"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283964615-km4f1",
+    "xPct": 75,
+    "yPct": 7.357859531772576,
+    "zoneId": "zone-91ba27b7ccce48a1bc424566042e0afc"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792283969689-00sws",
+    "xPct": 82.14285714285714,
+    "yPct": 7.357859531772576,
+    "zoneId": "zone-b0cdb9b5ce3a49b89c1218aa75c72a39"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283977703-5xyx9",
+    "xPct": 79.12946428571429,
+    "yPct": 3.177257525083612,
+    "zoneId": "zone-339769264a51497da4b568c492fd609b"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792283984867-i8so1",
+    "xPct": 88.16964285714286,
+    "yPct": 7.357859531772576,
+    "zoneId": "zone-2ffb60c0b57341389f0b940cd7b10105"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792283995050-v212h",
+    "xPct": 94.41964285714286,
+    "yPct": 4.682274247491638,
+    "zoneId": "zone-214436a0cf714f10b3fb99e22413dd2b"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284002187-7v47c",
+    "xPct": 91.07142857142857,
+    "yPct": 14.381270903010032,
+    "zoneId": "zone-fda2fe952ef44f4798d879eae291ad7f"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284010418-h482r",
+    "xPct": 88.05803571428571,
+    "yPct": 14.381270903010032,
+    "zoneId": "zone-677b74c2617f426590567913ee25016b"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284015026-ssq5q",
+    "xPct": 88.05803571428571,
+    "yPct": 21.57190635451505,
+    "zoneId": "zone-fec134e03f2e4dd4b38450ba7cbc0870"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284029171-omv30",
+    "xPct": 94.19642857142857,
+    "yPct": 22.5752508361204,
+    "zoneId": "zone-494d391f89a2475da0c2c7195c4d64d2"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284037825-txtjv",
+    "xPct": 88.16964285714286,
+    "yPct": 27.257525083612038,
+    "zoneId": "zone-67c4fa19ce7f4b5690dd808dc31ad095"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284043710-dglxi",
+    "xPct": 87.94642857142857,
+    "yPct": 32.441471571906355,
+    "zoneId": "zone-de2e8f2fb29549668c7318a7b9fed314"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284056576-hgnij",
+    "xPct": 91.51785714285714,
+    "yPct": 33.11036789297659,
+    "zoneId": "zone-1030d3571f2d48e091eeb6adc7550a4b"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284066553-d54se",
+    "xPct": 81.02678571428571,
+    "yPct": 22.240802675585282,
+    "zoneId": "zone-04f2edb6e7554eed8a8cd6da00f4fdad"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284083954-06z0v",
+    "xPct": 68.30357142857143,
+    "yPct": 27.09030100334448,
+    "zoneId": "zone-df4b2f595e9749eaa5ee4d7c7bebd0a6"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284096545-ine6w",
+    "xPct": 61.49553571428571,
+    "yPct": 32.441471571906355,
+    "zoneId": "zone-acadfd308be7416b9cc617dff9e84d2e"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284103310-xyuys",
+    "xPct": 64.84375,
+    "yPct": 32.274247491638796,
+    "zoneId": "zone-508e2970d1aa4cf7a1cd9e56ed313682"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284124365-uwy2r",
+    "xPct": 62.5,
+    "yPct": 21.73913043478261,
+    "zoneId": "zone-1d593568592d438a988572da7d1c1a65"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284133856-kqf5q",
+    "xPct": 58.25892857142857,
+    "yPct": 17.05685618729097,
+    "zoneId": "zone-49bf4bfded8941309144ecc504962dfe"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284142309-wicoc",
+    "xPct": 64.95535714285714,
+    "yPct": 12.37458193979933,
+    "zoneId": "zone-10529b9119df4168995a7bb98a6ecf86"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284150865-922s0",
+    "xPct": 69.97767857142857,
+    "yPct": 12.040133779264215,
+    "zoneId": "zone-383be9961f954a1a91e71e4fcffc0b63"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284160526-a9p62",
+    "xPct": 62.5,
+    "yPct": 4.849498327759197,
+    "zoneId": "zone-80b3847baa6b49908d89be7e73c75a25"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284175126-onzx8",
+    "xPct": 54.91071428571429,
+    "yPct": 32.10702341137124,
+    "zoneId": "zone-b521d45ba9584f2b91855f14b72d1446"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284185745-o3ras",
+    "xPct": 61.60714285714286,
+    "yPct": 42.30769230769231,
+    "zoneId": "zone-ef75247b5ce54ea292aa2ec711f36e9a"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284192927-3tihe",
+    "xPct": 64.84375,
+    "yPct": 42.474916387959865,
+    "zoneId": "zone-cbd9c8eb95114a99939fc0e8e77aa9d3"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284201166-dfcsq",
+    "xPct": 64.84375,
+    "yPct": 52.0066889632107,
+    "zoneId": "zone-cf8627f28ae34cc295517e10d9d824e0"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284209786-3tirl",
+    "xPct": 64.73214285714286,
+    "yPct": 57.35785953177257,
+    "zoneId": "zone-b914b0f4b06149b09c9a52f9c1a5f3bd"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284214368-ntlf6",
+    "xPct": 61.60714285714286,
+    "yPct": 57.02341137123745,
+    "zoneId": "zone-1eec0ff3448b413ab33715cc6a537b5c"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284223787-8eto8",
+    "xPct": 52.90178571428571,
+    "yPct": 56.020066889632105,
+    "zoneId": "zone-6d63c6005a684739b7addb6672d538c7"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284230765-f9xxy",
+    "xPct": 48.325892857142854,
+    "yPct": 52.17391304347826,
+    "zoneId": "zone-687d1aa3a95348bdbcf27e156d4d27e8"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284238286-5c3z3",
+    "xPct": 41.74107142857143,
+    "yPct": 57.19063545150501,
+    "zoneId": "zone-91f4dd4885514043a097bcdb8f522d24"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284245903-9r2al",
+    "xPct": 44.97767857142857,
+    "yPct": 62.374581939799334,
+    "zoneId": "zone-d0d658a31436475b961c576214fffdba"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284256425-7ynaf",
+    "xPct": 38.392857142857146,
+    "yPct": 52.508361204013376,
+    "zoneId": "zone-e279b335d11e4ae79a879eb933f76009"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284266449-sk18y",
+    "xPct": 41.74107142857143,
+    "yPct": 72.40802675585284,
+    "zoneId": "zone-391dc49056a646e4ac91cdab401a7190"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284277089-s4q47",
+    "xPct": 28.348214285714285,
+    "yPct": 72.24080267558529,
+    "zoneId": "zone-8451ade6bb85439484c3a481fd1a0ead"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284297667-43tmn",
+    "xPct": 28.348214285714285,
+    "yPct": 87.29096989966555,
+    "zoneId": "zone-bc5b93b32e994d96bbb287385d269906"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284312589-0q60q",
+    "xPct": 52.90178571428571,
+    "yPct": 87.62541806020067,
+    "zoneId": "zone-58aed21b705347dda40a775165689792"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284322502-u0vmc",
+    "xPct": 44.419642857142854,
+    "yPct": 87.29096989966555,
+    "zoneId": "zone-314b8dd38b2a4d13913fa52a76b95c9b"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284331485-bwkqz",
+    "xPct": 44.53125,
+    "yPct": 79.59866220735786,
+    "zoneId": "zone-a1f321ff64624d639d9d80b15c6a1c1d"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284341953-gftwm",
+    "xPct": 23.772321428571427,
+    "yPct": 87.29096989966555,
+    "zoneId": "zone-dda94d8ebe3b4d5c89c28b1ad12bcc35"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284348175-julmx",
+    "xPct": 18.303571428571427,
+    "yPct": 87.29096989966555,
+    "zoneId": "zone-8ed2b9348f1d4dfdab5dbd4f78055f7d"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284356668-lnvpx",
+    "xPct": 14.508928571428573,
+    "yPct": 89.13043478260869,
+    "zoneId": "zone-47b977a739074194b44af2788f2d21e8"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284360794-xa6fk",
+    "xPct": 11.71875,
+    "yPct": 81.93979933110369,
+    "zoneId": "zone-8d449c574b534fcda8e7e3562ea6ad68"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284368958-lhvbq",
+    "xPct": 18.303571428571427,
+    "yPct": 78.09364548494983,
+    "zoneId": "zone-b45fa94767ac4718bb44dcd32328374e"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284377284-xe5yx",
+    "xPct": 18.191964285714285,
+    "yPct": 71.90635451505017,
+    "zoneId": "zone-75fcbc838277443ea3aa692dad507de0"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284438933-2qbdb",
+    "xPct": 18.191964285714285,
+    "yPct": 62.87625418060201,
+    "zoneId": "zone-303a9fb2744d4de98cde7d79cb2fb68f"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284446171-13frt",
+    "xPct": 18.191964285714285,
+    "yPct": 52.0066889632107,
+    "zoneId": "zone-7b753ab5573b4d7bbae6ceab0b3beec3"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284506190-l2h1w",
+    "xPct": 50.44642857142857,
+    "yPct": 47.15719063545151,
+    "zoneId": "zone-dbac483131e94a4abf5db6eb8c05b789"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284516335-i3hg2",
+    "xPct": 38.392857142857146,
+    "yPct": 47.15719063545151,
+    "zoneId": "zone-d609ae56ad614388b96186fc2c094a24"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284532495-syl55",
+    "xPct": 28.236607142857146,
+    "yPct": 52.34113712374582,
+    "zoneId": "zone-5ca9838e8c0748cb8f6a7ce73588ac3c"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284541805-3l38j",
+    "xPct": 25.558035714285715,
+    "yPct": 47.324414715719065,
+    "zoneId": "zone-abb120c43de9460b921f71151a712830"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284558350-h8edj",
+    "xPct": 28.348214285714285,
+    "yPct": 42.30769230769231,
+    "zoneId": "zone-ca46a470b2734d989ded1d52ca1d9005"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284566212-6qfu6",
+    "xPct": 34.933035714285715,
+    "yPct": 42.30769230769231,
+    "zoneId": "zone-8d048300f30c4258b08f14f38ac02e65"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284583071-bq5hn",
+    "xPct": 48.214285714285715,
+    "yPct": 37.29096989966555,
+    "zoneId": "zone-2ccdd700f4214810a31c60ac1c686a4f"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284601252-4x52i",
+    "xPct": 48.10267857142857,
+    "yPct": 25.25083612040134,
+    "zoneId": "zone-a16a757b7f9642a18f1196ecf1cd4491"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284613408-488jp",
+    "xPct": 48.10267857142857,
+    "yPct": 17.892976588628763,
+    "zoneId": "zone-01bf285384d243eba57fa8ce231f383a"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284619596-b3m1x",
+    "xPct": 44.97767857142857,
+    "yPct": 12.37458193979933,
+    "zoneId": "zone-90b4361f1f7146158dae2768f779ca55"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284628521-3bqg6",
+    "xPct": 35.60267857142857,
+    "yPct": 4.849498327759197,
+    "zoneId": "zone-3da5d3287cc64013972d66d7425a3e9d"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284646884-t2rig",
+    "xPct": 33.59375,
+    "yPct": 17.391304347826086,
+    "zoneId": "zone-d6000f6905a243a0a84a6fbc24c583c0"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284655910-juyi3",
+    "xPct": 25.111607142857146,
+    "yPct": 17.391304347826086,
+    "zoneId": "zone-3086263c23c04016a38dd6bf1547b7cd"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284661364-qa74f",
+    "xPct": 25,
+    "yPct": 11.37123745819398,
+    "zoneId": "zone-beb5bfdae2344a7881b75a1c2db5e091"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284686298-75lbr",
+    "xPct": 13.727678571428573,
+    "yPct": 32.77591973244147,
+    "zoneId": "zone-d4b3498c02bf49fd8aa76574f5c7ed7a"
+  },
+  {
+    "kind": "ruta",
+    "id": "1792284694840-mv78a",
+    "xPct": 20.089285714285715,
+    "yPct": 24.91638795986622,
+    "zoneId": "zone-d5b004850e8a4ec5a55a46ca01023815"
+  },
+  {
+    "kind": "secundaria",
+    "id": "1792284715428-lf120",
+    "xPct": 85.82589285714286,
+    "yPct": 88.2943143812709,
+    "zoneId": "zone-28656595f9484d7a903938eb5ba145ff"
+  },
+  {
+    "kind": "ciudad",
+    "id": "1792284726091-f8w0v",
+    "xPct": 89.28571428571429,
+    "yPct": 92.80936454849498,
+    "zoneId": "zone-e8cc0f872bf947ad836ffca1e2e67ae6"
+  }
+]

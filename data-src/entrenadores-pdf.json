@@ -1,0 +1,2257 @@
+[
+  {
+    "zona": "Ruta 2",
+    "seccion": "Ruta 2",
+    "entrenadores": [
+      {
+        "nombre": "Campesino Jean",
+        "equipo": [
+          "Bunnelby, nivel 6.",
+          "Scatterbug, nivel 6."
+        ]
+      },
+      {
+        "nombre": "Campesina Pauline",
+        "equipo": [
+          "Pichu, nivel 7."
+        ]
+      },
+      {
+        "nombre": "Campesino Pierre",
+        "equipo": [
+          "Fletchling, nivel 6.",
+          "Bidoof Z (Normal Hielo), nivel 7."
+        ]
+      },
+      {
+        "nombre": "Burgués Remi",
+        "equipo": [
+          "Spritzee, nivel 8."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Cueva Grisalla",
+    "seccion": "Cueva Grisalla",
+    "entrenadores": [
+      {
+        "nombre": "Ladrona Vin",
+        "equipo": [
+          "Zigzagoon de Galar, nivel 8.",
+          "Roggenrola, nivel 8.",
+          "Venonat, nivel 9."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 3",
+    "seccion": "Ruta 3",
+    "entrenadores": [
+      {
+        "nombre": "Burguesa Rena",
+        "equipo": [
+          "Swirlix, nivel 10."
+        ]
+      },
+      {
+        "nombre": "Campesino Gerald",
+        "equipo": [
+          "Wooper, nivel 10.",
+          "Burmy, nivel 11."
+        ]
+      },
+      {
+        "nombre": "Ladrona Medea",
+        "equipo": [
+          "Drowzee, nivel 10.",
+          "Sandile, nivel 11."
+        ]
+      },
+      {
+        "nombre": "Campesina Vero",
+        "equipo": [
+          "Budew, nivel 12."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 4",
+    "seccion": "Ruta 4",
+    "entrenadores": [
+      {
+        "nombre": "Burguesa Amarna",
+        "equipo": [
+          "Staryu, nivel 14."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BOSQUE LADERA ZONA 1",
+    "seccion": "Bosque Ladera",
+    "entrenadores": [
+      {
+        "nombre": "Campesina Maya",
+        "equipo": [
+          "Skiddo, nivel 14.",
+          "Kakuna, nivel 15."
+        ]
+      },
+      {
+        "nombre": "Ladrona Asta",
+        "equipo": [
+          "Poochyena, nivel 15.",
+          "Joltik, nivel 15."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 4 Parte 2",
+    "seccion": "Ruta 4 Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Burgués Fibo",
+        "equipo": [
+          "Espurr, nivel 15.",
+          "Eevee, nivel 15."
+        ]
+      },
+      {
+        "nombre": "Mosqueteros Leandro y Laura",
+        "equipo": [
+          "Riolu, nivel 16. Golpe Roca, Ataque Rápido, Garra Metal, Puño Bala.",
+          "Scorbunny, nivel 15. Doble Patada, Nitrocarga."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BOSQUE LADERA PARTE 2",
+    "seccion": "Bosque Ladera Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Recluta Azoth Rubenchu",
+        "equipo": [
+          "Cacnea, nivel 16.",
+          "Solosis Z (Psíquico Veneno), nivel 16. Confusión, Luz Decadente (Hada)"
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Winona",
+        "equipo": [
+          "Solosis Z (Psíquico Veneno), nivel 16. Bomba Ácida, Luz Decadente (Hada)",
+          "Nidorino, nivel 16."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Teófilo",
+        "equipo": [
+          "Morgrem, nivel 17. Mordisco, Sorpresa, Luz Decadente (Hada)"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 5",
+    "seccion": "Ruta 5",
+    "entrenadores": [
+      {
+        "nombre": "Curandera Merce",
+        "equipo": [
+          "Shuppet, nivel 18.",
+          "Swadloon, nivel 18."
+        ]
+      },
+      {
+        "nombre": "Ilustrado Andrés",
+        "equipo": [
+          "Kadabra, nivel 19."
+        ]
+      },
+      {
+        "nombre": "Campesino Daniel",
+        "equipo": [
+          "Skiddo, nivel 18.",
+          "Graveler, nivel 19"
+        ]
+      },
+      {
+        "nombre": "Burguesa Diana",
+        "equipo": [
+          "Skiploom, nivel 20."
+        ]
+      },
+      {
+        "nombre": "Curandera Maya",
+        "equipo": [
+          "Pansage, nivel 19.",
+          "Panpour ,nivel 19.",
+          "Pansear, nivel 19."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BASTIÓN DEL REGENTE HISOPO (2º MEDALLA)",
+    "seccion": "Bastión Pokémon Ciudad Óleo",
+    "entrenadores": [
+      {
+        "nombre": "Ilustrado Feric",
+        "equipo": [
+          "Golett, nivel 22.",
+          "Yamask Z (Fantasma), nivel 22."
+        ]
+      },
+      {
+        "nombre": "Ilustrado Marco",
+        "equipo": [
+          "Haunter, nivel 22.",
+          "Frillish, nivel 22."
+        ]
+      },
+      {
+        "nombre": "Cantante María",
+        "equipo": [
+          "Sinistea, nivel 22."
+        ]
+      },
+      {
+        "nombre": "Cantante Mía",
+        "equipo": [
+          "Pumpkaboo, nivel 22.",
+          "Yamask Z (Fantasma), nivel 22.",
+          "Litwick, nivel 22."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "CHATEAU ROSILLON",
+    "seccion": "Chateau Rosillon",
+    "entrenadores": [
+      {
+        "nombre": "Doncella Helga",
+        "equipo": [
+          "Shellos, nivel 24.",
+          "Kirlia, nivel 23."
+        ]
+      },
+      {
+        "nombre": "Metre Maurice",
+        "equipo": [
+          "Marill, nivel 24",
+          "Pachirisu, nivel 23."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "ANTIGUA BIBLIOTECA",
+    "seccion": "Antigua Biblioteca",
+    "entrenadores": [
+      {
+        "nombre": "Doncella Amelie",
+        "equipo": [
+          "Misdreavus, nivel 24."
+        ]
+      },
+      {
+        "nombre": "Metre Mario",
+        "equipo": [
+          "Haunter, nivel 24."
+        ]
+      },
+      {
+        "nombre": "Metre Gero",
+        "equipo": [
+          "Golett, nivel 24.",
+          "Doublade, nivel 24."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 6",
+    "seccion": "Ruta 6",
+    "entrenadores": [
+      {
+        "nombre": "Hermanas Misteriosas Molly y Mila",
+        "equipo": [
+          "Roselia, nivel 25.",
+          "Houndour, nivel 24."
+        ]
+      },
+      {
+        "nombre": "Cazador Ludwig",
+        "equipo": [
+          "Staravia, nivel 25.",
+          "Krokorok nivel 25."
+        ]
+      },
+      {
+        "nombre": "Cazador Germán",
+        "equipo": [
+          "Croagunk, nivel 25.",
+          "Sneasel, nivel 25."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Amicia",
+        "equipo": [
+          "Solosis Z (Psíquico Veneno), nivel 25. Bomba Ácida, Luz Decadente (Hada),"
+        ]
+      },
+      {
+        "nombre": "Psicorrayo",
+        "equipo": [
+          "Dottler, nivel 25. Estoicismo, Luz Decadente (Hada), Psicorrayo"
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Hugo",
+        "equipo": [
+          "Solosis Z (Psíquico Veneno), nivel 25. Bomba Ácida, Luz Decadente (Hada),"
+        ]
+      },
+      {
+        "nombre": "Psicorrayo",
+        "equipo": [
+          "Golbat, nivel 25. Aire Afilado, Luz Decadente (Hada), Colmillo Venenoso"
+        ]
+      },
+      {
+        "nombre": "Brujita Aida",
+        "equipo": [
+          "Murkrow, nivel 25."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PANTANO PROFANO",
+    "seccion": "Pantano Profano",
+    "entrenadores": [
+      {
+        "nombre": "Cazador Tilador",
+        "equipo": [
+          "Psyduck, nivel 26.",
+          "Gligar, nivel 26."
+        ]
+      },
+      {
+        "nombre": "Bruja Carla",
+        "equipo": [
+          "Hattrem, nivel 26."
+        ]
+      },
+      {
+        "nombre": "Curandera Alicia",
+        "equipo": [
+          "Chinchou, nivel 26.",
+          "Lombre, nivel 26."
+        ]
+      },
+      {
+        "nombre": "Cazador Lawrence",
+        "equipo": [
+          "Arbok, nivel 27."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Cueva Refulgente",
+    "seccion": "Cueva Refulgente",
+    "entrenadores": [
+      {
+        "nombre": "Alquimista Noelia",
+        "equipo": [
+          "Voltorb, nivel 27.",
+          "Voltorb, nivel 29.",
+          "Voltorb Hisui, nivel 28.",
+          "Electrode Hisui, nivel 28."
+        ]
+      },
+      {
+        "nombre": "Alquimista Elisa",
+        "equipo": [
+          "Luxio, nivel 28.",
+          "Bellibolt, nivel 27."
+        ]
+      },
+      {
+        "nombre": "Burgués Gerard",
+        "equipo": [
+          "Glameow, nivel 28.",
+          "Persian, nivel 28."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Cueva Refulgente Parte 2",
+    "seccion": "Cueva Refulgente Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Curandera Samira",
+        "equipo": [
+          "Tangela, nivel 29."
+        ]
+      },
+      {
+        "nombre": "Ladrona Amaya",
+        "equipo": [
+          "Murkrow, nivel 28.",
+          "Thievul, nivel 29."
+        ]
+      },
+      {
+        "nombre": "Alquimista Luciana",
+        "equipo": [
+          "Magneton, nivel 28."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "COLINA DE TORMENTA",
+    "seccion": "Colina de Tormenta",
+    "entrenadores": [
+      {
+        "nombre": "Alquimista Margot",
+        "equipo": [
+          "Volbeat, nivel 30.",
+          "Illumise, nivel 30."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BASTIÓN DEL REGENTE F3 (3º MEDALLA)",
+    "seccion": "Bastión Pokémon 1º Sala",
+    "entrenadores": [
+      {
+        "nombre": "Alquimista Liama",
+        "equipo": [
+          "Magnemite, nivel 32.",
+          "Wattrel, nivel 32."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BASTIÓN DEL REGENTE F3 (3º MEDALLA)",
+    "seccion": "Bastión Pokémon 2º Sala",
+    "entrenadores": [
+      {
+        "nombre": "Alquimista Benjamina (Es combate doble)",
+        "equipo": [
+          "Plusle, nivel 32.",
+          "Minun, nivel 32."
+        ]
+      },
+      {
+        "nombre": "Alquimista Viviana",
+        "equipo": [
+          "Electabuzz, nivel 32."
+        ]
+      },
+      {
+        "nombre": "Alquimista Luna",
+        "equipo": [
+          "Eelektrik, nivel 32."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 8",
+    "seccion": "Ruta 8",
+    "entrenadores": [
+      {
+        "nombre": "Jardinero Romerales",
+        "equipo": [
+          "Corphish, nivel 32.",
+          "Corphish, nivel 33."
+        ]
+      },
+      {
+        "nombre": "Jardinero Pinares",
+        "equipo": [
+          "Crawdaunt, nivel 32."
+        ]
+      },
+      {
+        "nombre": "Jardinero Gabriel",
+        "equipo": [
+          "Roselia, nivel 32.",
+          "Wormadam, nivel 32."
+        ]
+      },
+      {
+        "nombre": "Jardinero Tobías",
+        "equipo": [
+          "Scyther, nivel 32."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 8 Parte 3",
+    "seccion": "Ruta 8 Parte 3",
+    "entrenadores": [
+      {
+        "nombre": "Jardinero Julio",
+        "equipo": [
+          "Pawniard, nivel 33.",
+          "Roselia, nivel 33."
+        ]
+      },
+      {
+        "nombre": "Niña Soñadora Madeline",
+        "equipo": [
+          "Togetic, nivel 32.",
+          "Slurpuff, nivel 33."
+        ]
+      },
+      {
+        "nombre": "Burguesa Valentina",
+        "equipo": [
+          "Swanna, nivel 33."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "2º SUBTRAMA DE PUEBLO BODEGÓN BASTIÓN DE LA REGENTE ZAFRA (4º MEDALLA)",
+    "seccion": "Bastión Pokémon 1º Sala",
+    "entrenadores": [
+      {
+        "nombre": "Chef Gordon",
+        "equipo": [
+          "Morelull, nivel 36.",
+          "Morelull, nivel 36.",
+          "Shiinotic, nivel 36."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "2º SUBTRAMA DE PUEBLO BODEGÓN BASTIÓN DE LA REGENTE ZAFRA (4º MEDALLA)",
+    "seccion": "Bastión Pokémon 2º Sala",
+    "entrenadores": [
+      {
+        "nombre": "Chef Ferran",
+        "equipo": [
+          "Tandemaus, nivel 36.",
+          "Milcery, nivel 36."
+        ]
+      },
+      {
+        "nombre": "Chef Carmy",
+        "equipo": [
+          "Vanillish, nivel 36."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "2º SUBTRAMA DE PUEBLO BODEGÓN BASTIÓN DE LA REGENTE ZAFRA (4º MEDALLA)",
+    "seccion": "Bastión Pokémon 3º Sala",
+    "entrenadores": [
+      {
+        "nombre": "Chef Berasategui",
+        "equipo": [
+          "Maushold, nivel 36.",
+          "Azumarill, nivel 36."
+        ]
+      },
+      {
+        "nombre": "Chef Grimod",
+        "equipo": [
+          "Granbull, nivel 37."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 9",
+    "seccion": "Ruta 9",
+    "entrenadores": [
+      {
+        "nombre": "Campesino Ginés",
+        "equipo": [
+          "Lechonk, nivel 35.",
+          "Lechonk, nivel 35.",
+          "Lechonk, nivel 36."
+        ]
+      },
+      {
+        "nombre": "Campesina Abigail",
+        "equipo": [
+          "Oinkologne, nivel 36."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 10",
+    "seccion": "Ruta 10",
+    "entrenadores": [
+      {
+        "nombre": "Cazador Turi",
+        "equipo": [
+          "Krokorok, nivel 38.",
+          "Staraptor, nivel 38."
+        ]
+      },
+      {
+        "nombre": "Ladrona Marchena",
+        "equipo": [
+          "Thievul, nivel 38.",
+          "Lampent, nivel 38."
+        ]
+      },
+      {
+        "nombre": "Dúo Mosquetero Didri y Dani",
+        "equipo": [
+          "Pawmot, nivel 38.",
+          "Doublade, nivel 38",
+          "Dragonair, nivel 39.",
+          "Sealeo, nivel 39."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "FORT LEVIATÁN",
+    "seccion": "Fort Leviatán",
+    "entrenadores": [
+      {
+        "nombre": "Revolucionario Coxer",
+        "equipo": [
+          "Cottonee, nivel 38.",
+          "Dugtrio, nivel 38."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Mikela",
+        "equipo": [
+          "Staravia, nivel 38.",
+          "Machoke, nivel 38."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Constanze",
+        "equipo": [
+          "Dunsparce, nivel 38.",
+          "Skiploom, nivel 38."
+        ]
+      },
+      {
+        "nombre": "Revolucionario Joachim",
+        "equipo": [
+          "Octillery, nivel 39."
+        ]
+      },
+      {
+        "nombre": "Revolucionario Elisa",
+        "equipo": [
+          "Miltank, nivel 39."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 11",
+    "seccion": "Ruta 11",
+    "entrenadores": [
+      {
+        "nombre": "Pirata Bonny",
+        "equipo": [
+          "Carvanha, nivel 42.",
+          "Seadra, nivel 42."
+        ]
+      },
+      {
+        "nombre": "Pirata Mary",
+        "equipo": [
+          "Sharpedo, nivel 42."
+        ]
+      },
+      {
+        "nombre": "Monsieur y Madame Emmanuel y Jaqueline",
+        "equipo": [
+          "Vaporeon, nivel 42.",
+          "Flareon, nivel 42."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 11 Parte 2",
+    "seccion": "Ruta 11 Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Revolucionario Jeremie",
+        "equipo": [
+          "Altaria, nivel 42."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Alexandra",
+        "equipo": [
+          "Sandslash, nivel 42.",
+          "Arbok, nivel 42.",
+          "Lurantis, nivel 42."
+        ]
+      },
+      {
+        "nombre": "Pirata Read",
+        "equipo": [
+          "Tentacruel, nivel 42.",
+          "Octillery, nivel 42."
+        ]
+      },
+      {
+        "nombre": "Pirata Wila",
+        "equipo": [
+          "Gyarados, nivel 42."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BARCO DEL CAPITÁN LOTO (5º MEDALLA )",
+    "seccion": "Zona Oeste del barco",
+    "entrenadores": [
+      {
+        "nombre": "Pirata Nami",
+        "equipo": [
+          "Wailmer Regional (Agua/Volador), nivel 43.",
+          "Kilowattrel, nivel 43."
+        ]
+      },
+      {
+        "nombre": "Pirata Sandra",
+        "equipo": [
+          "Mantine, nivel 44."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BARCO DEL CAPITÁN LOTO (5º MEDALLA )",
+    "seccion": "Zona Este del barco",
+    "entrenadores": [
+      {
+        "nombre": "Pirata Yolanda",
+        "equipo": [
+          "Corsola, nivel 43.",
+          "Wailmer Regional (Agua/Volador), nivel 43."
+        ]
+      },
+      {
+        "nombre": "Pirata Andrea",
+        "equipo": [
+          "Skarmory, nivel 44."
+        ]
+      },
+      {
+        "nombre": "Pirata Roxana",
+        "equipo": [
+          "Murkrow, nivel 43.",
+          "Cloyster, nivel 43."
+        ]
+      },
+      {
+        "nombre": "Pirata Eloisa",
+        "equipo": [
+          "Jellicent, nivel 43.",
+          "Chatot, nivel 43."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Gruta Tierraunida",
+    "seccion": "Gruta Tierraunida",
+    "entrenadores": [
+      {
+        "nombre": "Revolucionario Luisvi",
+        "equipo": [
+          "Primeape, nivel 43.",
+          "Kangaskhan, nivel 43."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 12",
+    "seccion": "Ruta 12",
+    "entrenadores": [
+      {
+        "nombre": "Revolucionaria Miquela",
+        "equipo": [
+          "Fearow, nivel 45.",
+          "Gengar, nivel 45."
+        ]
+      },
+      {
+        "nombre": "Ilustrado Loxtres",
+        "equipo": [
+          "Magneton, nivel 45.",
+          "Coalossal, nivel 45."
+        ]
+      },
+      {
+        "nombre": "Chef Sergio",
+        "equipo": [
+          "Togedemaru, nivel 46."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Shuu",
+        "equipo": [
+          "Gyarados, nivel 45.",
+          "Sylveon, nivel 45."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "VIEJO VÁNITAS",
+    "seccion": "Viejo Vánitas",
+    "entrenadores": [
+      {
+        "nombre": "Cazador Pablo",
+        "equipo": [
+          "Lampent, nivel 47.",
+          "Murkrow, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Cazador Dan",
+        "equipo": [
+          "Toxicroak, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Sanadora Jagoba",
+        "equipo": [
+          "Hypno, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Cazador Telmo",
+        "equipo": [
+          "Excadrill, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Cazador Camilo",
+        "equipo": [
+          "Croagunk, nivel 47",
+          "Liepard, nivel 47.",
+          "Breloom, nivel 47."
+        ]
+      },
+      {
+        "nombre": "Sanadora Jxaran",
+        "equipo": [
+          "Meowstic, nivel 47.",
+          "Banette, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Cazador Iván",
+        "equipo": [
+          "Stunfisk, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Sanadora Raven",
+        "equipo": [
+          "Lampent, nivel 47.",
+          "Tinkaton, nivel 48."
+        ]
+      },
+      {
+        "nombre": "Cazador Diego",
+        "equipo": [
+          "Scrafty, nivel 47.",
+          "Toxtricity, nivel 47."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "HOSPICIO CADUCO",
+    "seccion": "Hospicio Caduco",
+    "entrenadores": [
+      {
+        "nombre": "Recluta Azoth Sebastien",
+        "equipo": [
+          "Golbat, nivel 49.",
+          "Hypno, nivel 49."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Fantine",
+        "equipo": [
+          "Houndour, nivel 49.",
+          "Parasect Z (Bicho Veneno), nivel 49."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Valjean",
+        "equipo": [
+          "Mightyena, nivel 49."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Cosette",
+        "equipo": [
+          "Duosion Z (Psíquico Veneno), nivel 49.",
+          "Liepard, nivel 49."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Nina",
+        "equipo": [
+          "Parasect Z (Bicho Veneno), nivel 50."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 13",
+    "seccion": "Ruta 13",
+    "entrenadores": [
+      {
+        "nombre": "Mosquetero Jorge",
+        "equipo": [
+          "Bisharp, nivel 52.",
+          "Excadrill, nivel 52."
+        ]
+      },
+      {
+        "nombre": "Mosquetero Manu",
+        "equipo": [
+          "Kricketune Z (Bicho Lucha), nivel 53."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Didri",
+        "equipo": [
+          "Mudsdale, nivel 53."
+        ]
+      },
+      {
+        "nombre": "Monsieur Adry",
+        "equipo": [
+          "Audino, nivel 52.",
+          "Vikavolt, nivel 52."
+        ]
+      },
+      {
+        "nombre": "Mosquetero Archi y Marie",
+        "equipo": [
+          "Lucario, nivel 54.",
+          "Leavanny, nivel 54."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PALACIO LUMINALIA (MAZMORRA FINAL PARTE 1)",
+    "seccion": "Palacio Luminalia",
+    "entrenadores": [
+      {
+        "nombre": "Revolucionario Rodry",
+        "equipo": [
+          "Scyther, nivel 56."
+        ]
+      },
+      {
+        "nombre": "Revolucionaria Foxua",
+        "equipo": [
+          "Salazzle, nivel 55.",
+          "Krookodile, nivel 55."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Félix",
+        "equipo": [
+          "Toxtricity, nivel 56."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Alvar",
+        "equipo": [
+          "Crobat, nivel 56."
+        ]
+      },
+      {
+        "nombre": "Revolucionario Luisvo",
+        "equipo": [
+          "Chansey, nivel 55.",
+          "Gliscor, nivel 55."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Alexandra",
+        "equipo": [
+          "Dusclops, nivel 55.",
+          "Crabominable, nivel 55."
+        ]
+      },
+      {
+        "nombre": "Revolucionario Reyson",
+        "equipo": [
+          "Staraptor, nivel 55.",
+          "Electivire, nivel 55."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PRISIÓN DEL OLVIDO (MATERIALES)",
+    "seccion": "Prisión del Olvido",
+    "entrenadores": [
+      {
+        "nombre": "Carabinera Chloe",
+        "equipo": [
+          "Spinda, nivel 34.",
+          "Houndoom, nivel 35."
+        ]
+      },
+      {
+        "nombre": "Carabinero Mathieu",
+        "equipo": [
+          "Cufant, nivel 34.",
+          "Kricketune, nivel 35."
+        ]
+      },
+      {
+        "nombre": "Carabinera Claire",
+        "equipo": [
+          "Manectric, nivel 35."
+        ]
+      },
+      {
+        "nombre": "Carabinero Teo",
+        "equipo": [
+          "Herdier, nivel 35.",
+          "Graveler, nivel 35."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PIRINEOS DE KALOS",
+    "seccion": "Pirineos de Kalos",
+    "entrenadores": [
+      {
+        "nombre": "Carabinera Lasfilt",
+        "equipo": [
+          "Granbull, nivel 61.",
+          "Magmortar, nivel 61."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PIRINEOS DE KALOS PARTE 2",
+    "seccion": "Pirineos de Kalos Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Ladrona Sianne",
+        "equipo": [
+          "Grafaiai, nivel 61.",
+          "Toxicroak, nivel 62."
+        ]
+      },
+      {
+        "nombre": "Ladrona Jona",
+        "equipo": [
+          "Crobat, nivel 61.",
+          "Thievul, nivel 61."
+        ]
+      },
+      {
+        "nombre": "Carabinero Aiden",
+        "equipo": [
+          "Braviary, nivel 62.",
+          "Mandibuzz, nivel 62."
+        ]
+      },
+      {
+        "nombre": "Sanadora Lenu",
+        "equipo": [
+          "Gardevoir, nivel 62."
+        ]
+      },
+      {
+        "nombre": "Carabinero Kyrian",
+        "equipo": [
+          "Ursaluna, nivel 63."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PIRINEOS DE KALOS PARTE 3",
+    "seccion": "Pirineos de Kalos Parte 3",
+    "entrenadores": [
+      {
+        "nombre": "Ilustrador Marc",
+        "equipo": [
+          "Medicham, nivel 62.",
+          "Swellow, nivel 62."
+        ]
+      },
+      {
+        "nombre": "Monsieur Estefan",
+        "equipo": [
+          "Glalie, nivel 62.",
+          "Aurorus, nivel 62.",
+          "Swalot, nivel 62"
+        ]
+      },
+      {
+        "nombre": "Carabinero Asier",
+        "equipo": [
+          "Quagsire, nivel 63.",
+          "Exploud, nivel 63.",
+          "Eelektross, nivel 63"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "TORRE OSCURA (7º MEDALLA)",
+    "seccion": "Torre Oscura",
+    "entrenadores": [
+      {
+        "nombre": "Lunática Bellatrix",
+        "equipo": [
+          "Kadabra, nivel 64.",
+          "Exeggutor, nivel 64."
+        ]
+      },
+      {
+        "nombre": "Lunático Gabi",
+        "equipo": [
+          "Braviary Hisui, nivel 64.",
+          "Espeon, nivel 65."
+        ]
+      },
+      {
+        "nombre": "Lunática Alicia",
+        "equipo": [
+          "Musharna, nivel 64.",
+          "Meowstic, nivel 64."
+        ]
+      },
+      {
+        "nombre": "Lunático Danforth",
+        "equipo": [
+          "Malamar, nivel 63.",
+          "Lunatone, nivel 63.",
+          "Slowking, nivel 63."
+        ]
+      },
+      {
+        "nombre": "Lunática Lana",
+        "equipo": [
+          "Girafarig, nivel 64.",
+          "Farigiraf, nivel 64."
+        ]
+      },
+      {
+        "nombre": "Lunática Juana",
+        "equipo": [
+          "Mr. Mime, nivel 64.",
+          "Orbeetle, nivel 65."
+        ]
+      },
+      {
+        "nombre": "Lunático Archer",
+        "equipo": [
+          "Bronzong, nivel 63.",
+          "Starmie, nivel 63.",
+          "Gardevoir, nivel 63."
+        ]
+      },
+      {
+        "nombre": "Lunático Sanz",
+        "equipo": [
+          "Chimecho, nivel 64.",
+          "Grumpig, nivel 64."
+        ]
+      },
+      {
+        "nombre": "Lunático Yibirina",
+        "equipo": [
+          "Beheeyem, nivel 64.",
+          "Dottler, nivel 64.",
+          "Rapidash Galar, nivel 64."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 14",
+    "seccion": "Ruta 14",
+    "entrenadores": [
+      {
+        "nombre": "Niña Soñadora Mirta",
+        "equipo": [
+          "Granbull, nivel 66."
+        ]
+      },
+      {
+        "nombre": "Chef Shawn",
+        "equipo": [
+          "Amoonguss, nivel 66.",
+          "Breloom, nivel 66."
+        ]
+      },
+      {
+        "nombre": "Brujita Vicky",
+        "equipo": [
+          "Lampent, nivel 66.",
+          "Banette, nivel 66."
+        ]
+      },
+      {
+        "nombre": "Dúo Místico Telma y Louise",
+        "equipo": [
+          "Vileplume, nivel 67.",
+          "Clefable, nivel 67."
+        ]
+      },
+      {
+        "nombre": "Chef Mateo",
+        "equipo": [
+          "Shiinotic, nivel 66.",
+          "Mabosstiff, nivel 66."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "FÁBRICA DE POKÉBALL (INTERIOR)",
+    "seccion": "Fábrica de Pokéball Interior",
+    "entrenadores": [
+      {
+        "nombre": "Obrero Jaime",
+        "equipo": [
+          "Carkol, nivel 68.",
+          "Excadrill, nivel 68."
+        ]
+      },
+      {
+        "nombre": "Obrero Pereira",
+        "equipo": [
+          "Coalossal, nivel 69."
+        ]
+      },
+      {
+        "nombre": "Obrero Olmos",
+        "equipo": [
+          "Gurdurr, nivel 68.",
+          "Conkeldurr, nivel 68"
+        ]
+      },
+      {
+        "nombre": "Obrero Stajanov",
+        "equipo": [
+          "Klink, nivel 68.",
+          "Klang, nivel 68.",
+          "Klinklang, nivel 68."
+        ]
+      },
+      {
+        "nombre": "Obrero Ludd",
+        "equipo": [
+          "Gurdurr, nivel 68.",
+          "Revavroom, nivel 69."
+        ]
+      },
+      {
+        "nombre": "Obrero Marx",
+        "equipo": [
+          "Duraludon, nivel 69."
+        ]
+      },
+      {
+        "nombre": "Obrero Armesilla",
+        "equipo": [
+          "Machoke, nivel 68.",
+          "Orthworm, nivel 68."
+        ]
+      },
+      {
+        "nombre": "Obrero Paco",
+        "equipo": [
+          "Aggron, nivel 69.",
+          "Heatmor, nivel 69.",
+          "Machamp, nivel 69."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BASTIÓN ROMANTIS (8º MEDALLA)",
+    "seccion": "Bastión Romantis",
+    "entrenadores": [
+      {
+        "nombre": "Brujita Glinda",
+        "equipo": [
+          "Lampent, nivel 70.",
+          "Scovillain, nivel 70.",
+          "Ceruledge, nivel 70."
+        ]
+      },
+      {
+        "nombre": "Brujita Elphaba",
+        "equipo": [
+          "Centiskorch, nivel 70.",
+          "Chandelure, nivel 70."
+        ]
+      },
+      {
+        "nombre": "Brujita Blair",
+        "equipo": [
+          "Ninetales, nivel 70.",
+          "Flareon, nivel 70.",
+          "Skeledirge, nivel 70."
+        ]
+      },
+      {
+        "nombre": "Brujita Agatha",
+        "equipo": [
+          "Armarouge, nivel 70.",
+          "Lampent, nivel 70."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 15",
+    "seccion": "Ruta 15",
+    "entrenadores": [
+      {
+        "nombre": "Ranger Marianne",
+        "equipo": [
+          "Kilowattrel, nivel 70.",
+          "Maractus, nivel 70."
+        ]
+      },
+      {
+        "nombre": "Ranger Chim",
+        "equipo": [
+          "Stonjourner, nivel 70.",
+          "Zanghoul (Normal/Fantasma), nivel 70."
+        ]
+      },
+      {
+        "nombre": "Brujita Lucrecia",
+        "equipo": [
+          "Drifblim, nivel 71.",
+          "Swoobat, nivel 71.",
+          "Chimecho, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Ranger Nixx",
+        "equipo": [
+          "Braviary, nivel 70.",
+          "Noivern, nivel 70."
+        ]
+      },
+      {
+        "nombre": "Ranger Alber",
+        "equipo": [
+          "Stoutland, nivel 70.",
+          "Houndstone, nivel 70."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 15 Parte 2",
+    "seccion": "Ruta 15 Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Niña Soñadora Paula",
+        "equipo": [
+          "Ribombee, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Hermanas Misteriosas Molly y Mila",
+        "equipo": [
+          "Raichu Z, nivel 72.",
+          "Trevenant, nivel 72.",
+          "Polteageist, nivel 72.",
+          "Aromatisse, nivel 72."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 16 Norte (Opcional)",
+    "seccion": "Ruta 16 Norte",
+    "entrenadores": [
+      {
+        "nombre": "Ranger Antonio",
+        "equipo": [
+          "Floatzel, nivel 71.",
+          "Raichu Regional, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Ranger Tysman",
+        "equipo": [
+          "Absol, nivel 72."
+        ]
+      },
+      {
+        "nombre": "Burguesa Nestora",
+        "equipo": [
+          "Parasect Z (Bicho/Veneno), nivel 71.",
+          "Pangoro, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Ranger Nani",
+        "equipo": [
+          "Tyranitar, nivel 72."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 16 Sur (Opcional)",
+    "seccion": "Ruta 16 Sur",
+    "entrenadores": [
+      {
+        "nombre": "Ranger Dani",
+        "equipo": [
+          "Electivire, nivel 71.",
+          "Gyarados, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Ilustrado Unai",
+        "equipo": [
+          "Scizor, nivel 71.",
+          "Lokix, nivel 71.",
+          "Galvantula, nivel 71."
+        ]
+      },
+      {
+        "nombre": "Cantante Guerre",
+        "equipo": [
+          "Furfrou, nivel 71.",
+          "Alcremie, nivel 71."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 17",
+    "seccion": "Ruta 17",
+    "entrenadores": [
+      {
+        "nombre": "Ilustrado Donato",
+        "equipo": [
+          "Smeargle, nivel 72. Banda Focus. Espora, Frío Polar, Fijar Blanco."
+        ]
+      },
+      {
+        "nombre": "Monsieur Trey",
+        "equipo": [
+          "Vaporeon, nivel 72.",
+          "Jolteon, nivel 72.",
+          "Flareon, nivel 72."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "GRUTA HELADA",
+    "seccion": "Gruta Helada",
+    "entrenadores": [
+      {
+        "nombre": "Cantante Lola",
+        "equipo": [
+          "Jynx, nivel 72.",
+          "Cryogonal, nivel 72."
+        ]
+      },
+      {
+        "nombre": "Monsieur y Madame Zarina y Otto",
+        "equipo": [
+          "Crabominable, nivel 72.",
+          "Sandslash Alola, nivel 73.",
+          "Gliscor, nivel 72.",
+          "Ninetales Alola, nivel 73."
+        ]
+      },
+      {
+        "nombre": "Sanadora Tomasa",
+        "equipo": [
+          "Ceruledge, nivel 72.",
+          "Reuniclus Z (Psíquico/Veneno), nivel 73."
+        ]
+      },
+      {
+        "nombre": "Dúo Mosquetero Ícaro y Alice",
+        "equipo": [
+          "Mamoswine, nivel 73.",
+          "Dachsbun, nivel 73."
+        ]
+      },
+      {
+        "nombre": "Ladrona Posse",
+        "equipo": [
+          "Walrein Z (Agua/Volador), nivel 72.",
+          "Noivern, nivel 72.",
+          "Gengar, nivel 72."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "CIUDAD FLUXUS",
+    "seccion": "Ciudad Fluxus",
+    "entrenadores": [
+      {
+        "nombre": "Ladrona Sadou",
+        "equipo": [
+          "Zoroark, nivel 75.",
+          "Zippectre, nivel 75."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "ANTIGUA FORJA INUNDADA",
+    "seccion": "Forja Inundada",
+    "entrenadores": [
+      {
+        "nombre": "Druida Alvsaan",
+        "equipo": [
+          "Tyrantrum, nivel 74.",
+          "Aerodactyl, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Cmari",
+        "equipo": [
+          "Lycanroc, nivel 74.",
+          "Kabutops, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Leafiwiper",
+        "equipo": [
+          "Archeops, nivel 75.",
+          "Armaldo, nivel 75."
+        ]
+      },
+      {
+        "nombre": "Druida Jose",
+        "equipo": [
+          "Gigalith, nivel 74.",
+          "Carbink, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Rocaber",
+        "equipo": [
+          "Steelix, nivel 74.",
+          "Carbink, nivel 74.",
+          "Solrock, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Aerion",
+        "equipo": [
+          "Lunatone, nivel 74.",
+          "Bastiodon, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Barros",
+        "equipo": [
+          "Rhydon, nivel 74.",
+          "Golem, nivel 74.",
+          "Carbink, nivel 74."
+        ]
+      },
+      {
+        "nombre": "Druida Santi",
+        "equipo": [
+          "Stonjourner, nivel 76."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 19",
+    "seccion": "Ruta 19",
+    "entrenadores": [
+      {
+        "nombre": "Obrero Brian",
+        "equipo": [
+          "Stunfisk, nivel 77."
+        ]
+      },
+      {
+        "nombre": "Madame Mar",
+        "equipo": [
+          "Machamp, nivel 76.",
+          "Dedenne, nivel 76."
+        ]
+      },
+      {
+        "nombre": "Monsieur Miguel",
+        "equipo": [
+          "Royaleon, nivel 77."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Cueva Desenlace (Opcional)",
+    "seccion": "Cueva Desenlace",
+    "entrenadores": [
+      {
+        "nombre": "Mosquetera Sophie",
+        "equipo": [
+          "Clawitzer, nivel 77.",
+          "Excadrill, nivel 77.",
+          "Kilowattrel, nivel 77."
+        ]
+      },
+      {
+        "nombre": "Curandera Mai",
+        "equipo": [
+          "Serperior nivel 78."
+        ]
+      },
+      {
+        "nombre": "Madame Eguiba",
+        "equipo": [
+          "Gardevoir, nivel 77.",
+          "Milotic, nivel 77."
+        ]
+      },
+      {
+        "nombre": "Mosquetero Rafael",
+        "equipo": [
+          "Magmortar, nivel 77.",
+          "Staraptor, nivel 77.",
+          "Ampharos, nivel 77."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PUEBLO MOSAICO",
+    "seccion": "Pueblo Mosaico",
+    "entrenadores": [
+      {
+        "nombre": "Monsieur Bastian",
+        "equipo": [
+          "Lucario, nivel 80.",
+          "Gengar, nivel 80."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 20",
+    "seccion": "Ruta 20",
+    "entrenadores": [
+      {
+        "nombre": "Élite de Fractal Cristóbal",
+        "equipo": [
+          "Mr. Rime, nivel 79.",
+          "Darmanitan Galar, nivel 79.",
+          "Frosmoth, nivel 79."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Okyxo",
+        "equipo": [
+          "Crabominable, nivel 79.",
+          "Froslass, nivel 79."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Caruso",
+        "equipo": [
+          "Empoleon, nivel 79.",
+          "Baxcalibur, nivel 79."
+        ]
+      },
+      {
+        "nombre": "Rangers Vinol y Begonya",
+        "equipo": [
+          "Ludicolo, nivel 78.",
+          "Hydrapple, nivel 78.",
+          "Miltank, nivel 78.",
+          "Tentacruel, nivel 78."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "BASTIÓN FRACTAL (10º MEDALLA)",
+    "seccion": "Bastión Fractal",
+    "entrenadores": [
+      {
+        "nombre": "Élite de Fractal Marcelo",
+        "equipo": [
+          "Beartic, nivel 80.",
+          "Avalugg, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Leonardo",
+        "equipo": [
+          "Froslass, nivel 80.",
+          "Piloswine, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Etienne",
+        "equipo": [
+          "Weavile, nivel 80.",
+          "Glaceon, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Joselito",
+        "equipo": [
+          "Cloyster, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Irving",
+        "equipo": [
+          "Eiscue, nivel 81."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Milchick",
+        "equipo": [
+          "Glalie, nivel 81."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Drumond",
+        "equipo": [
+          "Beartic, nivel 80.",
+          "Cryogonal, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Hans",
+        "equipo": [
+          "Weavile, nivel 80.",
+          "Sealeo, nivel 80.",
+          "Aurorus, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Vladimir",
+        "equipo": [
+          "Vanillish, nivel 80.",
+          "Glaceon, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Élite de Fractal Vostok",
+        "equipo": [
+          "Abomasnow, nivel 80.",
+          "Delibird, nivel 80.",
+          "Cetitan, nivel 80."
+        ]
+      },
+      {
+        "nombre": "Dúo Fractal Yuri y Raskolnikov",
+        "equipo": [
+          "Delibird, nivel 80.",
+          "Jynx, nivel 80.",
+          "Crabominable, nivel 80.",
+          "Dewgong, nivel 80."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Bosque Errante",
+    "seccion": "Bosque Errante",
+    "entrenadores": [
+      {
+        "nombre": "Espectro Dornefa",
+        "equipo": [
+          "Dusknoir, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Espectro Becuille",
+        "equipo": [
+          "Breeloom, a un nivel menos que tu pokémon de mayor nivel.",
+          "Wyrdeer, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Espectro Nonna",
+        "equipo": [
+          "Kleavor, a un nivel menos que tu pokémon de mayor nivel.",
+          "Roserade, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Espectro Mergin",
+        "equipo": [
+          "Pinsir, a un nivel menos que tu pokémon de mayor nivel.",
+          "Vileplume, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Bosque Errante",
+    "seccion": "Bosque Errante",
+    "entrenadores": [
+      {
+        "nombre": "Ariados Ungoliant",
+        "equipo": [
+          "Beedrill, a un nivel menos que la media de nivel de tu equipo.",
+          "Butterfree, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Spidops Aragog",
+        "equipo": [
+          "Lokix, a un nivel menos que la media de nivel de tu equipo.",
+          "Orbeetle, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Ariados Charlotte",
+        "equipo": [
+          "Escavalier, a un nivel menos que la media de nivel de tu equipo.",
+          "Vespiqueen, a un nivel menos que la media de nivel de tu equipo"
+        ]
+      },
+      {
+        "nombre": "Ariados Barb",
+        "equipo": [
+          "Durant, a un nivel menos que la media de nivel de tu equipo.",
+          "Rabsca, a un nivel menos que la media de nivel de tu equipo"
+        ]
+      },
+      {
+        "nombre": "Spidops Jeff",
+        "equipo": [
+          "Masquerain, a un nivel menos que la media de nivel de tu equipo.",
+          "Wormadam Tronco Basura, a un nivel menos que la media de nivel de tu equipo",
+          "Heracross, a un nivel menos que la media de nivel de tu equipo"
+        ]
+      },
+      {
+        "nombre": "Spidops Anansi",
+        "equipo": [
+          "Centiskorch, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Spidops Lolth",
+        "equipo": [
+          "Scolipede, a un nivel menos que la media de nivel de tu equipo.",
+          "Pinsir, a un nivel menos que la media de nivel de tu equipo",
+          "Frosmoth, a un nivel menos que la media de nivel de tu equipo"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 22 Parte 1:",
+    "seccion": "Ruta 22 Parte 1",
+    "entrenadores": [
+      {
+        "nombre": "Payaso Gaby",
+        "equipo": [
+          "Eiscue, a un nivel menos que la media de nivel de tu equipo.",
+          "Ribombee, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Arlequina Harley",
+        "equipo": [
+          "Swoobat, a un nivel menos que la media de nivel de tu equipo.",
+          "Lurantis, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Payaso Mecánico Obsceno",
+        "equipo": [
+          "Primarina, al 88.",
+          "Drapion, al 88.",
+          "Mimikyu, al 88."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 22 Parte 2",
+    "seccion": "Ruta 22 Parte 2",
+    "entrenadores": [
+      {
+        "nombre": "Payaso Miliki",
+        "equipo": [
+          "Liepard, a un nivel menos que la media de nivel de tu equipo.",
+          "Ludicolo, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Arlequina Quinn",
+        "equipo": [
+          "Kecleon, a un nivel menos que la media de nivel de tu equipo.",
+          "Froatzel, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Payaso Mecánico Trilero",
+        "equipo": [
+          "Simisear, al 88",
+          "Crawdaunt, al 88",
+          "Mr.Rime, al 88"
+        ]
+      },
+      {
+        "nombre": "Arlequina Markiona",
+        "equipo": [
+          "Bewear, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "PESADILLA DE CIRCO",
+    "seccion": "Pesadilla de Circo",
+    "entrenadores": [
+      {
+        "nombre": "Payaso Nicholson",
+        "equipo": [
+          "Zoroark, a un nivel menos que la media de nivel de tu equipo.",
+          "Honchcrow, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Arlequina Kaley",
+        "equipo": [
+          "Morpeko, a un nivel menos que la media de nivel de tu equipo.",
+          "Mabostiff, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Payaso Mecánico Impío",
+        "equipo": [
+          "Houndoom, al 88.",
+          "Overqwil, al 88.",
+          "Kingambit, al 88"
+        ]
+      },
+      {
+        "nombre": "Arlequina Sorkin",
+        "equipo": [
+          "Krookodile, a un nivel menos que la media de nivel de tu equipo.",
+          "Meowscarada, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Arlequina Robbie",
+        "equipo": [
+          "Weavile, a un nivel menos que la media de nivel de tu equipo.",
+          "Morpeko, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "TORRE PRISMA",
+    "seccion": "Torre Prisma",
+    "entrenadores": [
+      {
+        "nombre": "Mosquetero Antonio (P1)",
+        "equipo": [
+          "Excadrill, a un nivel menos que la media de nivel de tu equipo.",
+          "Ferrothorn, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Carabinero Fernand (P2)",
+        "equipo": [
+          "Mamoswine, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Duo Carabinero Gabriel y Edae (P3)",
+        "equipo": [
+          "Slowbro, al 85.",
+          "Scizor, al 85.",
+          "Nidoking, al 85",
+          "Lapras, al 85"
+        ]
+      },
+      {
+        "nombre": "Carabinero Narumi (P3)",
+        "equipo": [
+          "Gallade, a un nivel menos que la media de nivel de tu equipo."
+        ]
+      },
+      {
+        "nombre": "Duo Carabinero Lovahi y Ros (P7)",
+        "equipo": [
+          "Arcanine, al 85.",
+          "Rhyperior, al 85.",
+          "Ampharos, al 85",
+          "Ludicolo, al 85"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 23",
+    "seccion": "Ruta 23",
+    "entrenadores": [
+      {
+        "nombre": "Monje Yantra Gon",
+        "equipo": [
+          "Grapploct, al 92.",
+          "Archeops, al 92."
+        ]
+      },
+      {
+        "nombre": "Monje Yantra Macroq",
+        "equipo": [
+          "Lucario, al 93."
+        ]
+      },
+      {
+        "nombre": "Monja Yantra Luisda",
+        "equipo": [
+          "Pangoro, al 92.",
+          "Espeon, al 92."
+        ]
+      },
+      {
+        "nombre": "Monje Yantra Axel",
+        "equipo": [
+          "Golisopodt, al 92.",
+          "Drampa, al 92."
+        ]
+      },
+      {
+        "nombre": "Monjes Yantra Josu y Meer",
+        "equipo": [
+          "Flapple, al 92.",
+          "Medicham, al 92.",
+          "Luxray, al 92."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 24",
+    "seccion": "Ruta 24",
+    "entrenadores": [
+      {
+        "nombre": "Monja Yantra Alisson",
+        "equipo": [
+          "Tinkaton, al 92."
+        ]
+      },
+      {
+        "nombre": "Monja Yantra Nyra",
+        "equipo": [
+          "Tsareena, al 92.",
+          "Dragalge, al 92."
+        ]
+      },
+      {
+        "nombre": "Monjes Yantra Vicent y Amber",
+        "equipo": [
+          "Skarmory, al 92",
+          "Altaria, al 92",
+          "Druddigon, al 92"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "Ruta 25",
+    "seccion": "Ruta 25",
+    "entrenadores": [
+      {
+        "nombre": "Recluta Azoth Yomi",
+        "equipo": [
+          "Espeon, al 93.",
+          "Klinklang, al 93."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Danga",
+        "equipo": [
+          "Victreebel, al 93.",
+          "Slowking, al 93."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Eufraso",
+        "equipo": [
+          "Starmie, al 93."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Lena",
+        "equipo": [
+          "Parasect, al 93.",
+          "Shiinotic, al 93"
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Rufus",
+        "equipo": [
+          "Arbok, al 93.",
+          "Sigilyph, al 93.",
+          "Exeggutor, al 93"
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Sephirota",
+        "equipo": [
+          "Metagross, al 94."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Aya",
+        "equipo": [
+          "Reuniclus, al 93.",
+          "Overqwill, al 93."
+        ]
+      },
+      {
+        "nombre": "Recluta Azoth Shaitan",
+        "equipo": [
+          "Claydol, al 92.",
+          "Alakazam, al 93.",
+          "Venomoth, al 93"
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "El Arma Definitiva",
+    "seccion": "",
+    "entrenadores": [
+      {
+        "nombre": "Élite Azoth Sensui",
+        "equipo": [
+          "Starmie, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Jorge",
+        "equipo": [
+          "Toxapex, al 94",
+          "Garganacl, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Batin (Mini boss)",
+        "equipo": [
+          "Chesnaught, al 94",
+          "Mega Meowstic, al 95.",
+          "Aggron, al 94."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "El Arma Definitiva",
+    "seccion": "",
+    "entrenadores": [
+      {
+        "nombre": "Élite Azoth Notsel",
+        "equipo": [
+          "Dragalge, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Kysumba",
+        "equipo": [
+          "Raichu Z (Eléctrico/Veneno), al 94.",
+          "Floatzel, al 95"
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Harvey (Mini boss)",
+        "equipo": [
+          "Tyranitar, al 94.",
+          "Mega Scrafty, al 95",
+          "Excadrill, al 94."
+        ]
+      }
+    ]
+  },
+  {
+    "zona": "El Arma Definitiva",
+    "seccion": "",
+    "entrenadores": [
+      {
+        "nombre": "Élite Azoth Notsel (P1)",
+        "equipo": [
+          "Meganium, al 95.",
+          "Dragapult, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Sash (P1)",
+        "equipo": [
+          "Scolipede, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Fausto (P2)",
+        "equipo": [
+          "Annihilape, al 94.",
+          "Archaludon, al 95."
+        ]
+      },
+      {
+        "nombre": "Élite Azoth Antonie (P3)(Miniboss)",
+        "equipo": [
+          "Registeel, al 94.",
+          "Mega Emboar, al 95.",
+          "Snorlax, al 94."
+        ]
+      }
+    ]
+  }
+]
