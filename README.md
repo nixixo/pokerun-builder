@@ -1,15 +1,31 @@
 # 🎴 PokéRun Builder
 
-Dos herramientas para jugar **Pokémon Z**, el romhack:
+Herramientas para preparar un equipo y orientarte durante la aventura de
+**Pokémon Z**, con un Builder que también admite la Pokédex estándar. El objetivo
+es ayudarte a avanzar con los Pokémon que te gustan, sin exigir optimización
+competitiva.
 
 - **Builder** (`/`) — armas un equipo de 6 y te dice qué le falta: debilidades
   compartidas, cobertura ofensiva, roles, stats flojas y qué Pokémon te
   convendría meter. Funciona con la Pokédex estándar y con la de Pokémon Z, y
   admite Fakemon con sprite propio.
-- **Guía** (`/guia`) — la guía oficial del romhack, navegable. Cada zona con sus
+- **Guía** (`/guia`) — una adaptación navegable de la guía del romhack. Cada zona con sus
   salvajes, objetos, MTs, entrenadores y notas; progreso de coleccionables;
   mapa; y un panel de **próxima batalla importante** que cruza el equipo que
-  tengas en el Builder con el del rival y te dice quién sirve y quién no.
+  tengas en el Builder con el del rival para sugerir opciones según tipos,
+  movimientos y stats base. Es una orientación, no un cálculo de daño ni una
+  garantía de ganar el combate.
+
+La guía permite recorrer la historia o agrupar las visitas por lugar. Su búsqueda
+global incluye zonas, Pokémon, objetos, MTs, entrenadores y sus equipos,
+intercambios, conversiones, iniciales, páginas de alquimia, regalos, nidos,
+habitantes, requisitos y notas; acepta términos con o sin tildes. En móvil, la
+navegación de zonas se puede desplegar para dejar más espacio al contenido.
+
+**Estado del contenido:** la precisión de la guía está en revisión durante una
+partida completa. Algunos equipos de entrenador tienen datos incompletos; las
+evoluciones parten de los juegos oficiales y pueden diferir en el romhack.
+Las discrepancias se corrigen en las fuentes y scripts de datos.
 
 Español (la Guía) e inglés/español (el Builder).
 
@@ -19,7 +35,10 @@ Español (la Guía) e inglés/español (el Builder).
 
 Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind v4 ·
 `motion` · `lucide-react`. Sin base de datos y sin backend: todo el estado del
-usuario vive en `localStorage` y todos los datos son JSON estáticos.
+usuario vive en `localStorage` y los catálogos son JSON estáticos. Si falla el
+guardado local, se muestra un aviso y se conservan los cambios pendientes en
+memoria mientras la página siga abierta. Los sprites de Pokémon Z se cargan
+desde el proveedor externo Fakedex (`assets.fakedex.es`).
 
 ---
 
@@ -33,6 +52,13 @@ npm run dev
 ```
 
 En `http://localhost:3000`. `predev` prepara los datos automáticamente.
+
+Para ejecutar la versión de producción localmente:
+
+```bash
+npm run build
+npm start
+```
 
 ---
 
@@ -97,8 +123,10 @@ toca nunca**. La regeneración conserva los IDs de la salida anterior; no borres
 el JSON limpio para regenerarlo. Si hay una correspondencia ambigua, el script
 aborta antes de escribir y hay que resolverla explícitamente.
 
-Los otros scripts (`extraer-*.mjs`, `generate-evoluciones.mjs`) son extractores
-puntuales del PDF; no forman parte del build.
+Los scripts `extraer-*.mjs` son extractores puntuales del PDF y no forman parte
+del build. `generate-evoluciones.mjs` obtiene las cadenas evolutivas de los CSV
+de PokéAPI y aplica las correcciones del romhack definidas en `ANULACIONES`;
+requiere red y se ejecuta manualmente cuando hay que actualizar esos datos.
 
 > El PDF de la guía oficial no está en el repo: es material de terceros.
 
@@ -116,6 +144,12 @@ puntuales del PDF; no forman parte del build.
   conserva su ID y actualiza también la clave del mapa. El build rechaza IDs
   ausentes o repetidos. Para entradas nuevas usa un UUID nuevo; no recicles IDs.
 - Los índices solo se usan como adaptador de navegación en la interfaz.
+- El progreso de MT cuenta **108 números distintos**, aunque la guía contiene
+  114 referencias: las entradas del mismo número comparten el estado marcado.
+  Las marcas guardadas con los IDs de cada entrada siguen siendo válidas.
+- Hay **18 habitantes** en 17 entradas de reclutamiento: Mariano y Luciano
+  se marcan juntos y suman dos al progreso. Las otras colecciones son 47 páginas
+  de alquimia y 18 nidos Alfa.
 - `mapa.json` contiene los 87 puntos publicados del mapa (coordenadas porcentuales
   y `zoneId`). La web los muestra como puntos fijos para navegar: no permite
   editarlos ni toma marcadores del almacenamiento local. Para corregir un punto,
@@ -137,7 +171,10 @@ npm run test:e2e              # requiere el build anterior
 
 GitHub Actions ejecuta estas comprobaciones en push y pull request. Las pruebas
 unitarias cubren datos, migraciones, persistencia y concurrencia. Playwright
-comprueba foco/Escape, importación inválida, restauración y progreso de la Guía.
+comprueba foco/Escape, importación inválida, restauración y progreso de la Guía,
+los puntos fijos del mapa y la búsqueda y navegación en móvil. Las pruebas
+unitarias también comprueban la búsqueda global, los totales de colecciones
+y las correcciones de nombres de especies.
 El build descarga Geist Mono desde Google Fonts y necesita acceso a red.
 
 Convenciones y responsabilidades: [docs/architecture.md](docs/architecture.md).
