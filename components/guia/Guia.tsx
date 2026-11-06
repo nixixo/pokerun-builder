@@ -416,6 +416,7 @@ export default function GuiaPage() {
 
         <ListaPendientes
           entries={pendientes.entries}
+          getSpriteUrl={getSpriteUrl}
           onRemove={pendientes.remove}
           onNavigate={(id) => {
             const index = zones.findIndex((zone) => zone.id === id);

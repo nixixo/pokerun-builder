@@ -164,23 +164,41 @@ test("el selector conserva equipos y plantillas separados por juego", async ({ p
 
 test("la guía guarda un objeto pendiente y permite volver desde el mapa", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.route("**/Icons/item266.png", (route) => route.fulfill({
+    contentType: "image/png",
+    body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aKfoAAAAASUVORK5CYII=", "base64"),
+  }));
   await page.goto("/guia");
   const bookmark = page.getByRole("button", { name: "Guardar pendiente: Superball (X3)", exact: true });
   await expect(bookmark).toHaveAttribute("aria-pressed", "false");
   await bookmark.click();
   await expect(bookmark).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Guardar pendiente: Baya Aranja", exact: true }).click();
 
   await page.reload();
   await expect(bookmark).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Mapa", exact: true }).click();
   const summary = page.locator("summary").filter({ hasText: "Pendientes" });
-  await expect(summary).toContainText("(1)");
+  await expect(summary).toContainText("(2)");
   await summary.click();
   await expect(page.getByText(/cuando capturemos 5 Pokémon/)).toBeVisible();
+  const cards = page.locator("details").filter({ has: summary }).locator("ul > li");
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first().locator('img[src$="/item266.png"]')).toBeVisible();
+  const firstMobile = (await cards.first().boundingBox())!;
+  const secondMobile = (await cards.last().boundingBox())!;
+  expect(secondMobile.y).toBeGreaterThan(firstMobile.y);
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const firstDesktop = (await cards.first().boundingBox())!;
+  const secondDesktop = (await cards.last().boundingBox())!;
+  expect(secondDesktop.x).toBeGreaterThan(firstDesktop.x);
+  expect(secondDesktop.y).toBe(firstDesktop.y);
 
   await page.getByRole("button", { name: "Ir a la zona de Superball (X3)", exact: true }).click();
   await expect(bookmark).toBeVisible();
   await page.getByRole("button", { name: "Marcar como hecho: Superball (X3)", exact: true }).click();
   await expect(bookmark).toHaveAttribute("aria-pressed", "false");
+  await page.getByRole("button", { name: "Marcar como hecho: Baya Aranja", exact: true }).click();
   await expect(summary).toContainText("(0)");
 });

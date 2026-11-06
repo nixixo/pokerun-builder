@@ -18,6 +18,7 @@ import { useItemSprites } from "../useItemSprites";
 import { BotonPendiente } from "../listaPendientes";
 import { crearPendiente, type AccionesPendientes } from "../usePendientes";
 import { HoverDescription } from "../hoverDescription";
+import { IconoTarjetaObjeto } from "./iconoTarjetaObjeto";
 import { EmptyHint, RequisitoChips, SectionHead, VisitaChip } from "./piezas";
 
 // Un color por clase de objeto destacado, para poder distinguirlos de un
@@ -123,19 +124,10 @@ export function SeccionObjetos({
                     que hay un 20% largo que no casa con ningún ítem — muchos ni
                     siquiera son objetos, sino equipos de entrenador mal
                     volcados en este campo. */}
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
-                  {getItemSpriteUrl(o.nombre) ? (
-                    <img
-                      src={getItemSpriteUrl(o.nombre)!}
-                      alt=""
-                      aria-hidden
-                      className="h-6 w-6 object-contain [image-rendering:pixelated]"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <Package className="h-4 w-4 text-amber-400" />
-                  )}
-                </span>
+                <IconoTarjetaObjeto
+                  sprite={getItemSpriteUrl(o.nombre)}
+                  fallback={<Package className="h-4 w-4 text-amber-400" />}
+                />
                 <div className="min-w-0">
                   <div className="text-[13px] font-bold leading-snug">
                     {getItemDescription(o.nombre) ? (
