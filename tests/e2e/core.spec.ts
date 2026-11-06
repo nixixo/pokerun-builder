@@ -95,3 +95,34 @@ test("la guía se adapta al móvil y el buscador global navega a una coincidenci
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test("Pokémon Z sugiere movimientos y respeta Solo aprendibles", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("pokerun-builder-active-pokedex", "pokemon-z");
+  });
+  await page.goto("/");
+
+  const pokemon = page.getByPlaceholder("Buscar Pokémon por nombre", { exact: true }).first();
+  await pokemon.fill("pikachu");
+  await expect(page.getByRole("button", { name: "Pikachu", exact: true }).first()).toBeVisible();
+  await pokemon.press("ArrowDown");
+  await pokemon.press("Enter");
+
+  const slot = page.locator('[data-slot-idx="0"]');
+  await expect(slot.getByText("Eléctrico", { exact: true })).toBeVisible();
+  const move = slot.getByPlaceholder("Movimiento", { exact: true }).first();
+  const suggestions = page.locator("body > [data-move-dropdown]");
+  const learnable = page.getByRole("button", { name: "Solo aprendibles", exact: true });
+
+  await expect(learnable).toHaveAttribute("aria-pressed", "true");
+  await move.fill("rayo");
+  await expect(suggestions.getByRole("button", { name: /^Rayo(?:\s|$)/ }).first()).toBeVisible();
+  await move.press("Escape");
+  await learnable.click();
+  await expect(learnable).toHaveAttribute("aria-pressed", "false");
+  await move.fill("lanzallamas");
+  await expect(suggestions.getByRole("button", { name: "Lanzallamas", exact: true })).toBeInViewport();
+  await move.press("ArrowDown");
+  await move.press("Enter");
+  await expect(move).toHaveValue("Lanzallamas");
+});
