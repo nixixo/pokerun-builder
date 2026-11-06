@@ -11,6 +11,7 @@ import { EMPTY_MOVE, normalizeMoveSearch } from "../../utils/moveHelpers";
 import { getBulk, getSpeedTier, scoreAllRoles, getEffectiveRole, getRoleDescription } from "../../utils/roleCalculations";
 import { buildSpriteStyle, Z_SLOT_SPRITE_ZOOM_OVERRIDES } from "../../utils/spriteHelpers";
 import { formatForDisplay, formatForAPI } from "../../utils/typeHelpers";
+import { normalizeTypeToApi } from "../../utils/stringNormalization";
 import type { useMoveFilter } from "../../hooks/useMoveFilter";
 import { EMPTY_SLOT } from "../../hooks/useTeamStorage";
 import { SpriteImg } from "../SpriteImg";
@@ -37,7 +38,33 @@ const MoveFilterModal = dynamic(
   () => import("../MoveFilterModal").then((m) => m.MoveFilterModal),
   { ssr: false }
 );
-import { Clipboard, CheckCircle2, BookOpen, Save, X, Pencil, Search } from "lucide-react";
+import {
+  BookOpen, Brain, Bug, CheckCircle2, Circle, Clipboard, Diamond, Droplet,
+  Feather, Flame, Ghost, HandFist, Leaf, Moon, Mountain, Pencil, Save,
+  Search, Shield, Skull, Snowflake, Sparkles, Waves, X, Zap,
+  type LucideIcon,
+} from "lucide-react";
+
+const SLOT_TYPE_ICONS: Readonly<Partial<Record<string, LucideIcon>>> = {
+  normal: Circle,
+  fire: Flame,
+  water: Droplet,
+  electric: Zap,
+  grass: Leaf,
+  ice: Snowflake,
+  fighting: HandFist,
+  poison: Skull,
+  ground: Waves,
+  flying: Feather,
+  psychic: Brain,
+  bug: Bug,
+  rock: Mountain,
+  ghost: Ghost,
+  dragon: Diamond,
+  dark: Moon,
+  steel: Shield,
+  fairy: Sparkles,
+};
 
 type TeamGridProps = {
   team: Slot[];
@@ -287,11 +314,17 @@ export function TeamGrid(props: TeamGridProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             {team.map((slot, idx) => {
               const hasOpenMoveDropdown = moveOpen[idx]?.some(Boolean);
+              const primaryType = normalizeTypeToApi(slot.types.find((type) => type.trim()) ?? "");
+              const TypeIcon = Object.hasOwn(SLOT_TYPE_ICONS, primaryType) ? SLOT_TYPE_ICONS[primaryType] : undefined;
+              const typeColor = TypeIcon ? TYPE_COLORS[primaryType] : undefined;
               return (
               <div
                 key={idx}
                 data-slot-idx={idx}
                 ref={(el) => { teamCardRefs.current[idx] = el; }}
+                style={typeColor ? {
+                  backgroundImage: `radial-gradient(ellipse 12rem 7rem at top left, ${typeColor}45, transparent 100%), linear-gradient(180deg, rgba(8,10,20,0.6), rgba(3,7,18,0.7))`,
+                } : undefined}
                 className={`pokedex-card relative hover:z-20 ${hasOpenMoveDropdown ? "z-30" : ""} p-1.5 rounded-lg border-blue-800/30 hover:shadow-lg btn-interactive flex flex-col gap-1.5 transition-[box-shadow,border-color] ${dragOverIdx === idx && dragFromIdx !== idx ? "ring-2 ring-blue-400/70 bg-blue-950/30 scale-[1.02]" : ""} ${dragFromIdx === idx ? "opacity-30" : ""}`}
               >
                 {/* Drag handle */}
@@ -304,7 +337,14 @@ export function TeamGrid(props: TeamGridProps) {
                   title="Arrastra para reordenar"
                   style={{ touchAction: "none" }}
                 >
-                  <span className="text-lg tracking-widest">⠿</span>
+                  <span className="flex items-center gap-1.5">
+                    {TypeIcon && (
+                      <span className="inline-flex size-6 items-center justify-center rounded-md bg-slate-950/70" style={{ color: typeColor }} title={tn(primaryType)}>
+                        <TypeIcon className="size-3.5" role="img" aria-label={tn(primaryType)} />
+                      </span>
+                    )}
+                    <span className="text-lg tracking-widest">⠿</span>
+                  </span>
                   <span className="text-[13px] sm:text-[13px] uppercase tracking-widest opacity-50">{t.dragHandle}</span>
                 </div>
                 {/* Fila compacta: siempre visible, sprite chico + nombre. Click para expandir/colapsar. */}
