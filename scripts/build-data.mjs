@@ -17,16 +17,15 @@
 //
 // Uso:  node scripts/build-data.mjs   — corre solo en `npm run build`.
 
+import catalogManifest from "../data-src/builder-catalogs.json" with { type: "json" };
+import { prepareCatalog } from "./prepare-catalog.mjs";
 import { validateGuideIds } from "./guia-identities.mjs";
 import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const SRC_DIR = join(process.cwd(), "data-src");
 const OUT_DIR = join(process.cwd(), "public", "generated");
 const POKEAPI_DIR = join(process.cwd(), "public", "pokeapi");
-
-/** Campos de learnset que se separan del núcleo de la Pokédex Z. */
-const LEARNSET_FIELDS = ["moves", "tmMoves", "eggMoves", "tutorMoves"];
 
 /**
  * public/pokeapi/ NO se genera acá: lo escribe `npm run data:pokeapi`, que sale
@@ -72,40 +71,61 @@ async function verificarPokeapi() {
 
 async function emit(name, value) {
   const json = JSON.stringify(value);
-  await writeFile(join(OUT_DIR, name), json, "utf8");
+  const target = join(OUT_DIR, name);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, json, "utf8");
   return json.length;
 }
 
-/**
- * Parte la Pokédex Z en núcleo + learnsets, indexando los learnsets por `id`
- * (la clave estable de cada entrada).
- */
-function splitPokedexZ(entries) {
-  const core = [];
-  const learnsets = {};
-
-  for (const entry of entries) {
-    const coreEntry = {};
-    const learnset = {};
-    for (const [key, value] of Object.entries(entry)) {
-      if (LEARNSET_FIELDS.includes(key)) learnset[key] = value;
-      else coreEntry[key] = value;
+async function readCatalogs() {
+  const catalogs = [];
+  const outputPaths = new Set();
+  for (const [id, files] of Object.entries(catalogManifest)) {
+    if (id === "standard" || id === "catalog-test" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+      throw new Error(`ID de catálogo inválido: ${id}`);
     }
-    core.push(coreEntry);
-    if (Object.keys(learnset).length > 0) learnsets[entry.id] = learnset;
+    const keys = ["pokemon", "moves", "abilities", "items", "learnsets"];
+    for (const key of keys) {
+      if (!/^(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+\.json$/.test(files[key] ?? "")) {
+        throw new Error(`Catálogo ${id}: ruta inválida para ${key}.`);
+      }
+    }
+    for (const key of keys) {
+      const path = files[key].toLowerCase();
+      if (path === "builder-catalogs.json" || outputPaths.has(path)) {
+        throw new Error(`Catálogo ${id}: ruta de salida duplicada o reservada ${files[key]}.`);
+      }
+      outputPaths.add(path);
+    }
+    let sourceSize = 0;
+    const entries = await Promise.all(keys.slice(0, -1).map(async (key) => {
+      try {
+        const source = await readFile(join(SRC_DIR, files[key]), "utf8");
+        sourceSize += source.length;
+        return [key, JSON.parse(source)];
+      } catch (error) {
+        throw new Error(`Catálogo ${id}: no se pudo leer ${files[key]}: ${error.message}`);
+      }
+    }));
+    const data = Object.fromEntries(entries);
+    const prepared = prepareCatalog(id, data);
+    for (const warning of prepared.warnings) console.warn(`  ⚠ ${id}: ${warning}`);
+    catalogs.push({ files, data, prepared, sourceSize });
   }
-
-  return { core, learnsets };
+  return catalogs;
 }
 
 async function main() {
   await verificarPokeapi();
+  const catalogs = await readCatalogs();
+  const catalogPaths = new Set(catalogs.flatMap(({ files }) =>
+    [files.pokemon, files.learnsets, files.moves, files.abilities, files.items]));
   await mkdir(OUT_DIR, { recursive: true });
 
   // Los .raw.json son la ENTRADA de scripts/clean-guia-names.mjs, no un dato
   // que la app consuma: emitirlos duplicaría 775 KB en public/ para nada.
   const sources = (await readdir(SRC_DIR)).filter(
-    (f) => f.endsWith(".json") && !f.endsWith(".raw.json")
+    (f) => f.endsWith(".json") && !f.endsWith(".raw.json") && f !== "builder-catalogs.json" && !catalogPaths.has(f)
   );
   let rawTotal = 0;
   let outTotal = 0;
@@ -115,22 +135,21 @@ async function main() {
     rawTotal += raw.length;
     if (name === "pokemon_z_guia.json") validateGuideIds(JSON.parse(raw));
 
-    if (name === "pokemon_z_completo.json") {
-      const { core, learnsets } = splitPokedexZ(JSON.parse(raw));
-      const coreSize = await emit("pokemon_z_completo.json", core);
-      const learnSize = await emit("pokemon_z_learnsets.json", learnsets);
-      outTotal += coreSize + learnSize;
-      console.log(
-        `  ${name.padEnd(30)} ${kb(raw.length)} → ${kb(coreSize)} núcleo + ${kb(learnSize)} learnsets`
-      );
-      continue;
-    }
-
     const size = await emit(name, JSON.parse(raw));
     outTotal += size;
     console.log(`  ${name.padEnd(30)} ${kb(raw.length)} → ${kb(size)}`);
   }
 
+  for (const { files, data, prepared, sourceSize } of catalogs) {
+    rawTotal += sourceSize;
+    for (const [key, value] of Object.entries({
+      ...data, pokemon: prepared.core, learnsets: prepared.learnsets,
+    })) {
+      const size = await emit(files[key], value);
+      outTotal += size;
+      console.log(`  ${files[key].padEnd(30)} ${kb(size)}`);
+    }
+  }
   console.log(`\n  ${"TOTAL".padEnd(30)} ${kb(rawTotal)} → ${kb(outTotal)}`);
 }
 

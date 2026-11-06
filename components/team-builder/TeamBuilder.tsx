@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -17,16 +17,14 @@ import {
   POKEDEX_KEY,
   FAKEMON_MODE_KEY,
   MAX_PLANTILLAS,
-  POKEDEX_OPTIONS,
-  type PokedexId,
 } from "./utils/constants";
+import { getGame, POKEDEX_OPTIONS, type PokedexId } from "./data/gameRegistry";
 import {
   Z_FORM_SPECIES,
   Z_FORM_NO_STANDARD_DUPLICATE,
-  POKEMON_Z_PRE_EVOS,
 } from "./utils/pokemonDefinitions";
 import { normalizeTypeToApi } from "./utils/stringNormalization";
-import { getZDisplayName, getZSpriteUrl } from "./utils/spriteHelpers";
+import { defaultCatalogRules } from "./data/catalogRules";
 import { EMPTY_MOVE, normalizeMoveSearch, buildLearnMethodsFromApi } from "./utils/moveHelpers";
 import { formatForAPI, formatForDisplay, getStandardForm } from "./utils/typeHelpers";
 import { getTypeName, UI } from "./utils/i18n";
@@ -83,8 +81,8 @@ import { SlotSearchProvider } from "./context/SlotSearchContext";
 // EMPTY_SLOT vive junto al hook que lo usa (useTeamStorage).
 import { createRequestTracker } from "./utils/requestTracker";
 import { useStandardCatalogs } from "./hooks/useStandardCatalogs";
-import { usePokemonZData } from "./hooks/usePokemonZData";
-import { pokemonZResources } from "./data/pokemonZData";
+import { useGameCatalog } from "./hooks/useGameCatalog";
+import { getGameCatalog } from "./data/gameCatalog";
 import { useTeamStorage, EMPTY_SLOT } from "./hooks/useTeamStorage";
 import { useMoveFilter } from "./hooks/useMoveFilter";
 import { useItemsFilter } from "./hooks/useItemsFilter";
@@ -151,8 +149,11 @@ export default function TeamBuilder() {
 
   const [pokedexDropdownOpen, setPokedexDropdownOpen] = useState(false);
   const pokedexDropdownRef = useRef<HTMLDivElement>(null);
-  const zData = usePokemonZData(activePokedex === "pokemon-z");
-  const { pokemon: pokemonZData, moves: movesZData, abilities: abilitiesZDescData } = zData;
+  const activeGame = getGame(activePokedex);
+  const catalog = getGameCatalog(activePokedex);
+  const catalogRules = activeGame.source === "catalog" ? activeGame.rules ?? defaultCatalogRules : undefined;
+  const catalogData = useGameCatalog(catalog);
+  const { pokemon: pokemonZData, moves: movesZData, abilities: abilitiesZDescData } = catalogData;
   const requests = useMemo(() => createRequestTracker(activePokedex), [activePokedex]);
   useEffect(() => () => requests.invalidateAll(), [requests]);
   // Catálogo de objetos del buscador del header: carga, mapa de "útiles en
@@ -173,6 +174,7 @@ export default function TeamBuilder() {
     toggleItemsHideBerries,
   } = useItemsFilter(activePokedex);
   const { movesStandardData, abilitiesStandardData, moveEsMap, moveEsDisplay } = useStandardCatalogs();
+  const activeMoves = catalog ? movesZData : movesStandardData;
   // Mapa "NOMBREENSINGUIONES" (ej. "WATERABSORB", tal como viene en nameEn)
   // → nombre legible en inglés (ej. "Water Absorb"), construido una sola vez
   // a partir del listado oficial de PokéAPI. abilities_descriptions.json NO
@@ -453,13 +455,13 @@ export default function TeamBuilder() {
       if (query.trim().length >= 2 && !isFake) {
         const timer = setTimeout(() => {
           let filtered: string[];
-          if (activePokedex === "pokemon-z" && pokemonZData.length > 0) {
+          if (catalogRules) {
             // Buscar en el JSON de Pokémon Z por nombre crudo O por el label
             // ya formateado (ej. "Gigamax", "Mega", "Alola"), para que el
             // buscador devuelva resultados tanto al escribir "Butterfree" como
             // al escribir "Gigamax".
             const matches = pokemonZData.filter((p) => {
-              const label = getZDisplayName(p).toLowerCase();
+              const label = catalogRules.displayName(p).toLowerCase();
               return (
                 label.includes(query.toLowerCase()) ||
                 p.name?.toLowerCase().includes(query.toLowerCase())
@@ -475,7 +477,7 @@ export default function TeamBuilder() {
             // entrada, sin sufijo. getZDisplayName centraliza estas reglas,
             // incluyendo el caso especial de Raichu → "Raichu Alola".
             const zMatches = matches.map((p) => {
-              const label = getZDisplayName(p);
+              const label = catalogRules.displayName(p);
               return `${label}#z:${p.id}`;
             });
             // Para las especies de la lista curada (forma Z realmente
@@ -486,15 +488,16 @@ export default function TeamBuilder() {
             // a PokéAPI generaría una entrada duplicada con el mismo nombre.
             // Si esa forma estándar todavía no existe en PokéAPI, simplemente
             // no se agrega (sin romper nada).
+            const standardForms = catalogRules.includeStandardForms ? matches : [];
             const stdBaseNames = new Set(
-              matches
+              standardForms
                 .filter((p) => Z_FORM_SPECIES.has(p.name?.toLowerCase() ?? ""))
                 .filter((p) => !Z_FORM_NO_STANDARD_DUPLICATE.has(p.name?.toLowerCase() ?? ""))
                 .map((p) => p.name?.toLowerCase())
                 .filter(Boolean)
             );
             const stdMegaBaseNames = new Set(
-              matches
+              standardForms
                 .filter((p) => p.formLabel === "Mega")
                 .map((p) => p.name?.toLowerCase())
                 .filter(Boolean)
@@ -540,7 +543,7 @@ export default function TeamBuilder() {
       }
     });
     return () => timers.forEach((timer) => clearTimeout(timer));
-  }, [pokemonSearch, pokemonList, team, activePokedex, pokemonZData]);
+  }, [pokemonSearch, pokemonList, team, catalogRules, pokemonZData]);
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -583,7 +586,7 @@ export default function TeamBuilder() {
             return labelA.localeCompare(labelB);
           };
           let fullList: string[];
-          if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+          if (catalog && movesZData.length > 0) {
             fullList = movesZData
               .filter((m) => learnableSet.has(m.internalName))
               .sort((a, b) => compareByLearnMethod(a.internalName, b.internalName, a.name ?? "", b.name ?? ""))
@@ -611,7 +614,7 @@ export default function TeamBuilder() {
           const query = normalizeMoveSearch(draft);
           let merged: string[];
 
-          if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+          if (catalog && movesZData.length > 0) {
             // En modo Z: buscar por nombre español o internalName en el JSON Z
             merged = movesZData
               .filter((m) => {
@@ -643,7 +646,7 @@ export default function TeamBuilder() {
       });
     });
     return () => timers.forEach(clearTimeout);
-  }, [moveInputDraft, moveList, moveEsDisplay, activePokedex, movesZData, onlyLearnableMoves, team, lang]);
+  }, [moveInputDraft, moveList, moveEsDisplay, catalog, movesZData, onlyLearnableMoves, team, lang]);
 
   // Dado el nombre mostrado en una sugerencia del buscador de movimientos
   // (slug en inglés en modo estándar, nombre en español en modo Pokémon Z),
@@ -654,7 +657,7 @@ export default function TeamBuilder() {
     const lm = slot?.learnMethods;
     if (!lm) return null;
     let key = name;
-    if (activePokedex === "pokemon-z" && movesZData.length > 0) {
+    if (catalog && movesZData.length > 0) {
       const zm = movesZData.find((m) => m.name === name || m.internalName === name);
       if (zm?.internalName) key = zm.internalName;
     }
@@ -789,9 +792,9 @@ export default function TeamBuilder() {
     if (!name) return;
     const isCurrent = requests.begin(`pokemon:${idx}`);
     let zEntries = pokemonZData;
-    if (activePokedex === "pokemon-z") {
+    if (catalog) {
       try {
-        zEntries = await pokemonZResources.pokemon();
+        zEntries = await catalog.pokemon();
         if (!isCurrent()) return;
       } catch {
         if (isCurrent()) showToast(lang === "es" ? "No se pudieron cargar los datos de Pokémon Z. Reintenta la selección." : "Could not load Pokémon Z data. Try selecting again.");
@@ -800,7 +803,7 @@ export default function TeamBuilder() {
     }
 
     // ── Pokémon Z: usar datos del JSON local ─────────────────────────────────
-    if (activePokedex === "pokemon-z" && zEntries.length > 0) {
+    if (catalogRules && zEntries.length > 0) {
       // El selector codifica la forma exacta como "Label#z:id" (entradas del
       // JSON local de Pokémon Z, ej. "Mega Delphox Z#z:90005") o como
       // "Label#std:slug" (formas estándar/oficiales buscadas en PokéAPI, ej.
@@ -863,7 +866,7 @@ export default function TeamBuilder() {
             p.name?.toLowerCase() === needle ||
             p.internalName?.toLowerCase() === needle ||
             formatForDisplay(p.name ?? "").toLowerCase() === needle ||
-            getZDisplayName(p).toLowerCase() === needle
+            catalogRules.displayName(p).toLowerCase() === needle
         );
       if (zEntry) {
         // Tipos del JSON vienen en español → convertir a slugs de API
@@ -875,13 +878,13 @@ export default function TeamBuilder() {
         // Corregir URL: usar id con padding de 3 dígitos (001.png en vez de 1.png),
         // salvo las 8 entradas Mega Z (id 90001-90008), cuyo sprite real tiene un
         // sufijo "_N" distinto del dexId base (ver Z_MEGA_SPRITE_SUFFIX).
-        const rawSprite = getZSpriteUrl(zEntry);
+        const rawSprite = catalogRules.spriteUrl(zEntry);
         // Recortar primer frame del spritesheet
         const sprite = rawSprite ? await cropFirstFrame(rawSprite) : null;
         // Nombre final centralizado en getZDisplayName: Z_FORM_SPECIES lleva
         // sufijo " Z", Z_MEGA_ONLY_SPECIES no, Megas llevan "Mega X Z", y
         // Raichu base se muestra como "Raichu Alola" (ver definición arriba).
-        const displayName = getZDisplayName(zEntry);
+        const displayName = catalogRules.displayName(zEntry);
         const abilities: string[] | null = Array.isArray(zEntry.abilities) && zEntry.abilities.length > 0 ? zEntry.abilities : null;
         const hiddenAbility: string | null = zEntry.hiddenAbility ?? null;
         // Learnset real: movimientos por nivel + tutor + huevo, como
@@ -964,10 +967,10 @@ export default function TeamBuilder() {
     }
 
     // ── Pokémon Z: buscar en el JSON de movimientos ──────────────────────────
-    if (activePokedex === "pokemon-z") {
+    if (catalog) {
       let zMoves: MoveZ[];
       try {
-        zMoves = await pokemonZResources.moves();
+        zMoves = await catalog.moves();
         if (!isCurrent()) return;
       } catch {
         if (isCurrent()) showToast(lang === "es" ? "No se pudieron cargar los movimientos. Reintenta la selección." : "Could not load moves. Try selecting again.");
@@ -1083,9 +1086,9 @@ export default function TeamBuilder() {
   // En modo Z: convierte pokemonZData al mismo formato AvailablePokemon.
   // En modo estándar: usa allPokemonData cargado desde PokéAPI/GraphQL.
   const activeCandidates = useMemo((): AvailablePokemon[] => {
-    if (activePokedex === "pokemon-z" && pokemonZData.length > 0) {
+    if (catalogRules) {
       return pokemonZData.map((p) => {
-        const displayName = getZDisplayName(p);
+        const displayName = catalogRules.displayName(p);
         return {
           slug: displayName.toLowerCase().replace(/\s+/g, "-"),
           name: displayName,
@@ -1096,18 +1099,8 @@ export default function TeamBuilder() {
             .filter(Boolean)
             .slice(0, 2) as [string] | [string, string],
           stats: p.stats ?? null,
-          // fakemon/megas (id >= 899) siempre cuentan como evolución final.
-          // Para especies reales: combinamos el set dinámico de PokéAPI
-          // (speciesWithEvolution, evoluciones "oficiales") CON la lista
-          // estática POKEMON_Z_PRE_EVOS. Antes, una vez terminaba el fetch
-          // dinámico, este pisaba por completo a la lista estática — y como
-          // PokéAPI real no sabe que, por ejemplo, Marowak(Z) evoluciona a
-          // Marolier (evolución exclusiva de Pokémon Z), Marowak quedaba mal
-          // marcado como "última evolución". Ahora un Pokémon NO es evolución
-          // final si CUALQUIERA de las dos fuentes dice que evoluciona.
-          isFinalEvo:
-            p.id >= 899 ||
-            !(speciesWithEvolution.has(p.id) || POKEMON_Z_PRE_EVOS.has(p.id)),
+          isFinalEvo: catalogRules.isFinalEvolution(p, speciesWithEvolution),
+          sprite: catalogRules.spriteUrl(p),
           formLabel: p.formLabel ?? null,
           abilities: Array.isArray(p.abilities) && p.abilities.length > 0 ? p.abilities : null,
           hiddenAbility: p.hiddenAbility ?? null,
@@ -1125,9 +1118,9 @@ export default function TeamBuilder() {
       });
     }
     return allPokemonCore;
-  }, [activePokedex, pokemonZData, allPokemonCore, speciesWithEvolution]);
+  }, [catalogRules, pokemonZData, allPokemonCore, speciesWithEvolution]);
 
-  const ability = useAbilityFilter(activePokedex, lang, activeCandidates, abilitiesZDescData, abilitiesStandardData, getAbilityDisplayName);
+  const ability = useAbilityFilter(activePokedex, Boolean(catalogRules), lang, activeCandidates, abilitiesZDescData, abilitiesStandardData, getAbilityDisplayName);
   // Solo estos dos se siguen usando directo acá (recFilterAbility se pasa a
   // useRecommendations() más abajo, y setRecFilterAbility lo usa el header
   // al cambiar de pokédex). El resto del retorno de useAbilityFilter vive
@@ -1168,7 +1161,7 @@ export default function TeamBuilder() {
     typeRelations,
     activeCandidates,
     lang,
-    activePokedex,
+    catalogRules,
     abilitiesStandardData,
     recFilterAbility
   );
@@ -1233,7 +1226,7 @@ export default function TeamBuilder() {
       return;
     }
     const encodedName =
-      activePokedex === "pokemon-z" && pokemonZData.length > 0
+      catalog && pokemonZData.length > 0
         ? `${candidate.name}#z:${candidate.id}`
         : candidate.slug;
     selectPokemonSuggestion(emptyIdx, encodedName);
@@ -1245,14 +1238,15 @@ export default function TeamBuilder() {
 
   // Priorizar la carga de sprites de los candidatos visibles actualmente
   useEffect(() => {
-    if (activePokedex !== "pokemon-z" || pokemonZData.length === 0) return;
+    if (!catalogRules || pokemonZData.length === 0) return;
     let cancelled = false;
     const priorityEntries = pokemonRecommendations.map(({ candidate }) => candidate);
     if (priorityEntries.length === 0) return;
     Promise.all(priorityEntries.map(async (c) => {
-      const key = String(c.id);
+      const key = `${activePokedex}:${c.id}`;
       if (zSpritesCache[key]) return;
-      const url = getZSpriteUrl(c);
+      const url = c.sprite;
+      if (!url) return;
       const cropped = await cropFirstFrame(url);
       if (!cancelled) setZSpritesCache((prev) => ({ ...prev, [key]: cropped }));
     }));
@@ -1330,8 +1324,7 @@ export default function TeamBuilder() {
         pokedexDropdownOpen={pokedexDropdownOpen}
         onTogglePokedexDropdown={() => setPokedexDropdownOpen((v) => !v)}
         pokedexDropdownRef={pokedexDropdownRef}
-        pokemonZCount={pokemonZData.length}
-        movesZCount={movesZData.length}
+        pokedexCounts={{ "pokemon-z": { pokemon: pokemonZData.length, moves: movesZData.length } }}
         isAdvanced={isAdvanced}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -1340,11 +1333,11 @@ export default function TeamBuilder() {
         teamScore={teamScore}
         getStatColor={getStatColor}
       />
-      {activePokedex === "pokemon-z" && (zData.error || zData.loading) && (
+      {catalog && (catalogData.failed || catalogData.loading) && (
         <div role="status" className="my-3 rounded-xl border border-amber-500/40 bg-slate-950 p-3 text-sm text-amber-200">
-          {zData.loading ? (lang === "es" ? "Cargando datos de Pokémon Z…" : "Loading Pokémon Z data…") :
-            (lang === "es" ? zData.error : "Some Pokémon Z data could not be loaded.")}
-          {!zData.loading && <button type="button" onClick={zData.retry} className="ml-3 underline">{lang === "es" ? "Reintentar" : "Retry"}</button>}
+          {catalogData.loading ? (lang === "es" ? `Cargando datos de ${activeGame.label}…` : `Loading ${activeGame.label} data…`) :
+            (lang === "es" ? `No se pudieron cargar todos los datos de ${activeGame.label}.` : `Some ${activeGame.label} data could not be loaded.`)}
+          {!catalogData.loading && <button type="button" onClick={catalogData.retry} className="ml-3 underline">{lang === "es" ? "Reintentar" : "Retry"}</button>}
         </div>
       )}
       {isMounted && (
@@ -1357,8 +1350,7 @@ export default function TeamBuilder() {
           moveEsMap={moveEsMap}
           moveEsDisplay={moveEsDisplay}
           getMoveLearnBadge={getMoveLearnBadge}
-          movesZData={movesZData}
-          movesStandardData={movesStandardData}
+          activeMoves={activeMoves}
           moveFilter={moveFilter}
           teamCardRefs={teamCardRefs}
           dragFromIdx={dragFromIdx}
@@ -1442,8 +1434,7 @@ export default function TeamBuilder() {
         statNamesI18n={STAT_NAMES_I18N}
         statOrder={STAT_ORDER}
         toggleRecFilterSortStat={toggleRecFilterSortStat}
-        movesZData={movesZData}
-        movesStandardData={movesStandardData}
+        activeMoves={activeMoves}
         getStatColor={getStatColor}
         getAbilityDisplayName={getAbilityDisplayName}
         getStdAbilityLabel={getStdAbilityLabel}
@@ -1520,7 +1511,7 @@ export default function TeamBuilder() {
         <ItemsBrowserModal
           items={itemsData}
           combatUseful={itemsCombatUseful}
-          isStandardDex={activePokedex === "standard"}
+          isStandardDex={activeGame.source === "pokeapi"}
           lang={lang}
           search={itemsSearch}
           onSearchChange={setItemsSearch}

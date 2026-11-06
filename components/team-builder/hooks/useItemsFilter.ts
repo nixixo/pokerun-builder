@@ -1,20 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { codecBooleano, usePreferenciaLocal } from "@/components/shared/preferenciaLocal";
 import { ITEMS_ONLY_Z_KEY, ITEMS_ONLY_COMBAT_KEY } from "../utils/constants";
+import { getGameCatalog, type ItemEntry } from "../data/gameCatalog";
+import type { PokedexId } from "../data/gameRegistry";
 import type { PokeApiItem } from "../types/pokeapi";
-
-export interface ItemEntry {
-  id: number;
-  internalName: string;
-  name: string;
-  nameEn?: string;
-  namePlural: string;
-  description: string;
-  descriptionEn?: string;
-  hackrom: boolean;
-  sprite?: string | null;
-  category?: string | null;
-}
 
 // Categorías de objetos que realmente aportan a una estrategia de equipo
 // (held items permanentes durante el combate): held items, objetos "malos"
@@ -49,12 +38,15 @@ const EXCLUDED_ITEM_SLUGS = new Set(["rusted-sword", "rusted-shield", "red-necta
  * hack rom para Pokémon Z), el mapa de "útiles en combate", y el estado del
  * modal/filtros (búsqueda, solo-Z, solo-combate, ocultar bayas).
  */
-export function useItemsFilter(activePokedex: string) {
+const EMPTY_ITEMS: ItemEntry[] = [];
+
+export function useItemsFilter(activePokedex: PokedexId) {
   // Catálogo de objetos para el buscador de objetos del header.
   // - Pokédex estándar → PokeAPI (categorías con función real en combate)
   // - Pokédex Pokémon Z → items_pokemon_z.json (objetos del hack rom)
   // Se recarga cada vez que cambia la pokédex activa.
-  const [itemsData, setItemsData] = useState<ItemEntry[]>([]);
+  const [itemsByGame, setItemsByGame] = useState<Partial<Record<PokedexId, ItemEntry[]>>>({});
+  const loadedItems = itemsByGame[activePokedex];
   const [itemsModalOpen, setItemsModalOpen] = useState(false);
   const [itemsSearch, setItemsSearch] = useState("");
   const [itemsOnlyZ, setItemsOnlyZ] = usePreferenciaLocal(
@@ -78,20 +70,21 @@ export function useItemsFilter(activePokedex: string) {
   // apenas se entraba a la pokédex estándar, trayendo ~100-150 requests
   // individuales a PokeAPI (una por cada ítem) aunque el usuario nunca
   // hubiera tocado el botón "Objetos".
-  const loadedItemsForRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!itemsModalOpen) return;
-    if (loadedItemsForRef.current === activePokedex) return;
-    loadedItemsForRef.current = activePokedex;
+    if (!itemsModalOpen || loadedItems) return;
 
-    if (activePokedex !== "standard") {
-      fetch("/generated/items_pokemon_z.json")
-        .then((r) => r.json())
-        .then((data) => setItemsData(data))
-        .catch((err) => console.error("[PokeRun] Error loading items_pokemon_z.json:", err));
-      return;
-    }
     let cancelled = false;
+    const saveItems = (items: ItemEntry[]) => {
+      if (!cancelled) setItemsByGame((previous) => ({ ...previous, [activePokedex]: items }));
+    };
+    const catalog = getGameCatalog(activePokedex);
+    if (catalog) {
+      catalog.items()
+        .then(saveItems)
+        .catch((err) => console.error("[PokeRun] Error loading game items:", err));
+      return () => { cancelled = true; };
+    }
+
     (async () => {
       try {
         const categoryResults = await Promise.all(
@@ -150,7 +143,7 @@ export function useItemsFilter(activePokedex: string) {
         if (!cancelled) {
           const clean = details.filter(Boolean) as ItemEntry[];
           clean.sort((a, b) => a.name.localeCompare(b.name));
-          setItemsData(clean);
+          saveItems(clean);
         }
       } catch (err) {
         console.error("[PokeRun] Error loading items from PokeAPI:", err);
@@ -159,7 +152,7 @@ export function useItemsFilter(activePokedex: string) {
     return () => {
       cancelled = true;
     };
-  }, [activePokedex, itemsModalOpen]);
+  }, [activePokedex, itemsModalOpen, loadedItems]);
 
   // Objetos con efecto real en combate (choice items, potenciadores de tipo,
   // objetos defensivos, gemas, tablas, etc). Mapa id -> true. Cargado desde
@@ -181,7 +174,7 @@ export function useItemsFilter(activePokedex: string) {
   const toggleItemsHideBerries = () => setItemsHideBerries((v) => !v);
 
   return {
-    itemsData,
+    itemsData: loadedItems ?? EMPTY_ITEMS,
     itemsCombatUseful,
     itemsModalOpen,
     openItemsModal,

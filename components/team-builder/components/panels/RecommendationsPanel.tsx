@@ -4,12 +4,11 @@ import type { Dispatch, SetStateAction } from "react";
 import type { AvailablePokemon, BaseStats, Lang, Slot } from "../../types";
 import type { DamageRelations } from "../../data/staticPokeData";
 import type { MoveZ } from "../../types/pokemonZ";
-import type { PokedexId } from "../../utils/constants";
+import { getGame, type PokedexId } from "../../data/gameRegistry";
 import {
   GEN_RANGES,
   ROLES,
   BALANCED_ROLE,
-  POKEDEX_OPTIONS,
   TYPE_COLORS,
 } from "../../utils/constants";
 import { getCandidateWeaknesses } from "../../utils/defensiveCalculations";
@@ -58,8 +57,7 @@ type RecommendationsPanelProps = {
   statNamesI18n: Record<Lang, Record<keyof BaseStats, string>>;
   statOrder: (keyof BaseStats)[];
   toggleRecFilterSortStat: (key: keyof BaseStats) => void;
-  movesZData: MoveZ[];
-  movesStandardData: MoveZ[];
+  activeMoves: MoveZ[];
   getStatColor: (value: number) => string;
   getAbilityDisplayName: (esName: string) => string;
   getStdAbilityLabel: (slug: string) => string;
@@ -131,12 +129,15 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
     },
     lang, t, tn, badgeClass, isAdvanced, activePokedex, team, typeRelations, statLabels,
     allTypes, statNamesI18n: STAT_NAMES_I18N, statOrder: STAT_ORDER, toggleRecFilterSortStat,
-    movesZData, movesStandardData, getStatColor, getAbilityDisplayName, getStdAbilityLabel, getStdAbilityDescription,
+    activeMoves, getStatColor, getAbilityDisplayName, getStdAbilityLabel, getStdAbilityDescription,
     abilitiesZDescData, zSpritesCache, zSpriteNaturalSizes, zSpritesTrimmed, setZSpriteNaturalSizes, setZSpritesTrimmed,
     addCandidateToTeam, loadingAllPokemonData,
   } = props;
 
   const [roleFilterLegendOpen, setRoleFilterLegendOpen] = useState(false);
+
+  const game = getGame(activePokedex);
+  const usesCatalog = game.source === "catalog";
 
   return (
     <>
@@ -190,12 +191,12 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                       {/* Switches rápidos */}
                       <div className="flex flex-wrap gap-x-3 gap-y-1.5 pb-2 border-b border-slate-800/80">
                         {[
-                          ...(activePokedex === "pokemon-z" ? [{ key: "onlyOriginals", Icon: BookOpen, label: lang === "es" ? `${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex} ${t.recFilterOnlyOriginals}` : `Original ${POKEDEX_OPTIONS.find(p => p.id === activePokedex)?.label ?? activePokedex}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
+                          ...(game.source === "catalog" && game.rules?.isOriginal ? [{ key: "onlyOriginals", Icon: BookOpen, label: lang === "es" ? `${game.label} ${t.recFilterOnlyOriginals}` : `Original ${game.label}`, value: recFilterOnlyOriginals, setter: setRecFilterOnlyOriginals as (v: boolean) => void }] : []),
                           { key: "finalEvo", Icon: Sparkles, label: t.recFilterFinalEvo, value: recFilterFinalEvo, setter: setRecFilterFinalEvo },
                           { key: "prioritizeCoverage", Icon: Shield, label: t.recFilterPrioritizeCoverage, value: recFilterPrioritizeCoverage, setter: setRecFilterPrioritizeCoverage },
                           { key: "noDup", Icon: Ban, label: t.recFilterNoDupTypes, value: recFilterNoDupTypes, setter: setRecFilterNoDupTypes },
                           { key: "legendary", Icon: Crown, label: t.recFilterLegendary, value: recFilterLegendary, setter: setRecFilterLegendary },
-                          ...(activePokedex === "pokemon-z"
+                          ...(usesCatalog
                             ? [
                                 { key: "zMega", Icon: Diamond, label: lang === "es" ? "Mostrar Megas" : "Show Megas", value: recFilterZShowMega, setter: setRecFilterZShowMega },
                               ]
@@ -331,14 +332,14 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
 
                       {/* Filtro por movimiento — hasta 4 a la vez, el candidato debe
                           aprenderlos TODOS (modo avanzado, ambas pokédex) */}
-                      {isAdvanced && (activePokedex === "pokemon-z" ? movesZData.length > 0 : movesStandardData.length > 0) && (
+                      {isAdvanced && activeMoves.length > 0 && (
                       <div>
                         <div className="text-[13px] uppercase tracking-[0.15em] text-slate-500 mb-1.5">
                           {lang === "es" ? "Buscar por movimiento" : "Search by move"}
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {recFilterMoves.map((mvName) => {
-                            const mv = (activePokedex === "pokemon-z" ? movesZData : movesStandardData).find((m) => m.internalName === mvName);
+                            const mv = activeMoves.find((m) => m.internalName === mvName);
                             const label = mv ? (lang === "es" ? mv.name : mv.nameEn) : mvName;
                             return (
                               <span
@@ -616,6 +617,7 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
               {pokemonRecommendations.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-stretch">
                   {pokemonRecommendations.map(({ candidate, name, reasons, noNewCritical, immunities, newResistances, neededRole, realRole }) => {
+                    const spriteKey = `${activePokedex}:${candidate.id}`;
                     const allCandidateWeaknesses = getCandidateWeaknesses(candidate.types as string[], typeRelations);
                     const reasonWeakTypes = new Set(reasons.filter((r) => !r.positive).map((r) => r.weakType));
                     const candidateWeaknesses = allCandidateWeaknesses.filter((ty) => !reasonWeakTypes.has(ty));
@@ -676,7 +678,7 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                               />
                             </div>
                             {/* Spinner mientras carga y se ajusta el sprite Z */}
-                            {activePokedex === "pokemon-z" && zSpriteNaturalSizes[String(candidate.id)] === undefined && (
+                            {usesCatalog && candidate.sprite && zSpriteNaturalSizes[spriteKey] === undefined && (
                               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                                 <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
                                   <circle cx="12" cy="12" r="10" stroke="#334155" strokeWidth="3" />
@@ -686,8 +688,8 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                             )}
                             <img
                               src={
-                                activePokedex === "pokemon-z"
-                                  ? (zSpritesTrimmed[String(candidate.id)] ?? zSpritesCache[String(candidate.id)] ?? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+                                usesCatalog
+                                  ? (zSpritesTrimmed[spriteKey] ?? zSpritesCache[spriteKey] ?? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
                                   : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${candidate.id}.png`
                               }
                               alt={name}
@@ -698,27 +700,27 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                                 // onLoad de fondo) hasta que el tamaño/recorte real esté resuelto,
                                 // para evitar el flash del sprite sin ajustar.
                                 opacity:
-                                  activePokedex === "pokemon-z" && zSpriteNaturalSizes[String(candidate.id)] === undefined
+                                  usesCatalog && zSpriteNaturalSizes[spriteKey] === undefined
                                     ? 0
                                     : 1,
                                 transition: "opacity 120ms ease-out",
-                                ...(activePokedex === "pokemon-z"
+                                ...(usesCatalog
                                   ? (() => {
-                                      const size = zSpriteNaturalSizes[String(candidate.id)];
+                                      const size = zSpriteNaturalSizes[spriteKey];
                                       // Escalar al doble del tamaño trimmeado, con techo en 112px,
                                       // para que los sprites pequeños no queden diminutos.
                                       const base = size ? Math.min(size * 2, 112) : 80;
                                       // Zoom extra puntual para sprites cuyo arte deja margen
                                       // vacío dentro del bounding box (ver Z_SPRITE_ZOOM_OVERRIDES).
-                                      const zoom = Z_SPRITE_ZOOM_OVERRIDES[candidate.id] ?? 1;
+                                      const zoom = activePokedex === "pokemon-z" ? (Z_SPRITE_ZOOM_OVERRIDES[candidate.id] ?? 1) : 1;
                                       const display = Math.min(base * zoom, 128);
                                       return { width: display, height: display, objectFit: "contain" as const };
                                     })()
                                   : { width: 128, height: 128, objectFit: "contain" as const }),
                               }}
                               onLoad={(e) => {
-                                if (activePokedex !== "pokemon-z") return;
-                                const key = String(candidate.id);
+                                if (!usesCatalog) return;
+                                const key = spriteKey;
                                 // Si ya está trimmeado, solo actualizar el tamaño
                                 if (zSpritesTrimmed[key]) {
                                   const img = e.target as HTMLImageElement;
@@ -919,10 +921,10 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                                     content={
                                       <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
                                         <div className="text-[12px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
-                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
+                                          {usesCatalog ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
                                         </div>
                                         <div>
-                                          {activePokedex === "pokemon-z"
+                                          {usesCatalog
                                             ? (lang === "es" ? abilitiesZDescData[ab]?.description : (abilitiesZDescData[ab]?.descriptionEn ?? abilitiesZDescData[ab]?.description)) ?? ""
                                             : getStdAbilityDescription(ab)}
                                         </div>
@@ -930,7 +932,7 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                                     }
                                   >
                                     <span className="rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[12px] font-medium text-slate-300 cursor-default">
-                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
+                                      {usesCatalog ? getAbilityDisplayName(ab) : getStdAbilityLabel(ab)}
                                     </span>
                                   </FloatingTooltip>
                                 ))}
@@ -940,11 +942,11 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                                     content={
                                       <div className="w-56 rounded-xl border border-slate-700 bg-slate-950/98 p-2.5 shadow-xl text-xs text-slate-300">
                                         <div className="text-[12px] uppercase tracking-[0.2em] text-slate-500 mb-1.5">
-                                          {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
+                                          {usesCatalog ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
                                           {" "}({lang === "es" ? "oculta" : "hidden"})
                                         </div>
                                         <div>
-                                          {activePokedex === "pokemon-z"
+                                          {usesCatalog
                                             ? (lang === "es" ? abilitiesZDescData[candidate.hiddenAbility]?.description : (abilitiesZDescData[candidate.hiddenAbility]?.descriptionEn ?? abilitiesZDescData[candidate.hiddenAbility]?.description)) ?? ""
                                             : getStdAbilityDescription(candidate.hiddenAbility)}
                                         </div>
@@ -954,7 +956,7 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
                                     <span
                                       className="rounded-full border border-dashed border-slate-600 bg-slate-800/30 px-2 py-0.5 text-[12px] font-medium text-slate-400 cursor-default"
                                     >
-                                      {activePokedex === "pokemon-z" ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
+                                      {usesCatalog ? getAbilityDisplayName(candidate.hiddenAbility) : getStdAbilityLabel(candidate.hiddenAbility)}
                                     </span>
                                   </FloatingTooltip>
                                 )}
@@ -1129,7 +1131,7 @@ function RecommendationsPanelImpl(props: RecommendationsPanelProps) {
 
       {recFilterMoveModalOpen && (
         <MoveFilterModal
-          moves={(activePokedex === "pokemon-z" ? movesZData : movesStandardData) as MoveFilterEntry[]}
+          moves={activeMoves as MoveFilterEntry[]}
           lang={lang}
           search={recFilterMoveSearch}
           onSearchChange={setRecFilterMoveSearch}

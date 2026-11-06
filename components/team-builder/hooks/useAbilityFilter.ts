@@ -35,6 +35,7 @@ export interface AbilityModalEntry {
  */
 export function useAbilityFilter(
   activePokedex: string,
+  usesCatalog: boolean,
   lang: "es" | "en",
   activeCandidates: AvailablePokemon[],
   abilitiesZDescData: AbilitiesZDescData,
@@ -69,11 +70,11 @@ export function useAbilityFilter(
   const allAbilityNamesForFilter = useMemo(() => {
     const set = new Set<string>();
     activeCandidates.forEach((c) => {
-      (c.abilities ?? []).forEach((ab) => set.add(activePokedex === "pokemon-z" ? ab : formatForDisplay(ab)));
-      if (c.hiddenAbility) set.add(activePokedex === "pokemon-z" ? c.hiddenAbility : formatForDisplay(c.hiddenAbility));
+      (c.abilities ?? []).forEach((ab) => set.add(usesCatalog ? ab : formatForDisplay(ab)));
+      if (c.hiddenAbility) set.add(usesCatalog ? c.hiddenAbility : formatForDisplay(c.hiddenAbility));
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [activeCandidates, activePokedex]);
+  }, [activeCandidates, usesCatalog]);
 
   const recFilterAbilitySuggestions = useMemo(() => {
     const q = normalizeApostrophe(recFilterAbility.trim().toLowerCase());
@@ -85,7 +86,7 @@ export function useAbilityFilter(
   // habilidad. Z usa las descripciones locales precargadas; dex estándar usa
   // el dataset de PokéAPI ya traducido.
   const abilityModalEntries = useMemo((): AbilityModalEntry[] => {
-    if (activePokedex === "pokemon-z") {
+    if (usesCatalog) {
       return Object.entries(abilitiesZDescData).map(([esName, data]) => ({
         // Guardamos el nombre en español (esName) como valor real seleccionable,
         // ya que recFilterAbility/el resto del filtro trabaja con ese formato;
@@ -103,7 +104,7 @@ export function useAbilityFilter(
       name: lang === "es" ? a.nameEs : a.nameEn,
       description: (lang === "es" ? a.descriptionEs : a.descriptionEn) || (lang === "es" ? a.descriptionEn : a.descriptionEs) || "",
     }));
-  }, [abilitiesZDescData, abilitiesStandardData, activePokedex, lang, getAbilityDisplayName]);
+  }, [abilitiesZDescData, abilitiesStandardData, usesCatalog, lang, getAbilityDisplayName]);
 
   // ─── Handlers del input con autocompletado ─────────────────────────────
   const handleAbilityInputChange = (value: string) => {

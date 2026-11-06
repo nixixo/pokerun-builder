@@ -15,6 +15,8 @@ import type { Requisito, Zone } from "../types";
 import type { Origen } from "../lugares";
 import type { ClaseObjeto } from "../useItemSprites";
 import { useItemSprites } from "../useItemSprites";
+import { BotonPendiente } from "../listaPendientes";
+import { crearPendiente, type AccionesPendientes } from "../usePendientes";
 import { HoverDescription } from "../hoverDescription";
 import { EmptyHint, RequisitoChips, SectionHead, VisitaChip } from "./piezas";
 
@@ -59,11 +61,15 @@ const ORDEN_CLASES: ClaseObjeto[] = ["efigie", "mega", "evolutivo", "mejora", "c
 
 export function SeccionObjetos({
   objetos,
+  zonaDe,
+  pendientes,
   origenDe,
   visitaDe,
   pendientesDe,
 }: {
   objetos: Zone["objetos"];
+  zonaDe: (index: number) => Zone;
+  pendientes?: AccionesPendientes;
   /** De qué entrada de la guía salió el objeto i (en un lugar fusionado). */
   origenDe: (i: number) => Origen;
   visitaDe: (o: Origen) => number;
@@ -154,6 +160,9 @@ export function SeccionObjetos({
                   </div>
                   {o.detalle && <div className="mt-0.5 text-xs leading-snug text-slate-400">{o.detalle}</div>}
                   <RequisitoChips requisitos={o.requisitos} pendientes={pendientesDe(o.requisitos, desde.zona)} />
+                  {pendientes && (
+                    <BotonPendiente actions={pendientes} entry={crearPendiente(zonaDe(desde.zona), "Objeto", o.nombre, o.detalle, o.requisitos)} />
+                  )}
                 </div>
               </div>
             );

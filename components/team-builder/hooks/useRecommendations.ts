@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { GEN_RANGES, ROLES } from "../utils/constants";
-import { Z_MEGA_ONLY_SPECIES, Z_MEGA_OFFICIAL_DUPLICATE_SPECIES, POKEMON_Z_ORIGINALS } from "../utils/pokemonDefinitions";
+import type { CatalogRules } from "../data/catalogRules";
 import { isLegendary } from "../utils/pokemonHelpers";
-import { stripZFormPrefixSuffix } from "../utils/stringNormalization";
 import { normalizeApostrophe } from "../utils/stringNormalization";
 import { formatForDisplay, typeMatchesRole } from "../utils/typeHelpers";
 import { getEffectiveRole, getRole, matchesRole, scoreAllRoles } from "../utils/roleCalculations";
@@ -47,7 +46,7 @@ export function useRecommendations(
   typeRelations: Record<string, DamageRelations>,
   activeCandidates: AvailablePokemon[],
   lang: "es" | "en",
-  activePokedex: string,
+  catalogRules: CatalogRules | undefined,
   abilitiesStandardData: { slug: string; nameEs: string; nameEn: string; descriptionEs: string; descriptionEn: string }[],
   recFilterAbility: string
 ) {
@@ -250,76 +249,14 @@ export function useRecommendations(
         if (recFilterFinalEvo && !c.isFinalEvo) return false;
         // Filtro: ocultar legendarios
         if (!recFilterLegendary && isLegendary(c)) return false;
-        // Filtro: solo originales de Pokémon Z. Las Megas/Gigamax (rangos
-        // curados 90009-90025 y 91000-91118) también deben pasar este
-        // chequeo, pero con dos matices adicionales sobre la comparación
-        // simple de especie base:
-        //  1) Entei, Volcarona, Florges y Grimmsnarl (Z_MEGA_ONLY_SPECIES)
-        //     tienen su entrada BASE 1:1 igual a la oficial (por eso no
-        //     están en POKEMON_Z_ORIGINALS), pero su MEGA sí es contenido
-        //     exclusivo de Pokémon Z — así que su Mega cuenta como original
-        //     aunque la base no lo sea.
-        //  2) Mega Chesnaught, Mega Delphox y Mega Greninja son al revés:
-        //     su especie base SÍ es original de Z (están en
-        //     POKEMON_Z_ORIGINALS por sus stats/habilidad alterados), pero
-        //     esas 3 Megas puntuales son réplicas de la Mega oficial de
-        //     PokéAPI (no contenido exclusivo), así que no deben contar
-        //     como originales aunque su base sí lo sea.
-        // El switch "Mostrar Megas"/"Mostrar Gigamax" de más abajo sigue
-        // controlando aparte si se muestran o no las Megas/Gigamax en general.
-        if (recFilterOnlyOriginals) {
-          const isCuratedMega = activePokedex === "pokemon-z" && c.formLabel === "Mega" && c.id >= 90000;
-          const rawName = normalizeApostrophe(c.name);
-          const baseSpeciesName = stripZFormPrefixSuffix(rawName);
-          const baseKey = baseSpeciesName.toLowerCase();
-          // Para Chesnaught/Delphox/Greninja el JSON trae DOS Megas por
-          // especie con el mismo nombre base: la exclusiva del hackrom
-          // lleva el sufijo " Z" ("Mega Chesnaught Z", id 91021) y la
-          // réplica de la oficial no lo lleva ("Mega Chesnaught", id
-          // 91022). Sin distinguir por ese sufijo, ambas quedaban marcadas
-          // como duplicado oficial por igual (mismo baseKey "chesnaught"
-          // tras sacarle el sufijo), así que el filtro las excluía a las
-          // dos en vez de solo a la réplica.
-          const hasZSuffix = /\s+Z$/.test(rawName);
-          const isOfficialDuplicateMega = isCuratedMega && Z_MEGA_OFFICIAL_DUPLICATE_SPECIES.has(baseKey) && !hasZSuffix;
-          const isExclusiveMegaOnlySpecies = isCuratedMega && Z_MEGA_ONLY_SPECIES.has(baseKey);
-          const isOriginal = (POKEMON_Z_ORIGINALS.has(baseSpeciesName) && !isOfficialDuplicateMega) || isExclusiveMegaOnlySpecies;
-          if (!isOriginal) return false;
-        }
-        // Filtro: excluir entradas de datos inválidas conocidas. Ditto no
-        // puede Megaevolucionar (su gimmick es Transform, incompatible con
-        // Mega Evolución), así que si el JSON curado trae por error una
-        // "Mega Ditto" nunca debe aparecer como candidato, sin importar el
-        // switch "Mostrar Megas".
-        if (activePokedex === "pokemon-z" && c.formLabel === "Mega" && c.id >= 90000) {
-          const baseKey = stripZFormPrefixSuffix(normalizeApostrophe(c.name)).toLowerCase();
-          if (baseKey === "ditto") return false;
-        }
-        // Filtro: Megas (dex normal, PokéAPI). Se detecta por el slug oficial
-        // (ej. "venusaur-mega", "charizard-mega-x") — EXCLUDED_FORM_PATTERN ya
-        // no las saca del fetch, así que sin este filtro seguirían apareciendo
-        // siempre; acá se controla con el switch.
-        if (activePokedex !== "pokemon-z" && !recFilterShowMega && /-mega(-[xy])?\b/i.test(c.slug)) return false;
-        // Filtro: Gigamax (dex normal, PokéAPI). Se detecta por el slug
-        // oficial (ej. "venusaur-gmax") — igual mecánica que el de Megas.
-        if (activePokedex !== "pokemon-z" && !recFilterShowGmax && /-gmax\b/i.test(c.slug)) return false;
-        // Filtro: Megas y Gigamax (dex Pokémon Z). Se usa el campo formLabel
-        // del JSON, que es el más confiable para esto — no se puede usar un
-        // substring del nombre (ej. "Meganium"/"Yanmega" contienen "mega"
-        // sin ser Megaevoluciones). Los rangos viejos 90001-90008 y
-        // 90059-90078 ya no existen en el JSON (migrados a 91000-91118), así
-        // que se sacó el chequeo hardcodeado por esos IDs.
-        if (activePokedex === "pokemon-z") {
-          // OJO: el JSON usa formLabel "Mega" tanto para las Megas reales
-          // como (por error/diseño) para la entrada BASE de 26 especies que
-          // tienen mega en el juego (ej. Gyarados id 130, Charizard id 6,
-          // Lucario id 448...). Por eso NO alcanza con formLabel === "Mega":
-          // hay que exigir también que sea una entrada de la zona fakedex
-          // (id >= 90000), o species base como Gyarados quedan atrapadas
-          // por el switch igual que las Megas de verdad.
-          const isZMega = c.formLabel === "Mega" && c.id >= 90000;
-          if (!recFilterZShowMega && isZMega) return false;
+        if (recFilterOnlyOriginals && catalogRules?.isOriginal && !catalogRules.isOriginal(c)) return false;
+        if (catalogRules?.excludeRecommendation?.(c)) return false;
+        if (catalogRules) {
+          if (!recFilterZShowMega && catalogRules.isMega(c)) return false;
           if (!recFilterZShowGmax && c.formLabel === "Gmax") return false;
+        } else {
+          if (!recFilterShowMega && /-mega(-[xy])?\b/i.test(c.slug)) return false;
+          if (!recFilterShowGmax && /-gmax\b/i.test(c.slug)) return false;
         }
         // Filtro de rol suavizado (Opción D):
         // manual tiene prioridad sobre el toggle automático.
@@ -509,7 +446,7 @@ export function useRecommendations(
     recFilterMatchRole,
     recFilterPrioritizeCoverage,
     recFilterRoleManual,
-    activePokedex,
+    catalogRules,
     recFilterShowMega,
     recFilterShowGmax,
     recFilterZShowMega,

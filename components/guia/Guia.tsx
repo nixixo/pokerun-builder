@@ -33,6 +33,8 @@ import { ChipOpcional } from "@/components/guia/zona/opcional";
 import { ZoneSpriteImg } from "@/components/guia/zoneSpriteImage";
 import { fusionarLugar, lugarDeZona, lugarQueContiene, resolverLugares } from "@/components/guia/lugares";
 import { activeZoneCodec } from "./progressIdentity";
+import { ListaPendientes } from "./listaPendientes";
+import { usePendientes } from "./usePendientes";
 import { useGuideCollections } from "./useGuideCollections";
 import { codecTexto, usePreferenciaLocal } from "@/components/shared/preferenciaLocal";
 
@@ -251,6 +253,8 @@ export default function GuiaPage() {
 
   const { collection, paginasProgress, mtsProgress, nidosProgress, habitantesProgress } = useGuideCollections(zones);
 
+  const pendientes = usePendientes();
+
   const [search, setSearch] = useState("");
   const [activeZoneId, setActiveZoneId] = usePreferenciaLocal(`${LS_KEY_ZONE}:v2`, null, activeZoneCodec, LS_KEY_ZONE);
   const activeZoneIndex = zones.findIndex((zone) => zone.id === activeZoneId);
@@ -409,6 +413,19 @@ export default function GuiaPage() {
             <GlobalSearch onSearch={globalSearch} onSelect={irAZona} />
           )}
         </GuiaHeader>
+
+        <ListaPendientes
+          entries={pendientes.entries}
+          onRemove={pendientes.remove}
+          onNavigate={(id) => {
+            const index = zones.findIndex((zone) => zone.id === id);
+            if (index < 0) return;
+            irAZona(index);
+            setModo("historia");
+            setView("lista");
+            requestAnimationFrame(() => document.getElementById("guide-zone-detail")?.scrollIntoView());
+          }}
+        />
 
         {loading && (
           <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-700/50 bg-slate-900/40 py-24 text-slate-400">
@@ -669,7 +686,7 @@ export default function GuiaPage() {
             </aside>
 
             {/* Detail */}
-            <section className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-b from-slate-900/70 to-slate-950/70 p-5 min-h-[500px] shadow-lg shadow-black/30">
+            <section id="guide-zone-detail" className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-b from-slate-900/70 to-slate-950/70 p-5 min-h-[500px] shadow-lg shadow-black/30">
               {/* Grid blueprint muy tenue, como en el hero del Builder */}
               <div
                 className="pointer-events-none absolute inset-0 opacity-[0.035]"
@@ -725,6 +742,7 @@ export default function GuiaPage() {
                       isVisited={lugarActivo ? () => lugarVisitado : isVisited}
                       onToggleVisited={lugarActivo ? toggleLugarVisitado : toggleVisited}
                       collection={collection}
+                      pendientes={pendientes}
                     />
                   </>
                 )}

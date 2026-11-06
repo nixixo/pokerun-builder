@@ -20,7 +20,7 @@
 import { createContext, use } from "react";
 import type { ReactNode } from "react";
 import type { BaseStats, Lang } from "../types";
-import type { PokedexId } from "../utils/constants";
+import type { PokedexId } from "../data/gameRegistry";
 
 export type BuilderChrome = {
   lang: Lang;

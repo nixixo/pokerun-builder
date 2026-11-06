@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Lang, Slot, TeamScore } from "../../types";
-import { POKEDEX_OPTIONS, type PokedexId } from "../../utils/constants";
+import { getGame, POKEDEX_OPTIONS, type PokedexId } from "../../data/gameRegistry";
 import { PokeballIcon } from "../PokeballIcon";
 import { FloatingTooltip } from "../FloatingTooltip";
 import { Sprout, Wrench, Backpack, Lock, Swords, Shield, TrendingUp, Puzzle, BookOpen } from "lucide-react";
@@ -19,8 +19,7 @@ type BuilderHeaderProps = {
   pokedexDropdownOpen: boolean;
   onTogglePokedexDropdown: () => void;
   pokedexDropdownRef: RefObject<HTMLDivElement | null>;
-  pokemonZCount: number;
-  movesZCount: number;
+  pokedexCounts: Partial<Record<PokedexId, { pokemon: number; moves: number }>>;
 
   isAdvanced: boolean;
   viewMode: "simple" | "advanced";
@@ -51,8 +50,7 @@ export function BuilderHeader({
   pokedexDropdownOpen,
   onTogglePokedexDropdown,
   pokedexDropdownRef,
-  pokemonZCount,
-  movesZCount,
+  pokedexCounts,
   isAdvanced,
   viewMode,
   onViewModeChange,
@@ -61,6 +59,8 @@ export function BuilderHeader({
   teamScore,
   getStatColor,
 }: BuilderHeaderProps) {
+  const currentGame = getGame(activePokedex);
+
   // Cuántos Pokémon cumplen ya la condición para que se calcule la puntuación.
   //
   // El requisito real (ver teamScore en hooks/useTeamSummary.ts) son 3 Pokémon
@@ -101,28 +101,26 @@ export function BuilderHeader({
               // debajo de ese ancho este botón es SOLO un icono y se queda sin
               // nombre que anunciar. La etiqueta dice además cuál está activa,
               // que es justo lo que el icono no puede decir.
-              aria-label={`${lang === "es" ? "Pokédex" : "Pokédex"}: ${POKEDEX_OPTIONS.find((p) => p.id === activePokedex)?.label}`}
+              aria-label={`Pokédex: ${currentGame.label}`}
               aria-expanded={pokedexDropdownOpen}
               aria-haspopup="menu"
               className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                activePokedex === "pokemon-z"
+                currentGame.accent === "yellow"
                   ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
                   : "border-slate-700/60 bg-slate-900/70 text-slate-200"
               } hover:brightness-110`}
             >
-              {activePokedex === "pokemon-z" ? (
+              {currentGame.logo ? (
                 <Image
-                  src="/pokemon-z-logo.webp"
-                  alt="Pokémon Z"
-                  width={435}
-                  height={384}
+                  {...currentGame.logo}
+                  alt=""
                   className="h-6 w-6 shrink-0 object-contain drop-shadow"
                 />
               ) : (
                 <PokeballIcon className="h-5 w-5 shrink-0" />
               )}
               <span className="hidden xs:inline">
-                {POKEDEX_OPTIONS.find((p) => p.id === activePokedex)?.label}
+                {currentGame.label}
               </span>
               <svg
                 viewBox="0 0 20 20"
@@ -135,63 +133,41 @@ export function BuilderHeader({
 
             {pokedexDropdownOpen && (
               <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 rounded-2xl border border-slate-700/70 bg-slate-950/98 p-2 shadow-2xl shadow-black/60 z-50">
-                <button
-                  type="button"
-                  onClick={() => onSwitchPokedex("standard")}
-                  className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
-                    activePokedex === "standard"
-                      ? "border-blue-500/50 bg-blue-500/10"
-                      : "border-transparent hover:bg-slate-800/70"
-                  }`}
-                >
-                  <PokeballIcon className="h-9 w-9 shrink-0" />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-bold text-slate-100">Pokedex</span>
-                    <span className="block text-[13px] text-slate-500 leading-snug">
-                      {lang === "es" ? "Pokedex Nacional" : "National Pokedex"}
-                    </span>
-                  </span>
-                  {activePokedex === "standard" && (
-                    <span className="ml-auto shrink-0 text-blue-400">✓</span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onSwitchPokedex("pokemon-z")}
-                  className={`mt-1.5 flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
-                    activePokedex === "pokemon-z"
-                      ? "border-yellow-500/50 bg-yellow-500/10"
-                      : "border-transparent hover:bg-slate-800/70"
-                  }`}
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center">
-                    <Image
-                      src="/pokemon-z-logo.webp"
-                      alt="Pokémon Z"
-                      width={435}
-                      height={384}
-                      className="h-full w-full object-contain drop-shadow"
-                    />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-bold text-slate-100">Pokémon Z</span>
-                    {pokemonZCount > 0 && movesZCount > 0 ? (
-                      <span className="block text-[13px] text-slate-500 leading-snug">
-                        {`${pokemonZCount} Pokémon · ${movesZCount} ${lang === "es" ? "movimientos" : "moves"}`}
+                {POKEDEX_OPTIONS.map((option) => {
+                  const game = getGame(option.id);
+                  const selected = game.id === activePokedex;
+                  const yellow = game.accent === "yellow";
+                  const counts = pokedexCounts[option.id];
+                  const description = counts && counts.pokemon > 0 && counts.moves > 0
+                    ? `${counts.pokemon} Pokémon · ${counts.moves} ${lang === "es" ? "movimientos" : "moves"}`
+                    : game.description[lang];
+                  return (
+                    <button
+                      key={game.id}
+                      type="button"
+                      onClick={() => onSwitchPokedex(option.id)}
+                      aria-current={selected ? "true" : undefined}
+                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition [&+button]:mt-1.5 ${
+                        selected
+                          ? yellow ? "border-yellow-500/50 bg-yellow-500/10" : "border-blue-500/50 bg-blue-500/10"
+                          : "border-transparent hover:bg-slate-800/70"
+                      }`}
+                    >
+                      {game.logo ? (
+                        <Image {...game.logo} alt="" className="h-11 w-11 shrink-0 object-contain drop-shadow" />
+                      ) : <PokeballIcon className="h-9 w-9 shrink-0" />}
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold text-slate-100">{game.label}</span>
+                        {counts && counts.pokemon > 0 && !counts.moves ? (
+                          <span className="mt-1 block h-2.5 w-24 rounded bg-slate-700/60 animate-pulse" aria-hidden="true" />
+                        ) : (
+                          <span className="block text-[13px] text-slate-500 leading-snug">{description}</span>
+                        )}
                       </span>
-                    ) : pokemonZCount > 0 ? (
-                      <span className="mt-1 block h-2.5 w-24 rounded bg-slate-700/60 animate-pulse" aria-hidden="true" />
-                    ) : (
-                      <span className="block text-[13px] text-slate-500 leading-snug">
-                        {lang === "es" ? "Pokémon Customizados" : "Custom Pokemon"}
-                      </span>
-                    )}
-                  </span>
-                  {activePokedex === "pokemon-z" && (
-                    <span className="ml-auto shrink-0 text-yellow-400">✓</span>
-                  )}
-                </button>
+                      {selected && <span aria-hidden="true" className={`ml-auto shrink-0 ${yellow ? "text-yellow-400" : "text-blue-400"}`}>✓</span>}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -346,9 +322,9 @@ export function BuilderHeader({
 
             {/* Botón Objetos — versión mobile (1ra fila, junto al título) */}
             <div className="flex sm:hidden items-center gap-1.5 shrink-0">
-              {activePokedex === "pokemon-z" && (
+              {currentGame.guideHref && (
                 <Link
-                  href="/guia"
+                  href={currentGame.guideHref}
                   className="flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/20 hover:text-sky-200"
                 >
                   <BookOpen className="h-4 w-4 shrink-0" />
@@ -489,9 +465,9 @@ export function BuilderHeader({
           <div className="flex flex-col sm:flex-row sm:flex-1 sm:items-end sm:justify-end gap-2 shrink-0">
             {/* Botón Guía: solo visible con la Pokédex Z activa, ya que la
                 guía es específica del walkthrough de Pokémon Z. */}
-            {activePokedex === "pokemon-z" && (
+            {currentGame.guideHref && (
               <Link
-                href="/guia"
+                href={currentGame.guideHref}
                 className="hidden sm:flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-1.5 shrink-0 text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/20 hover:text-sky-200"
               >
                 <BookOpen className="h-4 w-4 shrink-0" />

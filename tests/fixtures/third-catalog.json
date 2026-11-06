@@ -1,0 +1,43 @@
+{
+  "pokemon": [
+    {
+      "id": 25,
+      "internalName": "NIMBO",
+      "name": "Nimbo",
+      "types": ["Agua"],
+      "stats": { "HP": 60, "ATK": 50, "DEF": 60, "SP.ATK": 80, "SP.DEF": 60, "SPE": 70 },
+      "abilities": ["Bruma"],
+      "moves": [{ "move": "ECODEPRUEBA", "level": 5 }]
+    },
+    {
+      "id": 26,
+      "internalName": "ROCIO",
+      "name": "Rocío",
+      "types": ["Tierra"],
+      "stats": { "HP": 80, "ATK": 60, "DEF": 70, "SP.ATK": 50, "SP.DEF": 50, "SPE": 40 },
+      "tmMoves": ["ECODEPRUEBA"]
+    }
+  ],
+  "moves": [
+    {
+      "internal_name": "ECODEPRUEBA",
+      "name": { "es": "Eco de prueba", "en": "Test Echo" },
+      "type": "WATER",
+      "category": "Special",
+      "power": 50
+    }
+  ],
+  "abilities": {
+    "Bruma": { "nameEn": null, "description": "Habilidad del catálogo de prueba." }
+  },
+  "items": [
+    {
+      "id": 1,
+      "internalName": "BRUJULANIMBO",
+      "name": "Brújula de Nimbo",
+      "namePlural": "Brújulas de Nimbo",
+      "description": "Objeto del catálogo de prueba.",
+      "hackrom": false
+    }
+  ]
+}

@@ -54,6 +54,8 @@ import {
 } from "./zona/encuentroAcento";
 import { CollectCheck, EmptyHint, RequisitoChips, SectionHead, VisitaChip } from "./zona/piezas";
 import type { ProgresoColeccion } from "./zona/piezas";
+import { BotonPendiente } from "./listaPendientes";
+import { crearPendiente, type AccionesPendientes } from "./usePendientes";
 import { SeccionObjetos } from "./zona/seccionObjetos";
 import { BadgesColeccionables } from "./zona/badgesColeccionables";
 import { BloqueCapturas, ChipOpcional } from "./zona/opcional";
@@ -111,6 +113,7 @@ export function ZoneDetail({
   isVisited,
   onToggleVisited,
   collection,
+  pendientes,
 }: {
   // Puede ser una entrada de la guía o un LUGAR entero ya fusionado. Lo segundo
   // trae `fusion`, que dice de qué entrada salió cada cosa.
@@ -134,6 +137,7 @@ export function ZoneDetail({
   // no lo pasen. El tipo vive en zona/piezas.tsx, que es de donde lo toman
   // también las secciones.
   collection?: ProgresoColeccion;
+  pendientes?: AccionesPendientes;
 }) {
   const activeIndex = zoneIndex;
   // Cuando la zona es un lugar fusionado, cada cosa arrastra la entrada de la
@@ -474,6 +478,9 @@ export function ZoneDetail({
                   {p.nota && <p className="relative z-10 mt-1 text-[13px] leading-snug text-slate-500">{p.nota}</p>}
                   <div className="relative z-10">
                     <RequisitoChips requisitos={p.requisitos} pendientes={pendientesDe(p.requisitos, o.zona)} />
+                    {pendientes && p.requisitos?.length ? (
+                      <BotonPendiente actions={pendientes} entry={crearPendiente(zones[o.zona], "Encuentro", p.nombre, [p.metodo, p.nota].filter(Boolean).join(" · "), p.requisitos)} />
+                    ) : null}
                   </div>
                 </div>
               );
@@ -486,6 +493,8 @@ export function ZoneDetail({
 
       <SeccionObjetos
         objetos={zone.objetos}
+        zonaDe={(index) => zones[index]}
+        pendientes={pendientes}
         origenDe={(i) => origen(fusion?.objetos, i)}
         visitaDe={visitaDe}
         pendientesDe={pendientesDe}
@@ -613,6 +622,9 @@ export function ZoneDetail({
                     </div>
                     {m.contexto && <span className="mt-0.5 block text-xs text-slate-500">{m.contexto}</span>}
                     <RequisitoChips requisitos={m.requisitos} pendientes={pendientesDe(m.requisitos, o.zona)} />
+                    {pendientes && m.requisitos?.length ? (
+                      <BotonPendiente actions={pendientes} entry={crearPendiente(zones[o.zona], "MT", `${m.numero} · ${m.movimiento}`, m.contexto, m.requisitos)} />
+                    ) : null}
                   </div>
                   {collection && (
                     <CollectCheck checked={mtChecked} onToggle={() => collection.toggleMt(o.zona, o.i)} label={m.numero} />

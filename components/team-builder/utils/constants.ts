@@ -17,14 +17,6 @@ export const ITEMS_ONLY_COMBAT_KEY = "pokerun-builder-items-only-combat";
 export const MAX_PLANTILLAS = 5;
 export const TEAM_SIZE = 6;
 
-// ─── Pokedex selector ────────────────────────────────────────────────────────
-export type PokedexId = "standard" | "pokemon-z";
-
-export const POKEDEX_OPTIONS: { id: PokedexId; label: string; emoji: string }[] = [
-  { id: "standard", label: "Pokedex", emoji: "🔵" },
-  { id: "pokemon-z", label: "Pokémon Z", emoji: "⚡" },
-];
-
 // ─── Generaciones ────────────────────────────────────────────────────────────
 export const GEN_RANGES: { gen: number; label: string; min: number; max: number }[] = [
   { gen: 1, label: "Gen I",   min: 1,    max: 151  },

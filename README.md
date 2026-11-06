@@ -161,6 +161,25 @@ requiere red y se ejecuta manualmente cuando hay que actualizar esos datos.
 
 ---
 
+## Añadir un catálogo al Builder
+
+1. Convierte los datos al formato de los JSON de `data-src/`. Usa una carpeta propia, por ejemplo `data-src/games/mi-juego/`, con especies, movimientos, habilidades y objetos.
+2. Añade una entrada en `data-src/builder-catalogs.json` con un ID estable, `label`, `description.es`, `description.en` y las rutas relativas a `data-src/`. Usa `pokemon`, `moves`, `abilities` e `items` para los archivos fuente. `learnsets` es la ruta de salida que generará el build; el archivo de especies incluye las listas originales.
+3. Ejecuta `npm run build`. El build valida IDs duplicados y referencias de movimientos y habilidades. El Builder incorpora el catálogo al selector y guarda equipos y plantillas con el ID del juego.
+
+Cada especie usa un `id` numérico estable y puede declarar `sprite` como URL o ruta pública. Las listas `moves`, `tmMoves`, `eggMoves` y `tutorMoves` apuntan al `internal_name` de cada movimiento. `moves` contiene pares `{ move, level }`; las demás listas contienen IDs. Los nombres de las habilidades apuntan a claves del archivo de habilidades. Puedes consultar `tests/fixtures/third-catalog.json` como ejemplo del formato.
+
+Para ejecutar la prueba de integración del tercer catálogo en PowerShell:
+
+```powershell
+$env:NEXT_PUBLIC_TEST_CATALOG = '1'
+npm run build
+npm run test:e2e -- --grep 'un tercer juego'
+Remove-Item Env:NEXT_PUBLIC_TEST_CATALOG
+```
+
+El catálogo ficticio recibe sus datos de Playwright y solo figura en el selector de ese build de prueba.
+
 ## Comprobaciones
 
 ```bash

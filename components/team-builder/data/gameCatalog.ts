@@ -1,5 +1,19 @@
+import { POKEDEX_OPTIONS, type CatalogFiles, type PokedexId } from "./gameRegistry";
 import { recursoJson } from "@/components/shared/recursoJson";
 import type { MoveZ, MoveZCrudo, PokemonZEntry } from "../types/pokemonZ";
+
+export interface ItemEntry {
+  id: number;
+  internalName: string;
+  name: string;
+  nameEn?: string;
+  namePlural: string;
+  description: string;
+  descriptionEn?: string;
+  hackrom: boolean;
+  sprite?: string | null;
+  category?: string | null;
+}
 
 export type AbilityDescriptions = Record<string, {
   nameEn: string | null; nameEnDisplay?: string; description: string;
@@ -28,11 +42,11 @@ function normalizeMoves(data: MoveZCrudo[]): MoveZ[] {
 }
 
 /** Recursos independientes: un reintento conserva las descargas que ya terminaron. */
-export function createPokemonZResources(base = "/generated") {
-  const core = recursoJson<PokemonZEntry[]>(`${base}/pokemon_z_completo.json`);
-  const learnsets = recursoJson<Record<string, Partial<PokemonZEntry>>>(`${base}/pokemon_z_learnsets.json`);
-  const moves = recursoJson<MoveZ[]>(`${base}/moves.json`, { transformar: normalizeMoves });
-  const abilities = recursoJson<AbilityDescriptions>(`${base}/abilities_descriptions.json`);
+export function createGameCatalog(files: CatalogFiles) {
+  const core = recursoJson<PokemonZEntry[]>(files.pokemon);
+  const learnsets = recursoJson<Record<string, Partial<PokemonZEntry>>>(files.learnsets);
+  const moves = recursoJson<MoveZ[]>(files.moves, { transformar: normalizeMoves });
+  const abilities = recursoJson<AbilityDescriptions>(files.abilities);
   return {
     async pokemon() {
       const [entries, learned] = await Promise.all([core.cargar(), learnsets.cargar()]);
@@ -40,7 +54,17 @@ export function createPokemonZResources(base = "/generated") {
     },
     moves: moves.cargar,
     abilities: abilities.cargar,
+    items: recursoJson<ItemEntry[]>(files.items).cargar,
   };
 }
 
-export const pokemonZResources = createPokemonZResources();
+export type GameCatalog = ReturnType<typeof createGameCatalog>;
+
+const catalogs = new Map<PokedexId, GameCatalog>();
+for (const game of POKEDEX_OPTIONS) {
+  if (game.source === "catalog") catalogs.set(game.id, createGameCatalog(game.files));
+}
+
+export function getGameCatalog(id: PokedexId) {
+  return catalogs.get(id);
+}

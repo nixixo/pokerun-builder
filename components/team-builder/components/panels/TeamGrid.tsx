@@ -54,8 +54,7 @@ type TeamGridProps = {
   moveEsMap: Record<string, string>;
   moveEsDisplay: Record<string, string>;
   getMoveLearnBadge: (slotIdx: number, name: string) => string | null;
-  movesZData: MoveZ[];
-  movesStandardData: MoveZ[];
+  activeMoves: MoveZ[];
 
   // modal de filtros de movimientos (Pokémon Z / estándar) — agrupado
   moveFilter: ReturnType<typeof useMoveFilter>;
@@ -107,7 +106,7 @@ type TeamGridProps = {
 export function TeamGrid(props: TeamGridProps) {
   const {
     team, updateSlot, setSlotManualRole,
-    moveEsMap, moveEsDisplay, getMoveLearnBadge, movesZData, movesStandardData,
+    moveEsMap, moveEsDisplay, getMoveLearnBadge, activeMoves,
     teamCardRefs, dragFromIdx, dragOverIdx, startSlotDrag, captureSlotRects,
     dragMoveFrom, moveDragOverIdx, handleMoveDragStart, handleMoveDragEnd, handleMoveDragOver, handleMoveDrop,
     abilitiesZDescData, getAbilityDisplayName,
@@ -986,8 +985,7 @@ const enSlug =
                                   </button>
                                 </FloatingTooltip>
                               </div>
-                            )}                            {((activePokedex === "pokemon-z" && movesZData.length > 0) ||
-                              (activePokedex === "standard" && movesStandardData.length > 0)) && (
+                            )}                            {activeMoves.length > 0 && (
                               <button
                                 type="button"
                                 onClick={() => openMoveFilter(idx, mi)}
@@ -1108,7 +1106,7 @@ const enSlug =
       {/* ── Modal de filtros de movimientos ── */}
       {moveFilterTarget && (
         <MoveFilterModal
-          moves={(activePokedex === "pokemon-z" ? movesZData : movesStandardData) as MoveFilterEntry[]}
+          moves={activeMoves as MoveFilterEntry[]}
           lang={lang}
           search={moveFilterSearch[moveFilterTarget.slotIdx] ?? ""}
           onSearchChange={(v) => {

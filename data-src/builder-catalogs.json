@@ -1,0 +1,11 @@
+{
+  "pokemon-z": {
+    "label": "Pokémon Z",
+    "description": { "es": "Pokémon Customizados", "en": "Custom Pokemon" },
+    "pokemon": "pokemon_z_completo.json",
+    "learnsets": "pokemon_z_learnsets.json",
+    "moves": "moves.json",
+    "abilities": "abilities_descriptions.json",
+    "items": "items_pokemon_z.json"
+  }
+}
